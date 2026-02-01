@@ -6,21 +6,23 @@
 [![MCP](https://img.shields.io/badge/MCP-Compatible-blue.svg)](https://modelcontextprotocol.io/)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-blueviolet?logo=anthropic)](https://claude.ai/code)
 
-座標参照系（CRS: Coordinate Reference System）に関する知識提供を行うMCPサーバーです。
+An MCP server that provides knowledge about Coordinate Reference Systems (CRS).
 
-日本のJGD2011測地系、平面直角座標系（I〜XIX系）、およびグローバルなWGS84、Web Mercatorなどの座標系情報を提供します。変換実行は [mcp-server-proj](https://github.com/mcp-server-proj) に委譲し、**知識提供・判断支援に特化**しています。
+Provides information on Japan's JGD2011 geodetic datum, Japan Plane Rectangular Coordinate Systems (Zones I-XIX), and global coordinate systems such as WGS84 and Web Mercator. Coordinate transformation execution is delegated to [mcp-server-proj](https://github.com/mcp-server-proj), **focusing on knowledge provision and decision support**.
 
 ## Features
 
-- **CRS検索**: EPSGコード、名称、地域名、都道府県名でCRSを検索
-- **詳細情報取得**: 測地系、投影法、適用範囲、精度特性などの詳細情報
-- **地域別一覧**: 日本/グローバルで利用可能なCRS一覧と用途別推奨
-- **CRS推奨**: 用途・場所に応じた最適なCRSを推奨（北海道・沖縄の複数系対応）
-- **使用検証**: CRS選択の妥当性を検証し、問題点と改善提案を提示
-- **変換経路提案**: BFSグラフ探索で最適な変換経路を提案（逆変換対応）
-- **CRS比較**: 7つの観点（測地系、投影法、精度、歪み、互換性など）でCRSを比較
-- **日本重視**: JGD2011、平面直角座標系I〜XIX系の完全サポート
-- **オフライン動作**: ローカルデータベースで外部API不要
+- **CRS Search**: Search CRS by EPSG code, name, region, or prefecture
+- **Detailed Information**: Get detailed information on geodetic datum, projection method, area of use, accuracy characteristics, and more
+- **Regional Listings**: List CRS available in Japan/Global with purpose-specific recommendations
+- **CRS Recommendation**: Recommend the optimal CRS for each purpose and location (with multi-zone support for Hokkaido and Okinawa)
+- **Usage Validation**: Verify the validity of CRS selection and present issues with suggestions for improvement
+- **Transformation Routing**: Propose optimal transformation paths using BFS graph search (with reverse transformation support)
+- **CRS Comparison**: Compare CRS from 7 perspectives (datum, projection, accuracy, distortion, compatibility, etc.)
+- **Best Practices**: CRS usage guidance on 10 topics (surveying, web mapping, data exchange, etc.)
+- **Troubleshooting**: Diagnose CRS problems by symptoms (coordinate shifts, calculation errors, etc.)
+- **Japan-focused**: Full support for JGD2011 and Japan Plane Rectangular Coordinate Systems I-XIX
+- **Offline Operation**: Local database requires no external API
 
 ## Installation
 
@@ -38,7 +40,7 @@ npx @shuji-bonji/epsg-mcp
 
 ### Claude Desktop
 
-`claude_desktop_config.json` に追加:
+Add to `claude_desktop_config.json`:
 
 ```json
 {
@@ -61,40 +63,40 @@ npx @anthropic-ai/mcp-inspector npx @shuji-bonji/epsg-mcp
 
 ### search_crs
 
-CRSをキーワードで検索します。
+Search CRS by keyword.
 
 ```typescript
-// 入力
+// Input
 {
-  query: string;           // 検索キーワード（例: "JGD2011", "4326", "東京"）
+  query: string;           // Search keyword (e.g., "JGD2011", "4326", "Tokyo")
   type?: "geographic" | "projected" | "compound" | "vertical" | "engineering";
   region?: "Japan" | "Global";
-  limit?: number;          // デフォルト: 10
+  limit?: number;          // Default: 10
 }
 
-// 出力
+// Output
 {
   results: CrsInfo[];
   totalCount: number;
 }
 ```
 
-**使用例**:
-- 「JGD2011に関連するCRSを検索」
-- 「東京で使える投影座標系を探す」
-- 「EPSGコード6677の情報」
+**Usage Examples**:
+- "Search for CRS related to JGD2011"
+- "Find projected coordinate systems available in Tokyo"
+- "Get information about EPSG code 6677"
 
 ### get_crs_detail
 
-EPSGコードでCRSの詳細情報を取得します。
+Get detailed CRS information by EPSG code.
 
 ```typescript
-// 入力
+// Input
 {
-  code: string;  // "EPSG:6677" または "6677"
+  code: string;  // "EPSG:6677" or "6677"
 }
 
-// 出力
+// Output
 {
   code: string;
   name: string;
@@ -109,23 +111,23 @@ EPSGコードでCRSの詳細情報を取得します。
 }
 ```
 
-**使用例**:
-- 「EPSG:6677の詳細を教えて」
-- 「Web Mercator(3857)の特徴は？」
+**Usage Examples**:
+- "Tell me the details of EPSG:6677"
+- "What are the characteristics of Web Mercator (3857)?"
 
 ### list_crs_by_region
 
-地域で利用可能なCRS一覧と推奨を取得します。
+Get available CRS list and recommendations by region.
 
 ```typescript
-// 入力
+// Input
 {
   region: "Japan" | "Global";
   type?: CrsType;
-  includeDeprecated?: boolean;  // デフォルト: false
+  includeDeprecated?: boolean;  // Default: false
 }
 
-// 出力
+// Output
 {
   region: string;
   crsList: CrsInfo[];
@@ -137,23 +139,23 @@ EPSGコードでCRSの詳細情報を取得します。
 }
 ```
 
-**使用例**:
-- 「日本で使えるCRS一覧」
-- 「グローバルな地理座標系は？」
+**Usage Examples**:
+- "List CRS available in Japan"
+- "What global geographic coordinate systems are there?"
 
 ### recommend_crs
 
-用途と場所に応じた最適なCRSを推奨します。
+Recommend optimal CRS based on purpose and location.
 
 ```typescript
-// 入力
+// Input
 {
   purpose: "web_mapping" | "distance_calculation" | "area_calculation" |
            "survey" | "navigation" | "data_exchange" | "data_storage" | "visualization";
   location: {
     country?: string;      // "Japan" | "Global"
-    prefecture?: string;   // "東京都", "北海道" など
-    city?: string;         // "札幌市", "那覇市" など（複数系対応）
+    prefecture?: string;   // "Tokyo", "Hokkaido", etc.
+    city?: string;         // "Sapporo", "Naha", etc. (for multi-zone support)
     boundingBox?: BoundingBox;
     centerPoint?: { lat: number; lng: number };
   };
@@ -163,61 +165,61 @@ EPSGコードでCRSの詳細情報を取得します。
   };
 }
 
-// 出力
+// Output
 {
-  primary: RecommendedCrs;    // 推奨CRS（score, pros, cons付き）
+  primary: RecommendedCrs;    // Recommended CRS (with score, pros, cons)
   alternatives: RecommendedCrs[];
   reasoning: string;
-  warnings?: string[];        // 複数系またぐ地域での警告など
+  warnings?: string[];        // Warnings for areas spanning multiple zones
 }
 ```
 
-**使用例**:
-- 「東京周辺で距離計算するのに最適なCRSは？」
-- 「北海道札幌で測量するときのCRSは？」
-- 「Webアプリで日本全国の地図を表示したい」
+**Usage Examples**:
+- "What's the best CRS for distance calculation around Tokyo?"
+- "What CRS should I use for surveying in Sapporo, Hokkaido?"
+- "I want to display a map of all Japan in a web app"
 
 ### validate_crs_usage
 
-指定されたCRSが特定の用途・場所で適切かどうかを検証します。
+Validate whether a specified CRS is appropriate for a specific purpose and location.
 
 ```typescript
-// 入力
+// Input
 {
-  crs: string;               // "EPSG:3857" または "3857"
-  purpose: Purpose;          // recommend_crsと同じ
-  location: LocationSpec;    // recommend_crsと同じ
+  crs: string;               // "EPSG:3857" or "3857"
+  purpose: Purpose;          // Same as recommend_crs
+  location: LocationSpec;    // Same as recommend_crs
 }
 
-// 出力
+// Output
 {
   isValid: boolean;
-  score: number;             // 適合度 0-100
-  issues: ValidationIssue[]; // 問題点リスト
-  suggestions: string[];     // 改善提案
-  betterAlternatives?: RecommendedCrs[];  // スコア低い場合の代替案
+  score: number;             // Suitability 0-100
+  issues: ValidationIssue[]; // List of issues
+  suggestions: string[];     // Improvement suggestions
+  betterAlternatives?: RecommendedCrs[];  // Alternatives when score is low
 }
 ```
 
-**検出される問題例**:
-- `DEPRECATED_CRS`: 非推奨CRSの使用
-- `AREA_DISTORTION`: Web Mercatorでの面積計算
-- `ZONE_MISMATCH`: 東京で系I（長崎用）を使用
-- `GEOJSON_INCOMPATIBLE`: 投影座標系でGeoJSON出力
+**Detected Issues Examples**:
+- `DEPRECATED_CRS`: Using deprecated CRS
+- `AREA_DISTORTION`: Area calculation with Web Mercator
+- `ZONE_MISMATCH`: Using Zone I (for Nagasaki) in Tokyo
+- `GEOJSON_INCOMPATIBLE`: Outputting GeoJSON with projected CRS
 
-**使用例**:
-- 「Web Mercatorを北海道の面積計算に使って大丈夫？」
-- 「EPSG:4326で日本の測量データを保存しても問題ない？」
+**Usage Examples**:
+- "Is it OK to use Web Mercator for area calculation in Hokkaido?"
+- "Any issues with storing survey data in Japan using EPSG:4326?"
 
 ### suggest_transformation
 
-2つのCRS間の最適な変換経路を提案します。
+Suggest optimal transformation path between two CRS.
 
 ```typescript
-// 入力
+// Input
 {
-  sourceCrs: string;    // "EPSG:4301" または "4301"
-  targetCrs: string;    // "EPSG:6668" または "6668"
+  sourceCrs: string;    // "EPSG:4301" or "4301"
+  targetCrs: string;    // "EPSG:6668" or "6668"
   location?: {
     country?: string;
     prefecture?: string;
@@ -225,67 +227,144 @@ EPSGコードでCRSの詳細情報を取得します。
   };
 }
 
-// 出力
+// Output
 {
-  directPath: TransformationPath | null;  // 直接変換経路
-  viaPaths: TransformationPath[];         // 間接変換経路
-  recommended: TransformationPath;        // 推奨経路
+  directPath: TransformationPath | null;  // Direct transformation path
+  viaPaths: TransformationPath[];         // Indirect transformation paths
+  recommended: TransformationPath;        // Recommended path
   warnings: string[];
 }
 ```
 
 **TransformationPath**:
-- `steps`: 変換ステップの配列（from, to, method, accuracy, isReverse）
-- `totalAccuracy`: 総合精度
+- `steps`: Array of transformation steps (from, to, method, accuracy, isReverse)
+- `totalAccuracy`: Overall accuracy
 - `complexity`: "simple" | "moderate" | "complex"
 
-**特徴**:
-- BFSグラフ探索で最大4ステップまでの経路を探索
-- 逆方向変換（reversible: true）も自動的に考慮
-- 非推奨CRS（Tokyo Datum, JGD2000）使用時に警告
-- 広域データ変換時の精度警告
+**Features**:
+- BFS graph search for paths up to 4 steps
+- Automatic consideration of reverse transformations (reversible: true)
+- Warnings when using deprecated CRS (Tokyo Datum, JGD2000)
+- Accuracy warnings for large area data transformation
 
-**使用例**:
-- 「Tokyo DatumからJGD2011への変換方法は？」
-- 「WGS84からWeb Mercatorへの変換経路を教えて」
+**Usage Examples**:
+- "How to transform from Tokyo Datum to JGD2011?"
+- "Show me the transformation path from WGS84 to Web Mercator"
 
 ### compare_crs
 
-2つのCRSを様々な観点から比較します。
+Compare two CRS from various perspectives.
 
 ```typescript
-// 入力
+// Input
 {
-  crs1: string;  // "EPSG:4326" または "4326"
-  crs2: string;  // "EPSG:6668" または "6668"
-  aspects?: ComparisonAspect[];  // 比較観点を指定（省略時は全て）
+  crs1: string;  // "EPSG:4326" or "4326"
+  crs2: string;  // "EPSG:6668" or "6668"
+  aspects?: ComparisonAspect[];  // Specify comparison aspects (all if omitted)
 }
 
 // ComparisonAspect
 "datum" | "projection" | "area_of_use" | "accuracy" | "distortion" | "compatibility" | "use_cases"
 
-// 出力
+// Output
 {
-  comparison: ComparisonResult[];  // 各観点の比較結果
-  summary: string;                 // サマリー
-  recommendation: string;          // 推奨
-  transformationNote?: string;     // 変換に関する注記
+  comparison: ComparisonResult[];  // Comparison results for each aspect
+  summary: string;                 // Summary
+  recommendation: string;          // Recommendation
+  transformationNote?: string;     // Notes on transformation
 }
 ```
 
-**比較観点**:
-- `datum`: 測地系の比較（WGS84 vs JGD2011は実用上同一など）
-- `projection`: 投影法の比較
-- `area_of_use`: 適用範囲の比較
-- `accuracy`: 精度特性の比較
-- `distortion`: 歪み特性の比較
-- `compatibility`: GIS/Web/CAD/GPS互換性の比較
-- `use_cases`: 用途適性の比較（スコアベース）
+**Comparison Aspects**:
+- `datum`: Datum comparison (e.g., WGS84 vs JGD2011 are practically identical)
+- `projection`: Projection comparison
+- `area_of_use`: Area of use comparison
+- `accuracy`: Accuracy characteristics comparison
+- `distortion`: Distortion characteristics comparison
+- `compatibility`: GIS/Web/CAD/GPS compatibility comparison
+- `use_cases`: Use case suitability comparison (score-based)
 
-**使用例**:
-- 「WGS84とJGD2011の違いは？」
-- 「Web Mercatorと地理座標系の比較をして」
-- 「JGD2000とJGD2011を測地系の観点で比較して」
+**Usage Examples**:
+- "What's the difference between WGS84 and JGD2011?"
+- "Compare Web Mercator and geographic CRS"
+- "Compare JGD2000 and JGD2011 from the datum perspective"
+
+### get_best_practices
+
+Get best practices for CRS usage.
+
+```typescript
+// Input
+{
+  topic: "japan_survey" | "web_mapping" | "data_exchange" | "coordinate_storage" |
+         "mobile_gps" | "cross_border" | "historical_data" | "gis_integration" |
+         "precision_requirements" | "projection_selection";
+  context?: string;  // Additional context (optional, max 500 characters)
+}
+
+// Output
+{
+  topic: string;
+  description: string;
+  practices: Practice[];       // Recommended practices
+  commonMistakes: Mistake[];   // Common mistakes
+  relatedTopics: string[];     // Related topics
+  references: Reference[];     // Reference materials
+}
+```
+
+**Practice**:
+- `title`: Practice name
+- `description`: Description
+- `priority`: "must" | "should" | "may"
+- `rationale`: Rationale
+- `example?`: Concrete example
+
+**Usage Examples**:
+- "What are the best practices for surveying in Japan?"
+- "How to choose coordinate systems when creating web maps"
+- "What to watch out for when exchanging data in GeoJSON"
+
+### troubleshoot
+
+Troubleshoot CRS-related problems.
+
+```typescript
+// Input
+{
+  symptom: string;  // Symptom (2-500 characters)
+  context?: {
+    sourceCrs?: string;   // Source CRS
+    targetCrs?: string;   // Target CRS
+    location?: string;    // Target region
+    tool?: string;        // Tool being used
+    magnitude?: string;   // Magnitude of shift
+  };
+}
+
+// Output
+{
+  matchedSymptom: string;         // Matched symptom category
+  possibleCauses: Cause[];        // Possible causes (with likelihood)
+  diagnosticSteps: DiagnosticStep[]; // Diagnostic steps
+  suggestedSolutions: Solution[]; // Solutions
+  relatedBestPractices: string[]; // Related best practices
+  confidence: "high" | "medium" | "low";  // Diagnosis confidence
+}
+```
+
+**Supported Symptoms**:
+- Coordinates shift by hundreds of meters to kilometers (Tokyo Datum issues, etc.)
+- Coordinates shift by 1-several meters (transformation accuracy limits, etc.)
+- Coordinates shift by centimeters to tens of centimeters (WGS84/JGD2011 difference, etc.)
+- Area/distance calculations are incorrect (Web Mercator distortion, etc.)
+- Data doesn't display (CRS mismatch, etc.)
+- Coordinate transformation errors (unregistered parameters, etc.)
+
+**Usage Examples**:
+- "Coordinates are off by 400m"
+- "Area calculation results are wrong"
+- "Old data and new data don't align"
 
 ## Supported CRS
 
@@ -293,17 +372,17 @@ EPSGコードでCRSの詳細情報を取得します。
 
 | EPSG | Name | Usage |
 |------|------|-------|
-| 6668 | JGD2011 | 地理座標系（基準） |
-| 6669-6687 | 平面直角座標系 I-XIX | 測量・大縮尺地図 |
-| 4612 | JGD2000 | レガシー（非推奨） |
+| 6668 | JGD2011 | Geographic CRS (reference) |
+| 6669-6687 | Japan Plane Rectangular CS I-XIX | Surveying, large-scale maps |
+| 4612 | JGD2000 | Legacy (deprecated) |
 
 ### Global
 
 | EPSG | Name | Usage |
 |------|------|-------|
-| 4326 | WGS 84 | GPS/GeoJSON標準 |
-| 3857 | Web Mercator | Web地図表示 |
-| 326xx | UTM zones | 距離・面積計算 |
+| 4326 | WGS 84 | GPS/GeoJSON standard |
+| 3857 | Web Mercator | Web map display |
+| 326xx | UTM zones | Distance/area calculation |
 
 ## Development
 
@@ -323,20 +402,20 @@ npm run test:watch
 
 ## Documentation
 
-- [設計書](docs/EPSG-MCP-Design-Specification.md) - 機能設計・ツール定義
-- [実装計画](docs/implementation-plan.md) - 実装タスク・進捗
+- [Design Document](docs/EPSG-MCP-Design-Specification.md) - Feature design and tool definitions
+- [Implementation Plan](docs/implementation-plan.md) - Implementation tasks and progress
 
 ## Roadmap
 
 - **Phase 1** ✅: search_crs, get_crs_detail, list_crs_by_region
 - **Phase 2** ✅: recommend_crs, validate_crs_usage
 - **Phase 3** ✅: suggest_transformation, compare_crs
-- **Phase 4**: get_best_practices, troubleshoot
+- **Phase 4** ✅: get_best_practices, troubleshoot
 
 ## Related Projects
 
-- [mcp-server-proj](https://github.com/mcp-server-proj) - 座標変換実行用MCPサーバー
-- [EPSG.io](https://epsg.io/) - EPSG座標系データベース
+- [mcp-server-proj](https://github.com/mcp-server-proj) - MCP server for coordinate transformation execution
+- [EPSG.io](https://epsg.io/) - EPSG coordinate system database
 
 ## License
 

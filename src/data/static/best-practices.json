@@ -1,0 +1,410 @@
+{
+	"version": "1.0.0",
+	"topics": {
+		"japan_survey": {
+			"description": "日本国内での測量・地図作成におけるCRS選択のベストプラクティス",
+			"practices": [
+				{
+					"title": "JGD2011 (EPSG:6668) を基準とする",
+					"description": "日本国内の測量・地図作成では、測量法に基づくJGD2011を使用する",
+					"priority": "must",
+					"rationale": "日本の公式測地系であり、国土地理院の成果と整合性がある",
+					"example": "国土基本図、地籍図、都市計画図などの作成"
+				},
+				{
+					"title": "適切な平面直角座標系を選択する",
+					"description": "対象地域に応じた平面直角座標系（I〜XIX系）を選択する",
+					"priority": "must",
+					"rationale": "系が異なると座標値の意味が変わり、計算結果が不正確になる",
+					"example": "東京都 → IX系 (EPSG:6677)、北海道札幌 → XII系 (EPSG:6680)"
+				},
+				{
+					"title": "広域データは地理座標系で管理",
+					"description": "複数の系にまたがるデータは地理座標系(EPSG:6668)で保存し、必要に応じて投影する",
+					"priority": "should",
+					"rationale": "系の境界で連続性が失われることを防ぐ"
+				},
+				{
+					"title": "座標精度に応じた桁数を使用",
+					"description": "平面直角座標系ではミリメートル単位（小数点以下3桁）、地理座標系では小数点以下8桁程度",
+					"priority": "should",
+					"rationale": "過剰な桁数は無意味であり、不足するとデータ品質が低下"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Tokyo Datum (EPSG:4301) を使用している",
+					"consequence": "JGD2011との座標差が1-2mあり、他データとの重ね合わせでずれが生じる",
+					"solution": "JGD2011に変換し、メタデータに変換履歴を記録する"
+				},
+				{
+					"mistake": "異なる系のデータを同一系として扱う",
+					"consequence": "座標値が大きく異なり、計算結果が不正確になる",
+					"solution": "データの系情報を確認し、必要に応じて座標変換する"
+				}
+			],
+			"relatedTopics": ["precision_requirements", "projection_selection", "historical_data"],
+			"references": [
+				{
+					"title": "国土地理院 - 測地成果2011について",
+					"url": "https://www.gsi.go.jp/sokuchikijun/jgd2011.html",
+					"type": "official"
+				},
+				{
+					"title": "作業規程の準則（公共測量）",
+					"url": "https://psgsv2.gsi.go.jp/koukyou/jyunsoku/",
+					"type": "official"
+				}
+			]
+		},
+		"web_mapping": {
+			"description": "Webアプリケーションでの地図表示・操作におけるCRS選択のベストプラクティス",
+			"practices": [
+				{
+					"title": "Web地図表示にはWeb Mercator (EPSG:3857) を使用",
+					"description": "Leaflet、MapLibre、Google Maps等の標準タイル座標系",
+					"priority": "must",
+					"rationale": "主要なWeb地図ライブラリとタイルサービスがこの座標系を採用",
+					"example": "地図タイルのURL: https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+				},
+				{
+					"title": "GeoJSONはWGS84 (EPSG:4326) で出力",
+					"description": "GeoJSON仕様ではWGS84が標準",
+					"priority": "must",
+					"rationale": "仕様準拠により相互運用性を確保",
+					"codeExample": "{ \"type\": \"Point\", \"coordinates\": [139.6917, 35.6895] }"
+				},
+				{
+					"title": "面積・距離計算はWeb Mercatorでは行わない",
+					"description": "面積・距離の正確な計算が必要な場合は、地理座標系または適切な投影座標系に変換",
+					"priority": "must",
+					"rationale": "Web Mercatorは高緯度で著しい面積歪みがある（緯度60度で4倍）"
+				},
+				{
+					"title": "高精度が必要な機能では適切な投影座標系を使用",
+					"description": "距離測定、面積計算、バッファ生成などでは目的に合った座標系に変換",
+					"priority": "should",
+					"rationale": "投影歪みによる誤差を最小化"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Web Mercatorで面積計算をしている",
+					"consequence": "日本（緯度35度付近）でも約23%の面積歪みが生じる",
+					"solution": "面積計算前にJGD2011平面直角座標系または等積図法に変換"
+				},
+				{
+					"mistake": "GeoJSONにEPSG:3857の座標を出力している",
+					"consequence": "他のGISソフトウェアで正しく読み込めない",
+					"solution": "GeoJSONはWGS84 (EPSG:4326) で出力し、CRSプロパティは省略"
+				}
+			],
+			"relatedTopics": ["data_exchange", "coordinate_storage"],
+			"references": [
+				{
+					"title": "GeoJSON仕様 (RFC 7946)",
+					"url": "https://datatracker.ietf.org/doc/html/rfc7946",
+					"type": "official"
+				},
+				{
+					"title": "Leaflet Documentation",
+					"url": "https://leafletjs.com/reference.html",
+					"type": "tool"
+				}
+			]
+		},
+		"data_exchange": {
+			"description": "組織間・システム間でのデータ交換におけるCRS選択のベストプラクティス",
+			"practices": [
+				{
+					"title": "データにCRS情報を明記する",
+					"description": "EPSGコードをメタデータに含め、変換履歴も記録",
+					"priority": "must",
+					"rationale": "CRS不明のデータは使用時に混乱を招く",
+					"example": "Shapefile の .prj ファイル、GeoPackage の spatial_ref_sys テーブル"
+				},
+				{
+					"title": "国際データ交換にはWGS84を使用",
+					"description": "国や地域を超えるデータ交換ではWGS84 (EPSG:4326) を基準",
+					"priority": "should",
+					"rationale": "GPS衛星の基準であり、世界共通で理解される"
+				},
+				{
+					"title": "変換精度を明示する",
+					"description": "座標変換を行った場合、変換方法と精度をメタデータに記録",
+					"priority": "should",
+					"rationale": "受領者が精度を評価できる"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "CRS情報なしでデータを渡している",
+					"consequence": "受領者が間違った座標系として解釈し、位置ずれが発生",
+					"solution": "常にCRS情報（EPSGコード）をメタデータに含める"
+				}
+			],
+			"relatedTopics": ["coordinate_storage", "cross_border"],
+			"references": [
+				{
+					"title": "ISO 19115 - Geographic information — Metadata",
+					"type": "official"
+				}
+			]
+		},
+		"coordinate_storage": {
+			"description": "データベースやファイルでの座標データ保存のベストプラクティス",
+			"practices": [
+				{
+					"title": "長期保存には地理座標系を使用",
+					"description": "データベースには地理座標系（EPSG:4326またはEPSG:6668）で保存",
+					"priority": "should",
+					"rationale": "投影座標系は将来変更の可能性があるが、地理座標系は安定"
+				},
+				{
+					"title": "座標の精度に応じた数値型を使用",
+					"description": "緯度経度はDOUBLE型、投影座標はDECIMAL(12,3)程度",
+					"priority": "should",
+					"rationale": "FLOAT型では精度不足の可能性"
+				},
+				{
+					"title": "空間インデックスのCRSを統一する",
+					"description": "PostGIS等で空間インデックスを作成する場合、統一されたCRSを使用",
+					"priority": "must",
+					"rationale": "異なるCRSのデータは空間クエリで正しく比較できない"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "FLOAT型で座標を保存している",
+					"consequence": "約7桁の精度しかなく、緯度経度で約10m程度の誤差が発生する可能性",
+					"solution": "DOUBLE型またはDECIMAL型を使用"
+				}
+			],
+			"relatedTopics": ["precision_requirements", "gis_integration"],
+			"references": [
+				{
+					"title": "PostGIS Documentation",
+					"url": "https://postgis.net/documentation/",
+					"type": "tool"
+				}
+			]
+		},
+		"mobile_gps": {
+			"description": "スマートフォンやGPSデバイスでの位置情報利用のベストプラクティス",
+			"practices": [
+				{
+					"title": "GPS出力はWGS84であることを認識する",
+					"description": "GPS衛星システムはWGS84を使用しており、出力される座標もWGS84",
+					"priority": "must",
+					"rationale": "測地系を誤認すると1-2m以上のずれが生じる"
+				},
+				{
+					"title": "GPS精度の限界を理解する",
+					"description": "民生GPS: 数m〜10m、DGPS: 1m程度、RTK: 数cm",
+					"priority": "should",
+					"rationale": "精度以上の議論は無意味"
+				},
+				{
+					"title": "日本国内データはJGD2011に変換して保存",
+					"description": "WGS84とJGD2011は実用上同一だが、国内データ管理の統一性のため変換推奨",
+					"priority": "may",
+					"rationale": "座標差は数cm以内だが、メタデータの一貫性を保つ"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "GPSデータをTokyo Datumとして扱っている",
+					"consequence": "実際の位置から400m以上ずれる",
+					"solution": "GPSはWGS84出力であることを認識し、適切に処理"
+				}
+			],
+			"relatedTopics": ["precision_requirements", "japan_survey"],
+			"references": [
+				{
+					"title": "GPSの仕組み - 国土地理院",
+					"url": "https://www.gsi.go.jp/denshi/denshi_g-01.html",
+					"type": "official"
+				}
+			]
+		},
+		"historical_data": {
+			"description": "過去に作成されたデータの取り扱いに関するベストプラクティス",
+			"practices": [
+				{
+					"title": "Tokyo Datumデータは変換して使用",
+					"description": "Tokyo Datum (EPSG:4301) のデータはJGD2011に変換してから使用",
+					"priority": "must",
+					"rationale": "現行測地系との整合性を確保",
+					"example": "EPSG:4301 → EPSG:4612 → EPSG:6668 の2段階変換"
+				},
+				{
+					"title": "変換精度の限界を認識する",
+					"description": "Tokyo Datum → JGD2011 の変換精度は1-2m程度が限界",
+					"priority": "must",
+					"rationale": "精度以上の議論は無意味であり、精度要件と照らし合わせる"
+				},
+				{
+					"title": "元データの測地系情報を保存",
+					"description": "変換後も元の測地系情報とパラメータをメタデータとして保持",
+					"priority": "should",
+					"rationale": "将来の検証や再変換に必要"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "測地系情報なしの古いデータをそのまま使用",
+					"consequence": "新しいデータとの重ね合わせで大きなずれが発生",
+					"solution": "データの由来を調査し、適切な測地系を推定して変換"
+				}
+			],
+			"relatedTopics": ["japan_survey", "precision_requirements"],
+			"references": [
+				{
+					"title": "測地成果2000・2011 - 国土地理院",
+					"url": "https://www.gsi.go.jp/sokuchikijun/sokuchikijun_top.html",
+					"type": "official"
+				}
+			]
+		},
+		"cross_border": {
+			"description": "国境をまたぐデータや国際プロジェクトでのCRS選択のベストプラクティス",
+			"practices": [
+				{
+					"title": "WGS84を共通基準とする",
+					"description": "国際データ交換ではWGS84 (EPSG:4326) を基準座標系として使用",
+					"priority": "must",
+					"rationale": "世界共通で認識され、GPS衛星の基準でもある"
+				},
+				{
+					"title": "UTM座標系の活用",
+					"description": "広域の投影座標が必要な場合はUTMゾーンを使用",
+					"priority": "should",
+					"rationale": "世界中で定義されており、相互運用性が高い",
+					"example": "日本: UTM 52N-54N (EPSG:32652-32654)"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "各国の国内測地系をそのまま結合している",
+					"consequence": "国境付近でデータの不連続が発生",
+					"solution": "共通座標系（WGS84等）に変換してから結合"
+				}
+			],
+			"relatedTopics": ["data_exchange", "projection_selection"],
+			"references": [
+				{
+					"title": "EPSG Registry",
+					"url": "https://epsg.org/",
+					"type": "official"
+				}
+			]
+		},
+		"gis_integration": {
+			"description": "GISソフトウェア・システム統合時のCRS取り扱いのベストプラクティス",
+			"practices": [
+				{
+					"title": "プロジェクトのCRSを明確に設定",
+					"description": "GISプロジェクト開始時にCRSを決定し、ドキュメント化",
+					"priority": "must",
+					"rationale": "後からの変更は大きな手戻りを招く"
+				},
+				{
+					"title": "オンザフライ変換に頼りすぎない",
+					"description": "表示用のオンザフライ変換は便利だが、分析・出力前に明示的に変換",
+					"priority": "should",
+					"rationale": "オンザフライ変換はパフォーマンスに影響し、予期しない丸め誤差の原因にもなる"
+				},
+				{
+					"title": "データ読み込み時にCRSを確認",
+					"description": "新しいデータを追加する際、CRS情報を確認してから読み込む",
+					"priority": "should",
+					"rationale": "CRS不明または誤りのデータ混入を防ぐ"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "CRS不明データを「多分これだろう」で設定",
+					"consequence": "実際のCRSと異なる場合、全ての空間計算結果が不正確に",
+					"solution": "データソースを確認し、必要なら提供元に問い合わせ"
+				}
+			],
+			"relatedTopics": ["coordinate_storage", "data_exchange"],
+			"references": [
+				{
+					"title": "QGIS Documentation",
+					"url": "https://qgis.org/documentation/",
+					"type": "tool"
+				}
+			]
+		},
+		"precision_requirements": {
+			"description": "用途に応じた精度要件の設定と達成方法",
+			"practices": [
+				{
+					"title": "用途に応じた精度を設定",
+					"description": "カーナビ: 数m、都市計画: 数十cm、測量: 数cm以下",
+					"priority": "must",
+					"rationale": "過剰精度はコスト増、不足は要件未達"
+				},
+				{
+					"title": "精度に見合った座標系を選択",
+					"description": "高精度が必要な場合は投影座標系、広域は地理座標系",
+					"priority": "should",
+					"rationale": "座標系の特性と精度要件をマッチング"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "GPSデータにミリメートル精度を求める",
+					"consequence": "測定限界を超えた議論になり、無意味な精度議論に時間を浪費",
+					"solution": "データソースの精度限界を理解する"
+				}
+			],
+			"relatedTopics": ["mobile_gps", "japan_survey"],
+			"references": [
+				{
+					"title": "測量精度等級 - 国土交通省",
+					"type": "official"
+				}
+			]
+		},
+		"projection_selection": {
+			"description": "目的に応じた投影法の選択方法",
+			"practices": [
+				{
+					"title": "用途に応じた投影法を選択",
+					"description": "正角図法（形状保存）、正積図法（面積保存）、正距図法（距離保存）",
+					"priority": "must",
+					"rationale": "全ての特性を同時に保存することは不可能"
+				},
+				{
+					"title": "日本の測量には平面直角座標系を使用",
+					"description": "横メルカトル図法（正角）で高精度な距離・角度計算が可能",
+					"priority": "should",
+					"rationale": "公共測量の基準であり、法的にも認められている"
+				},
+				{
+					"title": "Web地図にはWeb Mercatorを使用",
+					"description": "全世界を1枚の地図で表現でき、タイル分割と相性が良い",
+					"priority": "should",
+					"rationale": "Web地図のデファクトスタンダード"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Web Mercatorで統計地図を作成",
+					"consequence": "高緯度地域の面積が過大表示され、誤解を招く",
+					"solution": "統計地図には正積図法を使用"
+				}
+			],
+			"relatedTopics": ["web_mapping", "japan_survey"],
+			"references": [
+				{
+					"title": "地図投影法 - 国土地理院",
+					"url": "https://www.gsi.go.jp/KIDS/map-sign-tizutohou-tizutohou.html",
+					"type": "official"
+				}
+			]
+		}
+	}
+}

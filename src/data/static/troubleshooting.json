@@ -1,0 +1,332 @@
+{
+	"version": "1.0.0",
+	"symptoms": {
+		"coordinate_shift_large": {
+			"description": "座標が数百メートル〜数キロメートルずれる",
+			"keywords": ["数百m", "キロ", "全然違う", "大きくずれ", "400m", "数百メートル"],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "測地系の混在（Tokyo Datum と JGD/WGS84）",
+					"description": "Tokyo Datum と JGD2011/WGS84 の間には約400mの系統的なずれがある",
+					"indicators": [
+						"データが2002年以前に作成された",
+						"古い地図や図面からデジタイズした",
+						"CRS情報が不明または未設定"
+					]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "CRSの誤設定",
+					"description": "データのCRS情報が実際と異なる値で設定されている",
+					"indicators": [
+						"インポート時にCRSを手動指定した",
+						".prjファイルが欠落または不正",
+						"CRS変換を行っていないのに変換後のCRSが設定されている"
+					]
+				},
+				{
+					"likelihood": "low",
+					"cause": "座標軸の入れ替わり（X/Y, 経度/緯度）",
+					"description": "経度と緯度が入れ替わっているか、X/Yの順序が逆",
+					"indicators": ["ポイントが海上や外国に表示される", "座標値の範囲が想定と異なる"]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "データのCRS情報を確認する",
+					"expected": "明確なEPSGコードが設定されている",
+					"ifFailed": "CRS情報が不明の場合、データの由来を調査"
+				},
+				{
+					"step": 2,
+					"action": "座標値の範囲を確認する",
+					"expected": "日本の場合: 緯度 20-46°, 経度 122-154°",
+					"ifFailed": "座標値が異常な場合、座標軸の入れ替わりを疑う"
+				},
+				{
+					"step": 3,
+					"action": "既知の地点の座標を比較する",
+					"expected": "参照データと一致する",
+					"ifFailed": "ずれのパターン（方向、距離）から原因を推定"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "測地系の混在（Tokyo Datum と JGD/WGS84）",
+					"steps": [
+						"データがTokyo Datumであることを確認",
+						"EPSG:4301 から EPSG:6668 への変換を実行",
+						"変換後のデータを検証"
+					],
+					"prevention": "データ作成時に測地系を明記し、古いデータは変換してから使用する",
+					"tools": ["QGIS", "GDAL ogr2ogr", "PostGIS ST_Transform"]
+				},
+				{
+					"forCause": "CRSの誤設定",
+					"steps": [
+						"正しいCRSを特定する",
+						"CRS情報を修正（変換ではなく定義の変更）",
+						"修正後のデータを検証"
+					],
+					"prevention": "データ取得時にCRS情報を必ず確認し、ドキュメント化する"
+				}
+			],
+			"relatedBestPractices": ["historical_data", "data_exchange"]
+		},
+		"coordinate_shift_medium": {
+			"description": "座標が1〜数メートルずれる",
+			"keywords": ["数m", "1-2m", "メートル単位", "1m", "2m", "数メートル"],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "Tokyo Datum から JGD2011 への変換精度",
+					"description": "Tokyo Datum → JGD2011 の変換精度は1-2m程度が限界",
+					"indicators": ["Tokyo Datumからの変換を行った", "古いデータを使用している"]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "変換パラメータの違い",
+					"description": "同じ変換でも使用するパラメータにより結果が異なる",
+					"indicators": ["異なるソフトウェアで変換した結果が異なる", "変換方法を明示していない"]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "変換履歴を確認する",
+					"expected": "変換方法とパラメータが記録されている",
+					"ifFailed": "変換が行われたかどうか不明な場合、元データを確認"
+				},
+				{
+					"step": 2,
+					"action": "変換精度の限界を確認する",
+					"expected": "Tokyo→JGD変換では1-2mのずれは正常",
+					"ifFailed": "それ以上のずれがある場合、他の原因を調査"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Tokyo Datum から JGD2011 への変換精度",
+					"steps": [
+						"1-2mのずれは変換精度の限界として受容",
+						"より高精度が必要な場合は元データの再測量を検討",
+						"メタデータに変換精度を記録"
+					],
+					"prevention": "データの精度要件と変換精度の限界を事前に確認する"
+				}
+			],
+			"relatedBestPractices": ["historical_data", "precision_requirements"]
+		},
+		"coordinate_shift_small": {
+			"description": "座標が数cm〜数十cmずれる",
+			"keywords": ["数cm", "センチ", "微小", "cm", "数十cm"],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "WGS84 と JGD2011 の差",
+					"description": "WGS84とJGD2011は実用上同一だが、厳密には数cm程度の差がある",
+					"indicators": ["GPS(WGS84)データとJGD2011データを混在使用", "高精度測量データを使用"]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "JGD2000 から JGD2011 への地殻変動補正",
+					"description": "2011年東北地方太平洋沖地震による地殻変動で座標が変化",
+					"indicators": ["2011年以前のJGD2000データを使用", "東北地方のデータ"]
+				},
+				{
+					"likelihood": "low",
+					"cause": "数値精度・丸め誤差",
+					"description": "座標値の桁数不足や計算時の丸め誤差",
+					"indicators": ["FLOAT型で座標を保存している", "複数回の変換を経ている"]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "使用しているCRSを確認",
+					"expected": "WGS84とJGD2011が混在していないか確認",
+					"ifFailed": "混在している場合は統一を検討"
+				},
+				{
+					"step": 2,
+					"action": "数値型を確認",
+					"expected": "DOUBLE型または十分な精度のDECIMAL型",
+					"ifFailed": "FLOAT型の場合は型変更を検討"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "WGS84 と JGD2011 の差",
+					"steps": [
+						"実用上の問題がなければそのまま使用",
+						"厳密な整合性が必要な場合はどちらかに統一",
+						"日本国内データはJGD2011推奨"
+					],
+					"prevention": "プロジェクト開始時にCRSを統一する"
+				}
+			],
+			"relatedBestPractices": ["coordinate_storage", "precision_requirements"]
+		},
+		"area_distance_error": {
+			"description": "面積や距離の計算結果がおかしい",
+			"keywords": ["面積", "距離", "計算結果", "長さ", "広さ", "計算が合わない"],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "Web Mercator (EPSG:3857) での計算",
+					"description": "Web Mercatorは高緯度で著しい面積・距離歪みがある",
+					"indicators": ["Web地図ライブラリを使用", "EPSG:3857で計算している", "高緯度地域のデータ"]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "地理座標系での平面計算",
+					"description": "緯度経度で直接距離や面積を計算している",
+					"indicators": ["度単位の座標をそのまま計算に使用", "ピタゴラスの定理で距離計算"]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "計算時のCRSを確認",
+					"expected": "適切な投影座標系（日本なら平面直角座標系）",
+					"ifFailed": "Web Mercatorや地理座標系なら変換が必要"
+				},
+				{
+					"step": 2,
+					"action": "期待される誤差を計算",
+					"expected": "緯度35度のWeb Mercator: 面積約23%歪み",
+					"ifFailed": "誤差が想定と一致するか確認"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Web Mercator (EPSG:3857) での計算",
+					"steps": [
+						"計算前にJGD2011平面直角座標系に変換",
+						"または球面上の計算式（Haversine等）を使用",
+						"面積計算には等積図法を検討"
+					],
+					"prevention": "面積・距離計算にはWeb Mercatorを使用しない",
+					"tools": ["PostGIS ST_Area(geography)", "Turf.js"]
+				}
+			],
+			"relatedBestPractices": ["web_mapping", "projection_selection"]
+		},
+		"display_blank": {
+			"description": "データが表示されない・空白になる",
+			"keywords": ["表示されない", "空白", "見えない", "消えた", "何も表示されない"],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "CRS不一致による座標範囲外",
+					"description": "異なるCRSのデータを同一ビューで表示しようとしている",
+					"indicators": ["一部のレイヤーだけ表示されない", "ズームすると何も表示されない領域がある"]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "座標値の桁違い",
+					"description": "メートル単位と度単位が混在、または単位系の誤り",
+					"indicators": ["座標値が極端に大きいまたは小さい", "投影座標系と地理座標系が混在"]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "各レイヤーのCRSを確認",
+					"expected": "全レイヤーで同じCRS、または変換可能",
+					"ifFailed": "CRSを統一または変換設定を確認"
+				},
+				{
+					"step": 2,
+					"action": "座標値の範囲を確認",
+					"expected": "想定される範囲内（日本の緯度経度等）",
+					"ifFailed": "座標値が異常な場合、データの確認が必要"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "CRS不一致による座標範囲外",
+					"steps": [
+						"プロジェクトCRSを確認",
+						"全レイヤーのCRSを確認・統一",
+						"オンザフライ変換が有効か確認"
+					],
+					"prevention": "データ追加時にCRSを確認してから追加する"
+				}
+			],
+			"relatedBestPractices": ["gis_integration", "data_exchange"]
+		},
+		"transformation_error": {
+			"description": "座標変換でエラーが発生する",
+			"keywords": ["変換できない", "エラー", "失敗", "変換に失敗", "変換エラー"],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "変換パラメータが見つからない",
+					"description": "指定したCRS間の変換パラメータがソフトウェアに登録されていない",
+					"indicators": ["マイナーなCRS間の変換", "「変換方法が見つかりません」エラー"]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "不正なCRSコード",
+					"description": "存在しないまたは廃止されたEPSGコードを指定",
+					"indicators": ["「CRSが見つかりません」エラー", "手入力でCRSコードを指定した"]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "CRSコードの有効性を確認",
+					"expected": "EPSG Registryに存在するコード",
+					"ifFailed": "正しいコードを調査"
+				},
+				{
+					"step": 2,
+					"action": "中間CRS経由の変換を試す",
+					"expected": "WGS84 (EPSG:4326) 経由で変換可能",
+					"ifFailed": "手動でパラメータを設定"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "変換パラメータが見つからない",
+					"steps": [
+						"WGS84 (EPSG:4326) 経由の2段階変換を試す",
+						"PROJやGDALのバージョンを更新",
+						"手動で変換パラメータを設定"
+					],
+					"prevention": "主要なCRSを使用し、特殊なCRSは避ける",
+					"tools": ["PROJ", "GDAL", "epsg.io"]
+				}
+			],
+			"relatedBestPractices": ["data_exchange", "cross_border"]
+		}
+	},
+	"keywordMapping": {
+		"ずれる": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
+		"ずれ": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
+		"シフト": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
+		"400m": ["coordinate_shift_large"],
+		"数百": ["coordinate_shift_large"],
+		"キロ": ["coordinate_shift_large"],
+		"1-2m": ["coordinate_shift_medium"],
+		"数m": ["coordinate_shift_medium"],
+		"数メートル": ["coordinate_shift_medium"],
+		"数cm": ["coordinate_shift_small"],
+		"センチ": ["coordinate_shift_small"],
+		"微小": ["coordinate_shift_small"],
+		"面積": ["area_distance_error"],
+		"距離": ["area_distance_error"],
+		"長さ": ["area_distance_error"],
+		"計算結果": ["area_distance_error"],
+		"表示されない": ["display_blank"],
+		"空白": ["display_blank"],
+		"見えない": ["display_blank"],
+		"消えた": ["display_blank"],
+		"変換できない": ["transformation_error"],
+		"エラー": ["transformation_error"],
+		"失敗": ["transformation_error"]
+	}
+}

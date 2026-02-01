@@ -318,4 +318,81 @@ export const tools: Tool[] = [
 			required: ['crs1', 'crs2'],
 		},
 	},
+	{
+		name: 'get_best_practices',
+		description:
+			'CRS利用のベストプラクティスを取得します。日本の測量、Web地図作成、データ交換、座標の保存、モバイルGPS、越境データ、歴史的データ、GIS統合、精度要件、投影法選択などのトピックについて、推奨プラクティス、よくある間違い、参考情報を提供します。',
+		inputSchema: {
+			type: 'object',
+			properties: {
+				topic: {
+					type: 'string',
+					enum: [
+						'japan_survey',
+						'web_mapping',
+						'data_exchange',
+						'coordinate_storage',
+						'mobile_gps',
+						'cross_border',
+						'historical_data',
+						'gis_integration',
+						'precision_requirements',
+						'projection_selection',
+					],
+					description:
+						'ベストプラクティスのトピック。japan_survey: 日本での測量、web_mapping: Web地図作成、data_exchange: データ交換、coordinate_storage: 座標の保存、mobile_gps: モバイルGPS、cross_border: 越境データ、historical_data: 歴史的データ、gis_integration: GIS統合、precision_requirements: 精度要件、projection_selection: 投影法選択',
+				},
+				context: {
+					type: 'string',
+					description: '追加のコンテキスト情報（任意、最大500文字）',
+					maxLength: 500,
+				},
+			},
+			required: ['topic'],
+		},
+	},
+	{
+		name: 'troubleshoot',
+		description:
+			'CRS関連の問題をトラブルシューティングします。座標のずれ（cm、m、km単位）、面積・距離計算の誤り、データが表示されない問題、変換エラーなどの症状から、原因の特定、診断手順、解決策を提供します。',
+		inputSchema: {
+			type: 'object',
+			properties: {
+				symptom: {
+					type: 'string',
+					description:
+						'問題の症状を記述（例: "座標が400mずれる"、"面積計算の結果がおかしい"、"データが表示されない"）。2文字以上500文字以内で記述してください。',
+					minLength: 2,
+					maxLength: 500,
+				},
+				context: {
+					type: 'object',
+					description: '問題の文脈情報（任意）',
+					properties: {
+						sourceCrs: {
+							type: 'string',
+							description: '変換元CRS（例: "EPSG:4301"）',
+						},
+						targetCrs: {
+							type: 'string',
+							description: '変換先CRS（例: "EPSG:6668"）',
+						},
+						location: {
+							type: 'string',
+							description: '対象地域（例: "東北地方"、"東京都"）',
+						},
+						tool: {
+							type: 'string',
+							description: '使用しているツール（例: "QGIS"、"PostGIS"）',
+						},
+						magnitude: {
+							type: 'string',
+							description: 'ずれの大きさ（例: "400m"、"数cm"、"1-2m"）',
+						},
+					},
+				},
+			},
+			required: ['symptom'],
+		},
+	},
 ];

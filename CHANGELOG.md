@@ -156,6 +156,69 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Planned for Phase 4
-- `get_best_practices` - ベストプラクティス提供
-- `troubleshoot` - トラブルシューティング支援
+---
+
+## [1.3.0] - 2026-02-01
+
+### Added
+
+#### Tools
+- `get_best_practices` - CRS利用のベストプラクティス提供
+  - 10トピック対応:
+    - `japan_survey`: 日本での測量
+    - `web_mapping`: Web地図作成
+    - `data_exchange`: データ交換
+    - `coordinate_storage`: 座標の保存
+    - `mobile_gps`: モバイルGPS
+    - `cross_border`: 越境データ
+    - `historical_data`: 歴史的データ
+    - `gis_integration`: GIS統合
+    - `precision_requirements`: 精度要件
+    - `projection_selection`: 投影法選択
+  - 各トピックに対し:
+    - 推奨プラクティス（must/should/may優先度付き）
+    - よくある間違いと解決策
+    - 関連トピック
+    - 参考資料（official/article/tool）
+- `troubleshoot` - CRS関連問題のトラブルシューティング
+  - 6つの症状カテゴリ:
+    - `coordinate_shift_large`: 座標が数百m〜数kmずれる
+    - `coordinate_shift_medium`: 座標が1〜数mずれる
+    - `coordinate_shift_small`: 座標が数cm〜数十cmずれる
+    - `area_distance_error`: 面積・距離計算エラー
+    - `display_blank`: データが表示されない
+    - `transformation_error`: 座標変換エラー
+  - キーワードマッチング（長いキーワード優先）
+  - コンテキストに基づく可能性調整:
+    - sourceCrs/targetCrs: 変換元/先CRS
+    - location: 対象地域
+    - magnitude: ずれの大きさ
+    - tool: 使用ツール
+  - 診断信頼度（high/medium/low）算出
+  - 関連ベストプラクティスへのリンク
+
+#### Data
+- `best-practices.json` - ベストプラクティスデータ
+  - 10トピックの完全なベストプラクティス集
+  - 各トピック: description, practices[], commonMistakes[], relatedTopics[], references[]
+- `troubleshooting.json` - トラブルシューティングデータ
+  - 6症状カテゴリの診断データ
+  - キーワードマッピング（25キーワード）
+  - 各症状: possibleCauses[], diagnosticSteps[], solutions[]
+
+### Technical Details
+- 新規サービス: `best-practices-service.ts`
+  - `getBestPractices()` - トピック別ベストプラクティス取得
+  - `listBestPracticeTopics()` - トピック一覧取得
+- 新規サービス: `troubleshooting-service.ts`
+  - `sortKeywordsByLength()` - キーワード長さ順ソート
+  - `matchSymptom()` - 症状マッチング（スコアリング付き）
+  - `adjustCauseLikelihood()` - コンテキストベース可能性調整
+  - `sortCausesByLikelihood()` - 可能性順ソート
+  - `getSolutionsForCauses()` - 原因に対する解決策取得
+  - `calculateConfidence()` - 診断信頼度計算
+  - `troubleshoot()` - メインAPI
+  - `listSymptomCategories()` - 症状カテゴリ一覧
+- 型ガード: `isBestPracticeTopic()` - `as const`パターン
+- 入力バリデーション: symptom 2〜500文字
+- テスト数: 306 → 379（+73テスト）

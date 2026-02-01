@@ -8,6 +8,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DataLoadError } from '../errors/index.js';
 import type {
+	BestPracticesData,
 	ComparisonsData,
 	CrsDetail,
 	CrsInfo,
@@ -15,6 +16,7 @@ import type {
 	JapanCrsData,
 	RecommendationsData,
 	TransformationsData,
+	TroubleshootingData,
 } from '../types/index.js';
 import { debug } from '../utils/logger.js';
 
@@ -27,6 +29,8 @@ let globalCrsData: GlobalCrsData | null = null;
 let recommendationsData: RecommendationsData | null = null;
 let transformationsData: TransformationsData | null = null;
 let comparisonsData: ComparisonsData | null = null;
+let bestPracticesData: BestPracticesData | null = null;
+let troubleshootingData: TroubleshootingData | null = null;
 
 let crsIndex: Map<string, CrsDetail> | null = null;
 let regionIndex: Map<string, CrsInfo[]> | null = null;
@@ -79,6 +83,22 @@ export async function loadComparisons(): Promise<ComparisonsData> {
 		debug('Loaded comparisons.json');
 	}
 	return comparisonsData;
+}
+
+export async function loadBestPractices(): Promise<BestPracticesData> {
+	if (!bestPracticesData) {
+		bestPracticesData = await loadJsonFile<BestPracticesData>('best-practices.json');
+		debug('Loaded best-practices.json');
+	}
+	return bestPracticesData;
+}
+
+export async function loadTroubleshooting(): Promise<TroubleshootingData> {
+	if (!troubleshootingData) {
+		troubleshootingData = await loadJsonFile<TroubleshootingData>('troubleshooting.json');
+		debug('Loaded troubleshooting.json');
+	}
+	return troubleshootingData;
 }
 
 function normalizeCode(code: string): string {
@@ -162,6 +182,8 @@ export async function preloadAll(): Promise<void> {
 		loadRecommendations(),
 		loadTransformations(),
 		loadComparisons(),
+		loadBestPractices(),
+		loadTroubleshooting(),
 	]);
 	await buildCrsIndex();
 }
@@ -172,6 +194,8 @@ export function clearCache(): void {
 	recommendationsData = null;
 	transformationsData = null;
 	comparisonsData = null;
+	bestPracticesData = null;
+	troubleshootingData = null;
 	crsIndex = null;
 	regionIndex = null;
 	debug('Cache cleared');

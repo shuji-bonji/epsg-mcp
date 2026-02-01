@@ -10,6 +10,7 @@
 - [docs/implementation-plan.md](docs/implementation-plan.md) - Phase 1 実装計画書
 - [docs/phase2-implementation-plan.md](docs/phase2-implementation-plan.md) - Phase 2 実装計画書
 - [docs/phase3-implementation-plan.md](docs/phase3-implementation-plan.md) - Phase 3 実装計画書
+- [docs/phase4-implementation-plan.md](docs/phase4-implementation-plan.md) - Phase 4 実装計画書
 
 ## 技術スタック
 
@@ -49,12 +50,16 @@ src/
 │       ├── global-crs.json      # グローバルCRSデータ
 │       ├── recommendations.json # 推奨ルール・検証ルール
 │       ├── transformations.json # 変換経路データ（Phase 3）
-│       └── comparisons.json     # CRS比較データ（Phase 3）
+│       ├── comparisons.json     # CRS比較データ（Phase 3）
+│       ├── best-practices.json  # ベストプラクティスデータ（Phase 4）
+│       └── troubleshooting.json # トラブルシューティングデータ（Phase 4）
 ├── services/
 │   ├── search-service.ts        # 検索サービス
 │   ├── recommendation-service.ts # 推奨サービス（Phase 2）
-│   ├── transformation-service.ts # 変換経路サービス（Phase 3）
-│   └── comparison-service.ts    # CRS比較サービス（Phase 3）
+│   ├── transformation-service.ts    # 変換経路サービス（Phase 3）
+│   ├── comparison-service.ts        # CRS比較サービス（Phase 3）
+│   ├── best-practices-service.ts    # ベストプラクティスサービス（Phase 4）
+│   └── troubleshooting-service.ts   # トラブルシューティングサービス（Phase 4）
 └── tools/
     ├── definitions.ts      # ツール定義
     └── handlers.ts         # ツールハンドラー
@@ -87,6 +92,18 @@ src/
   - 7つの比較観点（datum, projection, area_of_use, accuracy, distortion, compatibility, use_cases）
   - 用途別スコアリング比較
   - サマリー・推奨生成
+
+### Phase 4（完了）
+- `get_best_practices` - ベストプラクティス提供
+  - 10トピック対応（japan_survey, web_mapping, data_exchange, coordinate_storage, mobile_gps, cross_border, historical_data, gis_integration, precision_requirements, projection_selection）
+  - 推奨プラクティス（must/should/may優先度）
+  - よくある間違いと解決策
+  - 参考資料（official/article/tool）
+- `troubleshoot` - トラブルシューティング
+  - 6症状カテゴリ（coordinate_shift_large/medium/small, area_distance_error, display_blank, transformation_error）
+  - キーワードマッチング（長いキーワード優先）
+  - コンテキストベース可能性調整
+  - 診断信頼度算出（high/medium/low）
 
 ## データソース
 

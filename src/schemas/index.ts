@@ -147,6 +147,48 @@ export const CompareCrsSchema = z.object({
 	aspects: z.array(ComparisonAspectSchema).optional(),
 });
 
+// ========================================
+// Phase 4: ベストプラクティス
+// ========================================
+
+export const BestPracticeTopicSchema = z.enum([
+	'japan_survey',
+	'web_mapping',
+	'data_exchange',
+	'coordinate_storage',
+	'mobile_gps',
+	'cross_border',
+	'historical_data',
+	'gis_integration',
+	'precision_requirements',
+	'projection_selection',
+]);
+
+export const GetBestPracticesSchema = z.object({
+	topic: BestPracticeTopicSchema,
+	context: z.string().max(500).optional(),
+});
+
+// ========================================
+// Phase 4: トラブルシューティング
+// ========================================
+
+export const TroubleshootContextSchema = z.object({
+	sourceCrs: z.string().optional(),
+	targetCrs: z.string().optional(),
+	location: z.string().optional(),
+	tool: z.string().optional(),
+	magnitude: z.string().optional(),
+});
+
+export const TroubleshootSchema = z.object({
+	symptom: z
+		.string()
+		.min(2, '症状は2文字以上で記述してください')
+		.max(500, '症状は500文字以内で記述してください'),
+	context: TroubleshootContextSchema.optional(),
+});
+
 export type SearchCrsInput = z.infer<typeof SearchCrsSchema>;
 export type GetCrsDetailInput = z.infer<typeof GetCrsDetailSchema>;
 export type ListCrsByRegionInput = z.infer<typeof ListCrsByRegionSchema>;
@@ -154,3 +196,5 @@ export type RecommendCrsInput = z.infer<typeof RecommendCrsSchema>;
 export type ValidateCrsUsageInput = z.infer<typeof ValidateCrsUsageSchema>;
 export type SuggestTransformationInput = z.infer<typeof SuggestTransformationSchema>;
 export type CompareCrsInput = z.infer<typeof CompareCrsSchema>;
+export type GetBestPracticesInput = z.infer<typeof GetBestPracticesSchema>;
+export type TroubleshootInput = z.infer<typeof TroubleshootSchema>;

@@ -419,3 +419,146 @@ export interface ComparisonsData {
 	crsCharacteristics: Record<string, CrsCharacteristics>;
 	comparisonTemplates: Record<string, ComparisonTemplate>;
 }
+
+// ========================================
+// Phase 4: ベストプラクティス
+// ========================================
+
+export const BEST_PRACTICE_TOPICS = [
+	'japan_survey',
+	'web_mapping',
+	'data_exchange',
+	'coordinate_storage',
+	'mobile_gps',
+	'cross_border',
+	'historical_data',
+	'gis_integration',
+	'precision_requirements',
+	'projection_selection',
+] as const;
+
+export type BestPracticeTopic = (typeof BEST_PRACTICE_TOPICS)[number];
+
+export function isBestPracticeTopic(value: string): value is BestPracticeTopic {
+	return BEST_PRACTICE_TOPICS.includes(value as BestPracticeTopic);
+}
+
+export type PracticePriority = 'must' | 'should' | 'may';
+
+export interface Practice {
+	title: string;
+	description: string;
+	example?: string;
+	codeExample?: string;
+	priority: PracticePriority;
+	rationale: string;
+}
+
+export interface CommonMistake {
+	mistake: string;
+	consequence: string;
+	solution: string;
+}
+
+export type ReferenceType = 'official' | 'article' | 'tool';
+
+export interface Reference {
+	title: string;
+	url?: string;
+	type: ReferenceType;
+}
+
+export interface GetBestPracticesArgs {
+	topic: BestPracticeTopic;
+	context?: string;
+}
+
+export interface GetBestPracticesOutput {
+	topic: string;
+	description: string;
+	practices: Practice[];
+	commonMistakes: CommonMistake[];
+	relatedTopics: string[];
+	references: Reference[];
+}
+
+// ========================================
+// Phase 4: トラブルシューティング
+// ========================================
+
+export type CauseLikelihood = 'high' | 'medium' | 'low';
+
+export interface Cause {
+	likelihood: CauseLikelihood;
+	cause: string;
+	description: string;
+	indicators: string[];
+}
+
+export interface DiagnosticStep {
+	step: number;
+	action: string;
+	expected: string;
+	ifFailed: string;
+}
+
+export interface Solution {
+	forCause: string;
+	steps: string[];
+	prevention: string;
+	tools?: string[];
+}
+
+export interface TroubleshootContext {
+	sourceCrs?: string;
+	targetCrs?: string;
+	location?: string;
+	tool?: string;
+	magnitude?: string;
+}
+
+export interface TroubleshootArgs {
+	symptom: string;
+	context?: TroubleshootContext;
+}
+
+export interface TroubleshootOutput {
+	matchedSymptom: string;
+	possibleCauses: Cause[];
+	diagnosticSteps: DiagnosticStep[];
+	suggestedSolutions: Solution[];
+	relatedBestPractices: string[];
+	confidence: 'high' | 'medium' | 'low';
+}
+
+// ========================================
+// Phase 4: データ構造（静的JSON用）
+// ========================================
+
+export interface BestPracticeTopicData {
+	description: string;
+	practices: Practice[];
+	commonMistakes: CommonMistake[];
+	relatedTopics: string[];
+	references: Reference[];
+}
+
+export interface BestPracticesData {
+	version: string;
+	topics: Record<BestPracticeTopic, BestPracticeTopicData>;
+}
+
+export interface SymptomData {
+	description: string;
+	keywords: string[];
+	possibleCauses: Cause[];
+	diagnosticSteps: DiagnosticStep[];
+	solutions: Solution[];
+	relatedBestPractices: string[];
+}
+
+export interface TroubleshootingData {
+	version: string;
+	symptoms: Record<string, SymptomData>;
+	keywordMapping: Record<string, string[]>;
+}

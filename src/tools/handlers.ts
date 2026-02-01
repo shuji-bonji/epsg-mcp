@@ -5,17 +5,21 @@
 import { NotFoundError, ValidationError } from '../errors/index.js';
 import {
 	CompareCrsSchema,
+	GetBestPracticesSchema,
 	GetCrsDetailSchema,
 	ListCrsByRegionSchema,
 	RecommendCrsSchema,
 	SearchCrsSchema,
 	SuggestTransformationSchema,
+	TroubleshootSchema,
 	ValidateCrsUsageSchema,
 } from '../schemas/index.js';
+import { getBestPractices } from '../services/best-practices-service.js';
 import { compareCrs } from '../services/comparison-service.js';
 import { recommendCrs } from '../services/recommendation-service.js';
 import { getCrsDetail, listCrsByRegion, searchCrs } from '../services/search-service.js';
 import { suggestTransformation } from '../services/transformation-service.js';
+import { troubleshoot } from '../services/troubleshooting-service.js';
 import { validateCrsUsage } from '../utils/validation.js';
 
 export async function handleSearchCrs(args: unknown) {
@@ -94,6 +98,26 @@ export async function handleCompareCrs(args: unknown) {
 	return await compareCrs(crs1, crs2, aspects);
 }
 
+export async function handleGetBestPractices(args: unknown) {
+	const result = GetBestPracticesSchema.safeParse(args);
+	if (!result.success) {
+		throw new ValidationError(result.error);
+	}
+
+	const { topic, context } = result.data;
+	return await getBestPractices(topic, context);
+}
+
+export async function handleTroubleshoot(args: unknown) {
+	const result = TroubleshootSchema.safeParse(args);
+	if (!result.success) {
+		throw new ValidationError(result.error);
+	}
+
+	const { symptom, context } = result.data;
+	return await troubleshoot(symptom, context);
+}
+
 export const toolHandlers: Record<string, (args: unknown) => Promise<unknown>> = {
 	search_crs: handleSearchCrs,
 	get_crs_detail: handleGetCrsDetail,
@@ -102,4 +126,6 @@ export const toolHandlers: Record<string, (args: unknown) => Promise<unknown>> =
 	validate_crs_usage: handleValidateCrsUsage,
 	suggest_transformation: handleSuggestTransformation,
 	compare_crs: handleCompareCrs,
+	get_best_practices: handleGetBestPractices,
+	troubleshoot: handleTroubleshoot,
 };
