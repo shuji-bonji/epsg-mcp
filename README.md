@@ -15,6 +15,8 @@
 - **CRS検索**: EPSGコード、名称、地域名、都道府県名でCRSを検索
 - **詳細情報取得**: 測地系、投影法、適用範囲、精度特性などの詳細情報
 - **地域別一覧**: 日本/グローバルで利用可能なCRS一覧と用途別推奨
+- **CRS推奨**: 用途・場所に応じた最適なCRSを推奨（北海道・沖縄の複数系対応）
+- **使用検証**: CRS選択の妥当性を検証し、問題点と改善提案を提示
 - **日本重視**: JGD2011、平面直角座標系I〜XIX系の完全サポート
 - **オフライン動作**: ローカルデータベースで外部API不要
 
@@ -137,6 +139,74 @@ EPSGコードでCRSの詳細情報を取得します。
 - 「日本で使えるCRS一覧」
 - 「グローバルな地理座標系は？」
 
+### recommend_crs
+
+用途と場所に応じた最適なCRSを推奨します。
+
+```typescript
+// 入力
+{
+  purpose: "web_mapping" | "distance_calculation" | "area_calculation" |
+           "survey" | "navigation" | "data_exchange" | "data_storage" | "visualization";
+  location: {
+    country?: string;      // "Japan" | "Global"
+    prefecture?: string;   // "東京都", "北海道" など
+    city?: string;         // "札幌市", "那覇市" など（複数系対応）
+    boundingBox?: BoundingBox;
+    centerPoint?: { lat: number; lng: number };
+  };
+  requirements?: {
+    accuracy?: "high" | "medium" | "low";
+    distortionTolerance?: "minimal" | "moderate" | "flexible";
+  };
+}
+
+// 出力
+{
+  primary: RecommendedCrs;    // 推奨CRS（score, pros, cons付き）
+  alternatives: RecommendedCrs[];
+  reasoning: string;
+  warnings?: string[];        // 複数系またぐ地域での警告など
+}
+```
+
+**使用例**:
+- 「東京周辺で距離計算するのに最適なCRSは？」
+- 「北海道札幌で測量するときのCRSは？」
+- 「Webアプリで日本全国の地図を表示したい」
+
+### validate_crs_usage
+
+指定されたCRSが特定の用途・場所で適切かどうかを検証します。
+
+```typescript
+// 入力
+{
+  crs: string;               // "EPSG:3857" または "3857"
+  purpose: Purpose;          // recommend_crsと同じ
+  location: LocationSpec;    // recommend_crsと同じ
+}
+
+// 出力
+{
+  isValid: boolean;
+  score: number;             // 適合度 0-100
+  issues: ValidationIssue[]; // 問題点リスト
+  suggestions: string[];     // 改善提案
+  betterAlternatives?: RecommendedCrs[];  // スコア低い場合の代替案
+}
+```
+
+**検出される問題例**:
+- `DEPRECATED_CRS`: 非推奨CRSの使用
+- `AREA_DISTORTION`: Web Mercatorでの面積計算
+- `ZONE_MISMATCH`: 東京で系I（長崎用）を使用
+- `GEOJSON_INCOMPATIBLE`: 投影座標系でGeoJSON出力
+
+**使用例**:
+- 「Web Mercatorを北海道の面積計算に使って大丈夫？」
+- 「EPSG:4326で日本の測量データを保存しても問題ない？」
+
 ## Supported CRS
 
 ### Japan (JGD2011)
@@ -178,8 +248,8 @@ npm run test:watch
 
 ## Roadmap
 
-- **Phase 1** (Current): search_crs, get_crs_detail, list_crs_by_region
-- **Phase 2**: recommend_crs, validate_crs_usage
+- **Phase 1** ✅: search_crs, get_crs_detail, list_crs_by_region
+- **Phase 2** ✅: recommend_crs, validate_crs_usage
 - **Phase 3**: suggest_transformation, compare_crs
 - **Phase 4**: get_best_practices, troubleshoot
 
