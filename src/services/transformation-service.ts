@@ -3,8 +3,15 @@
  * CRS間の最適な変換経路をBFSで探索
  */
 
+import {
+	ACCURACY_PRIORITY,
+	COMPLEXITY_THRESHOLD,
+	TRANSFORMATION,
+	WIDE_AREA_THRESHOLD,
+} from '../constants/index.js';
 import { loadTransformations } from '../data/loader.js';
 import { NotFoundError } from '../errors/index.js';
+import { MESSAGES } from '../messages/index.js';
 import type {
 	LocationSpec,
 	SuggestTransformationOutput,
@@ -16,8 +23,8 @@ import type {
 } from '../types/index.js';
 
 interface TransformationSearchOptions {
-	maxSteps?: number; // デフォルト: 4
-	maxPaths?: number; // デフォルト: 10（早期終了用）
+	maxSteps?: number; // デフォルト: TRANSFORMATION.MAX_STEPS
+	maxPaths?: number; // デフォルト: TRANSFORMATION.MAX_PATHS（早期終了用）
 }
 
 interface GraphEdge {
@@ -80,18 +87,18 @@ export function clearGraphCache(): void {
  * 精度文字列から優先度を算出（低いほど高精度）
  */
 function getAccuracyPriority(accuracy: string): number {
-	if (accuracy.includes('実用上同一') || accuracy.includes('高精度')) return 1;
-	if (accuracy.includes('cm')) return 2;
-	if (accuracy.includes('なし')) return 3;
-	if (accuracy.includes('1-2m') || accuracy.includes('数m')) return 4;
-	return 5;
+	if (accuracy.includes('実用上同一') || accuracy.includes('高精度')) return ACCURACY_PRIORITY.HIGH;
+	if (accuracy.includes('cm')) return ACCURACY_PRIORITY.CENTIMETER;
+	if (accuracy.includes('なし')) return ACCURACY_PRIORITY.NO_ERROR;
+	if (accuracy.includes('1-2m') || accuracy.includes('数m')) return ACCURACY_PRIORITY.METER;
+	return ACCURACY_PRIORITY.UNKNOWN;
 }
 
 /**
  * 複数ステップの精度を統合（最も悪い精度を採用）
  */
 function calculateTotalAccuracy(steps: TransformationStep[]): string {
-	if (steps.length === 0) return '変換不要';
+	if (steps.length === 0) return MESSAGES.accuracy.NO_TRANSFORMATION;
 	if (steps.length === 1) return steps[0].accuracy;
 
 	const accuracies = steps.map((s) => s.accuracy);
@@ -101,18 +108,18 @@ function calculateTotalAccuracy(steps: TransformationStep[]): string {
 	const hasCmError = accuracies.some((a) => a.includes('cm'));
 	const hasNoError = accuracies.some((a) => a.includes('なし') || a.includes('座標変換のみ'));
 
-	if (hasLargeError) return '1-2m以上（累積誤差注意）';
-	if (hasCmError) return '数cm〜数m';
+	if (hasLargeError) return MESSAGES.accuracy.CUMULATIVE_ERROR_WARNING;
+	if (hasCmError) return MESSAGES.accuracy.CM_TO_M_RANGE;
 	if (hasNoError) return accuracies[0];
-	return '不明';
+	return MESSAGES.accuracy.UNKNOWN;
 }
 
 /**
  * 複雑度を決定
  */
 function determineComplexity(stepCount: number): TransformationComplexity {
-	if (stepCount <= 1) return 'simple';
-	if (stepCount === 2) return 'moderate';
+	if (stepCount <= COMPLEXITY_THRESHOLD.SIMPLE_MAX) return 'simple';
+	if (stepCount <= COMPLEXITY_THRESHOLD.MODERATE_MAX) return 'moderate';
 	return 'complex';
 }
 
@@ -124,8 +131,10 @@ export function isWideArea(location: LocationSpec): boolean {
 		const { north, south, east, west } = location.boundingBox;
 		const latSpan = north - south;
 		const lngSpan = east - west;
-		// 緯度3度または経度5度以上を広域とみなす
-		return latSpan > 3 || lngSpan > 5;
+		return (
+			latSpan > WIDE_AREA_THRESHOLD.LAT_SPAN_DEGREES ||
+			lngSpan > WIDE_AREA_THRESHOLD.LNG_SPAN_DEGREES
+		);
 	}
 	return false;
 }
@@ -140,8 +149,8 @@ function findPaths(
 	data: TransformationsData,
 	options: TransformationSearchOptions = {}
 ): TransformationPath[] {
-	const maxSteps = options.maxSteps ?? 4;
-	const maxPaths = options.maxPaths ?? 10; // 最大パス数
+	const maxSteps = options.maxSteps ?? TRANSFORMATION.MAX_STEPS;
+	const maxPaths = options.maxPaths ?? TRANSFORMATION.MAX_PATHS;
 	const graph = buildTransformationGraph(data);
 	const paths: TransformationPath[] = [];
 
@@ -264,10 +273,10 @@ export async function suggestTransformation(
 			viaPaths: [],
 			recommended: {
 				steps: [],
-				totalAccuracy: '変換不要',
+				totalAccuracy: MESSAGES.transformation.NO_TRANSFORMATION_NEEDED,
 				complexity: 'simple',
 			},
-			warnings: ['同一のCRSが指定されました。変換は不要です。'],
+			warnings: [MESSAGES.transformation.SAME_CRS],
 		};
 	}
 
@@ -276,9 +285,7 @@ export async function suggestTransformation(
 	// 非推奨チェック
 	if (transformData.deprecatedTransformations[source]) {
 		const info = transformData.deprecatedTransformations[source];
-		warnings.push(
-			`${source} は非推奨です。${info.note} 新規データには ${info.migrateTo} を使用してください。`
-		);
+		warnings.push(MESSAGES.transformation.DEPRECATED_CRS(source, info.note, info.migrateTo));
 	}
 
 	// 全パスを探索
@@ -292,7 +299,7 @@ export async function suggestTransformation(
 	if (allPaths.length === 0) {
 		throw new NotFoundError(
 			'Transformation',
-			`${source} から ${target} への変換経路が見つかりません`
+			MESSAGES.transformation.NO_PATH_FOUND(source, target)
 		);
 	}
 
@@ -301,12 +308,12 @@ export async function suggestTransformation(
 
 	// 位置特有の警告
 	if (location && isWideArea(location)) {
-		warnings.push('広域のデータを変換する場合、位置によって精度が異なる場合があります。');
+		warnings.push(MESSAGES.transformation.WIDE_AREA_WARNING);
 	}
 
 	// 複雑な経路の警告
 	if (recommended.complexity === 'complex') {
-		warnings.push('変換が複数ステップにわたるため、累積誤差に注意してください。');
+		warnings.push(MESSAGES.transformation.COMPLEX_PATH_WARNING);
 	}
 
 	return {

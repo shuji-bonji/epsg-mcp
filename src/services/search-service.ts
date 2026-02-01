@@ -2,6 +2,7 @@
  * CRS検索サービス
  */
 
+import { DEFAULTS, SEARCH_SCORE } from '../constants/index.js';
 import { findCrsById, getCrsByRegion, loadGlobalCrs, loadJapanCrs } from '../data/loader.js';
 import type { CrsDetail, CrsInfo, CrsType, RegionCrsList, SearchResult } from '../types/index.js';
 
@@ -13,39 +14,42 @@ function calculateMatchScore(crs: CrsDetail, lowerQuery: string, queryWords: str
 	const normalizedCode = lowerCode.replace('epsg:', '');
 
 	if (normalizedCode === lowerQuery || lowerQuery === normalizedCode) {
-		return 100;
+		return SEARCH_SCORE.EXACT_CODE_MATCH;
 	}
 
 	if (lowerCode.includes(lowerQuery) || lowerQuery.includes(normalizedCode)) {
-		return 95;
+		return SEARCH_SCORE.PARTIAL_CODE_MATCH;
 	}
 
 	if (lowerName === lowerQuery) {
-		return 90;
+		return SEARCH_SCORE.EXACT_NAME_MATCH;
 	}
 
 	if (lowerName.includes(lowerQuery)) {
-		return 80;
+		return SEARCH_SCORE.NAME_CONTAINS;
 	}
 
 	const remarksLower = crs.remarks?.toLowerCase() || '';
 	if (remarksLower.includes(lowerQuery)) {
-		return 60;
+		return SEARCH_SCORE.REMARKS_CONTAINS;
 	}
 
 	const prefecturesStr = crs.areaOfUse?.prefectures?.join(' ').toLowerCase() || '';
 	if (prefecturesStr.includes(lowerQuery)) {
-		return 70;
+		return SEARCH_SCORE.PREFECTURE_MATCH;
 	}
 
 	if (queryWords.length > 0) {
 		const searchableText = `${lowerName} ${remarksLower} ${prefecturesStr}`;
 		const matchedWords = queryWords.filter((word) => searchableText.includes(word));
 		if (matchedWords.length === queryWords.length) {
-			return 65;
+			return SEARCH_SCORE.ALL_WORDS_MATCH;
 		}
 		if (matchedWords.length > 0) {
-			return 30 + (matchedWords.length / queryWords.length) * 30;
+			return (
+				SEARCH_SCORE.PARTIAL_WORDS_BASE +
+				(matchedWords.length / queryWords.length) * SEARCH_SCORE.PARTIAL_WORDS_MAX_BONUS
+			);
 		}
 	}
 
@@ -60,12 +64,12 @@ export async function searchCrs(
 		limit?: number;
 	} = {}
 ): Promise<SearchResult> {
-	const { type, region, limit = 10 } = options;
+	const { type, region, limit = DEFAULTS.SEARCH_LIMIT } = options;
 	const lowerQuery = query.toLowerCase().trim();
 	const queryWords = lowerQuery
 		.split(WORD_SPLIT_REGEX)
-		.filter((w) => w.length > 1)
-		.slice(0, 5);
+		.filter((w) => w.length >= DEFAULTS.MIN_WORD_LENGTH)
+		.slice(0, DEFAULTS.MAX_QUERY_WORDS);
 
 	const [japan, global] = await Promise.all([loadJapanCrs(), loadGlobalCrs()]);
 

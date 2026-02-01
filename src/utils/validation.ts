@@ -2,9 +2,10 @@
  * CRS使用検証ユーティリティ
  */
 
+import { EPSG, VALIDATION_SCORE } from '../constants/index.js';
 import { findCrsById, loadRecommendations } from '../data/loader.js';
 import { NotFoundError } from '../errors/index.js';
-import { recommendCrs, selectZoneForLocation } from '../services/recommendation-service.js';
+import { recommendCrs } from '../services/recommendation-service.js';
 import type {
 	BoundingBox,
 	CrsDetail,
@@ -15,13 +16,14 @@ import type {
 	ValidationIssue,
 	ValidationIssueCode,
 } from '../types/index.js';
+import { applyValidationRules } from './validation-rules.js';
 
 /**
  * 平面直角座標系かどうかを判定
  */
 export function isPlaneRectangularCS(code: string): boolean {
 	const numericCode = Number.parseInt(code.replace(/^EPSG:/i, ''), 10);
-	return numericCode >= 6669 && numericCode <= 6687;
+	return numericCode >= EPSG.PLANE_RECT.RANGE_START && numericCode <= EPSG.PLANE_RECT.RANGE_END;
 }
 
 /**
@@ -97,191 +99,15 @@ export function checkZoneSpan(bbox: BoundingBox): boolean {
 }
 
 /**
- * 用途別検証ルール
+ * 用途別検証ルールを適用
  */
 async function validateForPurpose(
 	crs: CrsDetail,
 	purpose: Purpose,
 	location: LocationSpec
 ): Promise<ValidationIssue[]> {
-	const issues: ValidationIssue[] = [];
 	const recommendations = await loadRecommendations();
-
-	switch (purpose) {
-		case 'area_calculation':
-			// Web Mercatorの面積歪み
-			if (crs.code === 'EPSG:3857') {
-				issues.push({
-					severity: 'warning',
-					code: 'AREA_DISTORTION',
-					message: 'Web Mercator causes significant area distortion',
-					recommendation: 'Use an equal-area or local projected CRS',
-				});
-			}
-			// 地理座標系での面積計算
-			if (crs.type === 'geographic') {
-				issues.push({
-					severity: 'info',
-					code: 'GEOGRAPHIC_AREA',
-					message: 'Geographic CRS requires spherical/ellipsoidal area calculation',
-					recommendation: 'Use projected CRS or geodetic area formula',
-				});
-			}
-			break;
-
-		case 'distance_calculation':
-			// 地理座標系での距離計算
-			if (crs.type === 'geographic') {
-				issues.push({
-					severity: 'info',
-					code: 'GEOGRAPHIC_DISTANCE',
-					message: 'Geographic CRS requires geodetic distance calculation',
-					recommendation: 'Use Haversine/Vincenty formula or a projected CRS',
-				});
-			}
-			// Web Mercatorの距離歪み
-			if (crs.code === 'EPSG:3857') {
-				issues.push({
-					severity: 'warning',
-					code: 'DISTANCE_DISTORTION',
-					message: 'Web Mercator distance varies significantly with latitude',
-					recommendation: 'Use local projected CRS or geodetic calculation',
-				});
-			}
-			// 系をまたぐ可能性
-			if (isPlaneRectangularCS(crs.code) && location.boundingBox) {
-				const spansMultipleZones = checkZoneSpan(location.boundingBox);
-				if (spansMultipleZones) {
-					issues.push({
-						severity: 'warning',
-						code: 'CROSS_ZONE_CALCULATION',
-						message: 'Area spans multiple plane rectangular zones',
-						recommendation: 'Use JGD2011 geographic (EPSG:6668) with geodetic calculation',
-					});
-				}
-			}
-			break;
-
-		case 'survey': {
-			const isJapan =
-				location.country?.toLowerCase() === 'japan' ||
-				location.country === '日本' ||
-				!!location.prefecture;
-
-			// 日本で平面直角座標系以外
-			if (isJapan && !isPlaneRectangularCS(crs.code)) {
-				issues.push({
-					severity: 'warning',
-					code: 'NOT_OFFICIAL_SURVEY_CRS',
-					message: 'Not the official survey CRS for Japan',
-					recommendation: 'Use Japan Plane Rectangular CS (EPSG:6669-6687)',
-				});
-			}
-
-			// 正しい系かどうか
-			if (isJapan && isPlaneRectangularCS(crs.code)) {
-				const expectedZone = await selectZoneForLocation(location);
-				if (expectedZone && expectedZone !== crs.code) {
-					issues.push({
-						severity: 'warning',
-						code: 'ZONE_MISMATCH',
-						message: `Expected ${expectedZone} for ${location.prefecture || 'this location'}, but ${crs.code} was specified`,
-						recommendation: `Use ${expectedZone} for this location`,
-					});
-				}
-			}
-
-			// 非推奨測地系（Tokyo Datum）
-			if (await isLegacyDatum(crs.code)) {
-				issues.push({
-					severity: 'error',
-					code: 'LEGACY_DATUM',
-					message: 'Tokyo Datum (old Japanese datum) should not be used for new surveys',
-					recommendation: 'Use JGD2011-based CRS (EPSG:6668 or EPSG:6669-6687)',
-				});
-			}
-			break;
-		}
-
-		case 'web_mapping':
-			if (!recommendations.validationRules.webMappingCrs.includes(crs.code)) {
-				issues.push({
-					severity: 'info',
-					code: 'NON_STANDARD_WEB_CRS',
-					message: 'This CRS may not be natively supported by web mapping libraries',
-					recommendation: 'Consider EPSG:3857 for display or EPSG:4326 for GeoJSON',
-				});
-			}
-			break;
-
-		case 'navigation':
-			// GPS出力との整合性
-			if (!recommendations.validationRules.navigationCrs.includes(crs.code)) {
-				issues.push({
-					severity: 'info',
-					code: 'GPS_CONVERSION_NEEDED',
-					message: 'GPS devices output WGS84 coordinates',
-					recommendation: 'Consider using EPSG:4326 or EPSG:6668 (practically equivalent)',
-				});
-			}
-			break;
-
-		case 'data_storage':
-			// 投影座標系での保存
-			if (crs.type === 'projected') {
-				issues.push({
-					severity: 'info',
-					code: 'PROJECTED_STORAGE',
-					message: 'Projected CRS may limit future reprojection flexibility',
-					recommendation: 'Consider storing in geographic CRS (EPSG:4326 or EPSG:6668)',
-				});
-			}
-			// 非推奨CRSでの保存
-			if (crs.deprecated) {
-				issues.push({
-					severity: 'warning',
-					code: 'DEPRECATED_STORAGE',
-					message: 'Storing data in deprecated CRS may cause future compatibility issues',
-					recommendation: `Migrate to ${crs.supersededBy || 'a current CRS'}`,
-				});
-			}
-			break;
-
-		case 'data_exchange':
-			// 非標準CRS
-			if (!recommendations.validationRules.dataExchangeCrs.includes(crs.code)) {
-				issues.push({
-					severity: 'info',
-					code: 'NON_STANDARD_EXCHANGE',
-					message: 'EPSG:4326 is the most widely supported CRS for data exchange',
-					recommendation: 'Consider converting to WGS84 for broader compatibility',
-				});
-			}
-			// GeoJSON互換性
-			if (crs.type === 'projected') {
-				issues.push({
-					severity: 'warning',
-					code: 'GEOJSON_INCOMPATIBLE',
-					message: 'GeoJSON specification requires WGS84 (EPSG:4326)',
-					recommendation: 'Convert to EPSG:4326 for GeoJSON export',
-				});
-			}
-			break;
-
-		case 'visualization':
-			// 基本的にweb_mappingと同じ
-			if (!recommendations.validationRules.webMappingCrs.includes(crs.code)) {
-				issues.push({
-					severity: 'info',
-					code: 'NON_STANDARD_WEB_CRS',
-					message: 'This CRS may not be natively supported by visualization libraries',
-					recommendation: 'Consider EPSG:3857 for web display',
-				});
-			}
-			break;
-	}
-
-	return issues;
+	return applyValidationRules(purpose, { crs, location, recommendations });
 }
 
 /**
@@ -410,7 +236,9 @@ export async function validateCrsUsage(
 
 	// 5. 代替案提案
 	const betterAlternatives =
-		score < 70 ? await findBetterAlternatives(purpose, location) : undefined;
+		score < VALIDATION_SCORE.BETTER_ALTERNATIVES_THRESHOLD
+			? await findBetterAlternatives(purpose, location)
+			: undefined;
 
 	return {
 		isValid: !issues.some((i) => i.severity === 'error'),

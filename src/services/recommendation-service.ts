@@ -3,6 +3,7 @@
  * 用途・場所に応じた最適なCRSを推奨
  */
 
+import { EPSG, JAPAN_BOUNDS, VALIDATION_SCORE, WIDE_AREA_THRESHOLD } from '../constants/index.js';
 import { findCrsById, getZoneMapping, loadRecommendations } from '../data/loader.js';
 import type {
 	CrsDetail,
@@ -64,27 +65,27 @@ function determineZoneFromCoordinate(
 ): string {
 	if (prefecture === '北海道') {
 		// 経度で大まかに判定
-		if (point.lng < 141.5) {
-			return 'EPSG:6679'; // XI系（西部）
+		if (point.lng < JAPAN_BOUNDS.HOKKAIDO.ZONE_XI_XII_BOUNDARY) {
+			return EPSG.PLANE_RECT.ZONE_XI; // 西部
 		}
-		if (point.lng < 144.0) {
-			return 'EPSG:6680'; // XII系（中部）
+		if (point.lng < JAPAN_BOUNDS.HOKKAIDO.ZONE_XII_XIII_BOUNDARY) {
+			return EPSG.PLANE_RECT.ZONE_XII; // 中部
 		}
-		return 'EPSG:6681'; // XIII系（東部）
+		return EPSG.PLANE_RECT.ZONE_XIII; // 東部
 	}
 
 	if (prefecture === '沖縄県') {
 		// 経度で大まかに判定
-		if (point.lng > 131.0) {
-			return 'EPSG:6685'; // XVII系（大東）
+		if (point.lng > JAPAN_BOUNDS.OKINAWA.ZONE_XVI_XVII_BOUNDARY) {
+			return EPSG.PLANE_RECT.ZONE_XVII; // 大東
 		}
-		if (point.lng < 126.5) {
-			return 'EPSG:6684'; // XVI系（先島）
+		if (point.lng < JAPAN_BOUNDS.OKINAWA.ZONE_XV_XVI_BOUNDARY) {
+			return EPSG.PLANE_RECT.ZONE_XVI; // 先島
 		}
-		return 'EPSG:6683'; // XV系（本島）
+		return EPSG.PLANE_RECT.ZONE_XV; // 本島
 	}
 
-	return 'EPSG:6677'; // デフォルト（系IX）
+	return EPSG.PLANE_RECT.ZONE_IX; // デフォルト（東京周辺）
 }
 
 /**
@@ -111,34 +112,37 @@ export async function selectZoneForLocation(location: LocationSpec): Promise<str
 		const { lat, lng } = location.centerPoint;
 
 		// 北海道
-		if (lat > 41.5) {
-			if (lng < 141.5) return 'EPSG:6679';
-			if (lng < 144.0) return 'EPSG:6680';
-			return 'EPSG:6681';
+		if (lat > JAPAN_BOUNDS.HOKKAIDO.LAT_THRESHOLD) {
+			if (lng < JAPAN_BOUNDS.HOKKAIDO.ZONE_XI_XII_BOUNDARY) return EPSG.PLANE_RECT.ZONE_XI;
+			if (lng < JAPAN_BOUNDS.HOKKAIDO.ZONE_XII_XIII_BOUNDARY) return EPSG.PLANE_RECT.ZONE_XII;
+			return EPSG.PLANE_RECT.ZONE_XIII;
 		}
 
 		// 東北
-		if (lat > 37.0 && lng > 139.5) {
-			return 'EPSG:6678'; // X系
+		if (lat > JAPAN_BOUNDS.REGIONS.TOHOKU.SOUTH && lng > JAPAN_BOUNDS.REGIONS.TOHOKU.EAST) {
+			return EPSG.PLANE_RECT.ZONE_X;
 		}
 
 		// 関東
-		if (lat > 34.5 && lat < 37.5 && lng > 138.5 && lng < 141.0) {
-			return 'EPSG:6677'; // IX系
+		const kanto = JAPAN_BOUNDS.REGIONS.KANTO;
+		if (lat > kanto.SOUTH && lat < kanto.NORTH && lng > kanto.WEST && lng < kanto.EAST) {
+			return EPSG.PLANE_RECT.ZONE_IX;
 		}
 
 		// 中部
-		if (lat > 34.5 && lat < 37.5 && lng > 136.0 && lng < 139.0) {
-			return 'EPSG:6675'; // VII系
+		const chubu = JAPAN_BOUNDS.REGIONS.CHUBU;
+		if (lat > chubu.SOUTH && lat < chubu.NORTH && lng > chubu.WEST && lng < chubu.EAST) {
+			return EPSG.PLANE_RECT.ZONE_VII;
 		}
 
 		// 近畿
-		if (lat > 33.5 && lat < 36.0 && lng > 134.5 && lng < 137.0) {
-			return 'EPSG:6674'; // VI系
+		const kansai = JAPAN_BOUNDS.REGIONS.KANSAI;
+		if (lat > kansai.SOUTH && lat < kansai.NORTH && lng > kansai.WEST && lng < kansai.EAST) {
+			return EPSG.PLANE_RECT.ZONE_VI;
 		}
 
 		// デフォルト
-		return 'EPSG:6677';
+		return EPSG.PLANE_RECT.ZONE_IX;
 	}
 
 	return null;
@@ -181,19 +185,20 @@ function adjustScoreForRequirements(
 	if (requirements.accuracy === 'high') {
 		// 投影座標系を優先
 		if (crsDetail?.type === 'projected') {
-			score += 5;
+			score += VALIDATION_SCORE.HIGH_ACCURACY_BONUS;
 		}
 	}
 
 	// 歪み許容度
 	if (requirements.distortionTolerance === 'minimal') {
-		// 局所座標系を優先
-		if (crsDetail?.code?.startsWith('EPSG:66')) {
-			score += 5;
+		// 平面直角座標系を優先
+		const codeNum = parseInt(crsDetail?.code?.replace('EPSG:', '') || '0');
+		if (codeNum >= EPSG.PLANE_RECT.RANGE_START && codeNum <= EPSG.PLANE_RECT.RANGE_END) {
+			score += VALIDATION_SCORE.MINIMAL_DISTORTION_BONUS;
 		}
 	}
 
-	return Math.min(100, score);
+	return Math.min(VALIDATION_SCORE.MAX, score);
 }
 
 /**
@@ -209,8 +214,8 @@ function isJapanLocation(location: LocationSpec): boolean {
 	}
 	if (location.centerPoint) {
 		const { lat, lng } = location.centerPoint;
-		// 日本の大まかな範囲
-		return lat >= 20 && lat <= 46 && lng >= 122 && lng <= 154;
+		const bounds = JAPAN_BOUNDS.OVERALL;
+		return lat >= bounds.SOUTH && lat <= bounds.NORTH && lng >= bounds.WEST && lng <= bounds.EAST;
 	}
 	return false;
 }
@@ -265,7 +270,7 @@ export async function recommendCrs(
 			}
 		} else {
 			// ゾーンが特定できない場合
-			primaryCode = 'EPSG:6677'; // デフォルトで系IX
+			primaryCode = EPSG.PLANE_RECT.ZONE_IX;
 			warnings.push(
 				'都道府県が特定できないため、系IX（東京周辺）をデフォルトとして推奨しています。'
 			);
@@ -281,9 +286,12 @@ export async function recommendCrs(
 		const latSpan = north - south;
 		const lngSpan = east - west;
 
-		if (latSpan > 3 || lngSpan > 3) {
+		if (
+			latSpan > WIDE_AREA_THRESHOLD.LAT_SPAN_DEGREES ||
+			lngSpan > WIDE_AREA_THRESHOLD.LNG_SPAN_DEGREES
+		) {
 			warnings.push(
-				'広域にわたる計算です。複数の平面直角座標系をまたぐ場合は、JGD2011地理座標系(EPSG:6668)での測地線計算を検討してください。'
+				`広域にわたる計算です。複数の平面直角座標系をまたぐ場合は、JGD2011地理座標系(${EPSG.JGD2011})での測地線計算を検討してください。`
 			);
 			// フォールバックを提案
 			if (ruleRegion.fallback) {
@@ -294,7 +302,11 @@ export async function recommendCrs(
 
 	// primaryを構築
 	const primaryCrsDetail = await findCrsById(primaryCode);
-	const primaryScore = adjustScoreForRequirements(95, primaryCrsDetail, requirements);
+	const primaryScore = adjustScoreForRequirements(
+		VALIDATION_SCORE.PRIMARY_BASE,
+		primaryCrsDetail,
+		requirements
+	);
 	const primary = await buildRecommendedCrs(
 		primaryCode,
 		primaryScore,
@@ -312,7 +324,11 @@ export async function recommendCrs(
 				continue;
 			}
 			const altDetail = await findCrsById(altCode);
-			const altScore = adjustScoreForRequirements(75, altDetail, requirements);
+			const altScore = adjustScoreForRequirements(
+				VALIDATION_SCORE.ALTERNATIVE_BASE,
+				altDetail,
+				requirements
+			);
 			alternatives.push(await buildRecommendedCrs(altCode, altScore, [], [], undefined));
 		}
 	}
@@ -320,7 +336,11 @@ export async function recommendCrs(
 	// fallbackがあれば追加
 	if (ruleRegion.fallback && ruleRegion.fallback !== primaryCode) {
 		const fallbackDetail = await findCrsById(ruleRegion.fallback);
-		const fallbackScore = adjustScoreForRequirements(70, fallbackDetail, requirements);
+		const fallbackScore = adjustScoreForRequirements(
+			VALIDATION_SCORE.FALLBACK,
+			fallbackDetail,
+			requirements
+		);
 		alternatives.push(
 			await buildRecommendedCrs(
 				ruleRegion.fallback,

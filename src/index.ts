@@ -45,7 +45,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 		};
 	} catch (err) {
 		const formatted = formatErrorResponse(err);
-		error(`Tool ${name} failed:`, formatted.text);
+		error(`Tool ${name} failed`, { error: formatted.text });
 		return {
 			content: [{ type: 'text', text: JSON.stringify(formatted, null, 2) }],
 			isError: true,
@@ -68,6 +68,6 @@ async function main() {
 }
 
 main().catch((err) => {
-	error('Failed to start server:', err);
+	error('Failed to start server', { error: err instanceof Error ? err.message : String(err) });
 	process.exit(1);
 });

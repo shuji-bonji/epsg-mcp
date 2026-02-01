@@ -3,6 +3,7 @@
  * 2つのCRSを様々な観点から比較
  */
 
+import { COMPARISON, EPSG } from '../constants/index.js';
 import { findCrsById, loadComparisons, loadTransformations } from '../data/loader.js';
 import { NotFoundError } from '../errors/index.js';
 import type {
@@ -48,16 +49,16 @@ function inferDatumName(crs: CrsDetail): string {
 	const name = crs.name.toLowerCase();
 	const code = crs.code;
 
-	if (name.includes('jgd2011') || code === 'EPSG:6668') {
+	if (name.includes('jgd2011') || code === EPSG.JGD2011) {
 		return 'JGD2011';
 	}
-	if (name.includes('jgd2000') || code === 'EPSG:4612') {
+	if (name.includes('jgd2000') || code === EPSG.JGD2000) {
 		return 'JGD2000';
 	}
-	if (name === 'tokyo' || code === 'EPSG:4301') {
+	if (name === 'tokyo' || code === EPSG.TOKYO_DATUM) {
 		return 'Tokyo Datum';
 	}
-	if (name.includes('wgs') || code === 'EPSG:4326' || code === 'EPSG:3857') {
+	if (name.includes('wgs') || code === EPSG.WGS84 || code === EPSG.WEB_MERCATOR) {
 		return 'WGS84';
 	}
 	// 平面直角座標系はJGD2011ベース
@@ -195,7 +196,7 @@ async function compareDistortion(crs1: CrsDetail, crs2: CrsDetail): Promise<Comp
 	let verdict: string;
 	if (crs1.type === 'geographic' && crs2.type === 'geographic') {
 		verdict = '両方とも地理座標系。投影歪みなし';
-	} else if (crs1.code === 'EPSG:3857' || crs2.code === 'EPSG:3857') {
+	} else if (crs1.code === EPSG.WEB_MERCATOR || crs2.code === EPSG.WEB_MERCATOR) {
 		verdict = 'Web Mercatorは面積・距離計算に大きな歪み';
 	} else {
 		verdict = '歪み特性が異なる';
@@ -213,7 +214,7 @@ function getDefaultDistortion(crs: CrsDetail): string {
 	if (crs.type === 'geographic') {
 		return '地理座標系（投影歪みなし）';
 	}
-	if (crs.code === 'EPSG:3857') {
+	if (crs.code === EPSG.WEB_MERCATOR) {
 		return '高緯度で面積歪み大';
 	}
 	return '投影座標系（限定範囲で高精度）';
@@ -231,9 +232,9 @@ async function compareCompatibility(crs1: CrsDetail, crs2: CrsDetail): Promise<C
 	const comp2 = chars2 ? formatCompatibility(chars2) : getDefaultCompatibility(crs2);
 
 	let verdict: string;
-	if (crs1.code === 'EPSG:4326' || crs2.code === 'EPSG:4326') {
+	if (crs1.code === EPSG.WGS84 || crs2.code === EPSG.WGS84) {
 		verdict = 'WGS84は最も広く互換性がある';
-	} else if (crs1.code === 'EPSG:3857' || crs2.code === 'EPSG:3857') {
+	} else if (crs1.code === EPSG.WEB_MERCATOR || crs2.code === EPSG.WEB_MERCATOR) {
 		verdict = 'Web MercatorはWeb地図ライブラリで標準';
 	} else {
 		verdict = '互換性が異なる';
@@ -281,9 +282,9 @@ async function compareUseCases(crs1: CrsDetail, crs2: CrsDetail): Promise<Compar
 		const s1 = scores1[p] || 50;
 		const s2 = scores2[p] || 50;
 		const diff = s1 - s2;
-		if (diff >= 20) {
+		if (diff >= COMPARISON.SCORE_DIFFERENCE_THRESHOLD) {
 			better1.push(`${PURPOSE_NAMES[p]}(+${diff})`);
-		} else if (diff <= -20) {
+		} else if (diff <= -COMPARISON.SCORE_DIFFERENCE_THRESHOLD) {
 			better2.push(`${PURPOSE_NAMES[p]}(+${-diff})`);
 		}
 	}
@@ -308,9 +309,11 @@ async function compareUseCases(crs1: CrsDetail, crs2: CrsDetail): Promise<Compar
 
 function formatScoreSummary(scores: Record<string, number>): string {
 	const entries = Object.entries(scores) as Array<[Purpose, number]>;
-	const high = entries.filter(([, v]) => v >= 80).map(([k]) => PURPOSE_NAMES[k as Purpose] || k);
+	const high = entries
+		.filter(([, v]) => v >= COMPARISON.HIGH_SUITABILITY_THRESHOLD)
+		.map(([k]) => PURPOSE_NAMES[k as Purpose] || k);
 	if (high.length === 0) return '特になし';
-	return `高適性: ${high.slice(0, 3).join(', ')}`;
+	return `高適性: ${high.slice(0, COMPARISON.MAX_SUMMARY_ITEMS).join(', ')}`;
 }
 
 /**
@@ -347,22 +350,22 @@ async function compareAspect(
 function generateSummary(crs1: CrsDetail, crs2: CrsDetail): string {
 	// 特定のパターンに基づいてサマリーを生成
 	if (
-		(crs1.code === 'EPSG:4326' && crs2.code === 'EPSG:6668') ||
-		(crs1.code === 'EPSG:6668' && crs2.code === 'EPSG:4326')
+		(crs1.code === EPSG.WGS84 && crs2.code === EPSG.JGD2011) ||
+		(crs1.code === EPSG.JGD2011 && crs2.code === EPSG.WGS84)
 	) {
 		return 'WGS84とJGD2011は実用上同一（数cm以内）。日本国内データはJGD2011推奨。';
 	}
 
 	if (
-		(crs1.code === 'EPSG:4326' && crs2.code === 'EPSG:3857') ||
-		(crs1.code === 'EPSG:3857' && crs2.code === 'EPSG:4326')
+		(crs1.code === EPSG.WGS84 && crs2.code === EPSG.WEB_MERCATOR) ||
+		(crs1.code === EPSG.WEB_MERCATOR && crs2.code === EPSG.WGS84)
 	) {
 		return '地理座標系とWeb Mercatorの比較。Web地図表示は3857、データ保存は4326推奨。';
 	}
 
 	if (
-		(crs1.code === 'EPSG:4612' && crs2.code === 'EPSG:6668') ||
-		(crs1.code === 'EPSG:6668' && crs2.code === 'EPSG:4612')
+		(crs1.code === EPSG.JGD2000 && crs2.code === EPSG.JGD2011) ||
+		(crs1.code === EPSG.JGD2011 && crs2.code === EPSG.JGD2000)
 	) {
 		return 'JGD2000からJGD2011への移行は2011年地震後の地殻変動補正のため必要。';
 	}

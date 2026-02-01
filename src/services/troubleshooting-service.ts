@@ -3,6 +3,7 @@
  * 症状からCRS関連問題を診断・解決策を提案
  */
 
+import { TROUBLESHOOTING } from '../constants/index.js';
 import { loadTroubleshooting } from '../data/loader.js';
 import type {
 	Cause,
@@ -52,7 +53,8 @@ function matchSymptom(
 		for (const keyword of sortedSymptomKeywords) {
 			if (normalizedText.includes(keyword.toLowerCase())) {
 				// 症状固有キーワードは高いウェイト
-				const score = (matches.get(id) || 0) + keyword.length * 1.5;
+				const score =
+					(matches.get(id) || 0) + keyword.length * TROUBLESHOOTING.SYMPTOM_KEYWORD_WEIGHT;
 				matches.set(id, score);
 			}
 		}
@@ -232,8 +234,8 @@ function calculateConfidence(
 	let score = 0;
 
 	// マッチスコアに基づく評価
-	if (matchScore >= 15) score += 2;
-	else if (matchScore >= 8) score += 1;
+	if (matchScore >= TROUBLESHOOTING.MATCH_SCORE_HIGH) score += 2;
+	else if (matchScore >= TROUBLESHOOTING.MATCH_SCORE_MEDIUM) score += 1;
 
 	// 一意なマッチの場合は信頼度向上
 	if (totalMatches === 1) score += 1;
@@ -244,8 +246,8 @@ function calculateConfidence(
 		if (context.magnitude) score += 1;
 	}
 
-	if (score >= 4) return 'high';
-	if (score >= 2) return 'medium';
+	if (score >= TROUBLESHOOTING.CONFIDENCE_HIGH_THRESHOLD) return 'high';
+	if (score >= TROUBLESHOOTING.CONFIDENCE_MEDIUM_THRESHOLD) return 'medium';
 	return 'low';
 }
 

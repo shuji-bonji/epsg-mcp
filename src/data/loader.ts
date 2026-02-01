@@ -34,6 +34,7 @@ let troubleshootingData: TroubleshootingData | null = null;
 
 let crsIndex: Map<string, CrsDetail> | null = null;
 let regionIndex: Map<string, CrsInfo[]> | null = null;
+let nameTokenIndex: Map<string, Set<string>> | null = null; // token → EPSG codes
 
 async function loadJsonFile<T>(filename: string): Promise<T> {
 	const filepath = join(STATIC_DIR, filename);
@@ -109,6 +110,53 @@ function normalizeRegion(region: string): string {
 	return region.toLowerCase();
 }
 
+/**
+ * テキストをトークンに分割（検索インデックス用）
+ */
+function tokenize(text: string): string[] {
+	return text
+		.toLowerCase()
+		.split(/[\s\-_/()（）]+/)
+		.filter((t) => t.length > 1);
+}
+
+/**
+ * CRSをトークンインデックスに追加
+ */
+function addToNameIndex(crs: CrsDetail): void {
+	if (!nameTokenIndex) return;
+
+	const code = normalizeCode(crs.code);
+	const tokens = new Set<string>();
+
+	// 名前のトークン
+	for (const t of tokenize(crs.name)) {
+		tokens.add(t);
+	}
+
+	// 備考のトークン
+	if (crs.remarks) {
+		for (const t of tokenize(crs.remarks)) {
+			tokens.add(t);
+		}
+	}
+
+	// 都道府県のトークン
+	if (crs.areaOfUse?.prefectures) {
+		for (const p of crs.areaOfUse.prefectures) {
+			tokens.add(p.toLowerCase());
+		}
+	}
+
+	// 各トークンからCRSコードへの逆引きマップを構築
+	for (const token of tokens) {
+		if (!nameTokenIndex.has(token)) {
+			nameTokenIndex.set(token, new Set());
+		}
+		nameTokenIndex.get(token)!.add(code);
+	}
+}
+
 function addToRegionIndex(region: string, crs: CrsDetail): void {
 	if (!regionIndex) return;
 	const normalizedRegion = normalizeRegion(region);
@@ -129,28 +177,33 @@ async function buildCrsIndex(): Promise<void> {
 
 	crsIndex = new Map();
 	regionIndex = new Map();
+	nameTokenIndex = new Map();
 
 	const [japan, global] = await Promise.all([loadJapanCrs(), loadGlobalCrs()]);
 
 	for (const crs of Object.values(japan.geographicCRS)) {
 		crsIndex.set(normalizeCode(crs.code), crs);
 		addToRegionIndex('Japan', crs);
+		addToNameIndex(crs);
 	}
 	for (const crs of Object.values(japan.projectedCRS)) {
 		crsIndex.set(normalizeCode(crs.code), crs);
 		addToRegionIndex('Japan', crs);
+		addToNameIndex(crs);
 	}
 
 	for (const crs of Object.values(global.geographicCRS)) {
 		crsIndex.set(normalizeCode(crs.code), crs);
 		addToRegionIndex('Global', crs);
+		addToNameIndex(crs);
 	}
 	for (const crs of Object.values(global.projectedCRS)) {
 		crsIndex.set(normalizeCode(crs.code), crs);
 		addToRegionIndex('Global', crs);
+		addToNameIndex(crs);
 	}
 
-	debug(`CRS index built: ${crsIndex.size} entries`);
+	debug(`CRS index built: ${crsIndex.size} entries, ${nameTokenIndex.size} tokens`);
 }
 
 export async function findCrsById(code: string): Promise<CrsDetail | undefined> {
@@ -166,6 +219,44 @@ export async function getCrsByRegion(region: string): Promise<CrsInfo[]> {
 export async function getAllCrs(): Promise<CrsDetail[]> {
 	await buildCrsIndex();
 	return crsIndex ? Array.from(crsIndex.values()) : [];
+}
+
+/**
+ * トークンに一致するCRSコードを検索
+ * 複数トークンの場合、すべてに一致するコードを返す
+ */
+export async function searchByTokens(tokens: string[]): Promise<string[]> {
+	await buildCrsIndex();
+	if (!nameTokenIndex || tokens.length === 0) return [];
+
+	const lowerTokens = tokens.map((t) => t.toLowerCase());
+
+	// 最初のトークンに一致するコードを取得
+	const firstMatches = nameTokenIndex.get(lowerTokens[0]);
+	if (!firstMatches) return [];
+
+	// 1トークンのみの場合はそのまま返す
+	if (lowerTokens.length === 1) {
+		return Array.from(firstMatches);
+	}
+
+	// 複数トークンの場合、すべてのトークンに一致するコードのみを返す
+	const result: string[] = [];
+	for (const code of firstMatches) {
+		let matchesAll = true;
+		for (let i = 1; i < lowerTokens.length; i++) {
+			const tokenMatches = nameTokenIndex.get(lowerTokens[i]);
+			if (!tokenMatches || !tokenMatches.has(code)) {
+				matchesAll = false;
+				break;
+			}
+		}
+		if (matchesAll) {
+			result.push(code);
+		}
+	}
+
+	return result;
 }
 
 export async function getZoneMapping(): Promise<
@@ -198,5 +289,6 @@ export function clearCache(): void {
 	troubleshootingData = null;
 	crsIndex = null;
 	regionIndex = null;
+	nameTokenIndex = null;
 	debug('Cache cleared');
 }
