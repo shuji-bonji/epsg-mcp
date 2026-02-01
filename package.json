@@ -1,6 +1,6 @@
 {
 	"name": "@shuji-bonji/epsg-mcp",
-	"version": "1.0.0",
+	"version": "0.4.0",
 	"description": "MCP server for EPSG Coordinate Reference System knowledge - providing CRS information for Japan (JGD2011, Plane Rectangular CS) and global systems (WGS84, Web Mercator)",
 	"main": "build/index.js",
 	"scripts": {

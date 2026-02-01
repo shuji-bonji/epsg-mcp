@@ -5,220 +5,257 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.2.0] - 2026-02-01
-
-### Added
-
-#### Tools
-- `suggest_transformation` - CRS間の変換経路提案
-  - BFSグラフ探索で最大4ステップの変換経路を探索
-  - 逆方向変換サポート（reversible: true のエッジは双方向探索）
-  - 直接経路（directPath）と間接経路（viaPaths）の両方を返却
-  - 推奨経路（recommended）の自動選択
-  - 精度累積計算（1-2m、数cm等の精度情報を伝播）
-  - 複雑度判定（simple/moderate/complex）
-  - 警告システム:
-    - 非推奨CRS（Tokyo Datum, JGD2000）使用時の警告
-    - 広域データ変換時の精度警告
-    - 複雑な変換経路での累積誤差警告
-- `compare_crs` - CRS比較
-  - 7つの比較観点:
-    - `datum`: 測地系比較（WGS84 vs JGD2011は実用上同一など）
-    - `projection`: 投影法比較
-    - `area_of_use`: 適用範囲比較
-    - `accuracy`: 精度特性比較
-    - `distortion`: 歪み特性比較
-    - `compatibility`: GIS/Web/CAD/GPS互換性比較
-    - `use_cases`: 用途適性スコアリング比較
-  - サマリー・推奨生成
-  - 変換に関する注記（transformationNote）
-
-#### Data
-- `transformations.json` - 変換経路データ
-  - 12件の変換レコード
-  - Tokyo→JGD2000、JGD2000→JGD2011、WGS84→JGD2011、WGS84→Web Mercator等
-  - JGD2011→平面直角座標系（IX, XI, XII, XIII, XV, XVI系）
-  - ハブCRS定義（EPSG:4326, EPSG:6668, EPSG:4612）
-  - 非推奨変換情報（EPSG:4301, EPSG:4612）
-- `comparisons.json` - CRS比較データ
-  - 7つのCRSの特性データ（4326, 6668, 4612, 4301, 3857, 6677, 6679）
-  - 歪み特性（distortion）: area, distance, shape, note
-  - 互換性（compatibility）: gis, web, cad, gps
-  - 用途スコア（useCasesScore）: 8種類の用途ごとのスコア
-  - 比較テンプレート（comparisonTemplates）: 5パターン
-
-### Technical Details
-- 新規サービス: `transformation-service.ts`
-  - `normalizeCrsCode()` - EPSGコード正規化
-  - `isWideArea()` - 広域判定
-  - `buildTransformationGraph()` - グラフ構築
-  - `findPaths()` - BFS経路探索
-  - `suggestTransformation()` - 変換提案
-- 新規サービス: `comparison-service.ts`
-  - `inferDatumName()` - データム名推論
-  - `compareDatum()`, `compareProjection()`, `compareAreaOfUse()` 等7つの比較関数
-  - `generateSummary()`, `generateRecommendation()`
-  - `compareCrs()` - メインAPI
-- テスト数: 261 → 306（+45テスト）
-
----
-
-## [1.1.0] - 2026-02-01
-
-### Added
-
-#### Tools
-- `recommend_crs` - 用途・場所に応じた最適CRS推奨
-  - 8つの用途タイプ対応（web_mapping, distance_calculation, area_calculation, survey, navigation, data_exchange, data_storage, visualization）
-  - 北海道の3系（XI, XII, XIII）対応（振興局・市区町村ベース）
-  - 沖縄の3系（XV, XVI, XVII）対応（本島/先島/大東）
-  - 広域計算時の警告・フォールバック提案
-  - pros/cons付きの推奨結果
-- `validate_crs_usage` - CRS使用の妥当性検証
-  - 18種類のValidationIssueCode
-  - severity（error/warning/info）による重大度分類
-  - スコア計算（0-100）
-  - 低スコア時の代替案自動提案
-
-#### Validation Rules
-- `DEPRECATED_CRS` - 非推奨CRS使用検出
-- `LEGACY_DATUM` - 旧測地系（Tokyo Datum）検出
-- `AREA_MISMATCH` - 適用範囲外使用検出
-- `AREA_DISTORTION` - Web Mercator面積歪み警告
-- `DISTANCE_DISTORTION` - Web Mercator距離歪み警告
-- `ZONE_MISMATCH` - 平面直角座標系の系不一致警告
-- `CROSS_ZONE_CALCULATION` - 複数系またぎ計算警告
-- `GEOJSON_INCOMPATIBLE` - GeoJSON非互換警告
-- `NOT_OFFICIAL_SURVEY_CRS` - 日本で非公式測量CRS警告
-- その他9種類
-
-#### Data
-- `recommendations.json` 拡張
-  - 各用途のpros/cons追加
-  - `multiZonePrefectures` - 北海道・沖縄の振興局/市区町村→系マッピング
-  - `validationRules` - 検証ルール設定・スコア重み
-
-### Changed
-- `LocationSpec` に `city` フィールド追加（複数系対応）
-- `Requirements` に `distortionTolerance` フィールド追加
-
-### Technical Details
-- 新規サービス: `recommendation-service.ts`
-- 新規ユーティリティ: `validation.ts`
-- テスト数: 171 → 261（+90テスト）
-
----
-
-## [1.0.0] - 2026-02-01
-
-### Added
-
-#### Tools
-- `search_crs` - CRSをキーワードで検索
-  - EPSGコード、名称、地域名、都道府県名での検索に対応
-  - タイプ（geographic/projected）、地域（Japan/Global）でのフィルタリング
-  - スコアリングベースの関連度順ソート
-- `get_crs_detail` - EPSGコードでCRS詳細情報を取得
-  - 測地系、投影法、適用範囲、精度特性などの詳細情報
-  - 使用目的、関連CRS、備考の提供
-- `list_crs_by_region` - 地域別CRS一覧と用途別推奨を取得
-  - 日本/グローバルの切り替え
-  - 非推奨CRSの表示/非表示オプション
-  - 用途別（汎用、測量、Web地図）の推奨CRS提示
-
-#### Data
-- 日本CRSデータ (`japan-crs.json`)
-  - JGD2011 (EPSG:6668) 地理座標系
-  - 平面直角座標系 I〜XIX系 (EPSG:6669-6687)
-  - JGD2000 (EPSG:4612) レガシーサポート
-  - Tokyo Datum (EPSG:4301) レガシーサポート
-  - 47都道府県の平面直角座標系マッピング
-- グローバルCRSデータ (`global-crs.json`)
-  - WGS 84 (EPSG:4326)
-  - Web Mercator (EPSG:3857)
-  - UTM zones 52N-54N (EPSG:32652-32654)
-  - NAD83, ETRS89
-- 用途別推奨ルール (`recommendations.json`)
-  - Web地図表示、距離計算、面積計算、測量、ナビゲーション、データ保存、データ交換、可視化
-
-#### Infrastructure
-- TypeScript + ES Modules 構成
-- @modelcontextprotocol/sdk によるMCPサーバー実装
-- Zod によるスキーマバリデーション
-- Vitest によるテスト（19テスト）
-- ローカルJSONデータベース（外部API不要）
-
-### Technical Details
-- Node.js 18+ 対応
-- stdio トランスポートによるMCP通信
-- 起動時データプリロードによる高速レスポンス
-- エラーハンドリング（ValidationError, NotFoundError, DataLoadError）
-
 ## [Unreleased]
 
 ---
 
-## [1.3.0] - 2026-02-01
+## [0.4.0] - 2026-02-01
+
+### Added
+
+#### CI/CD
+- GitHub Actions workflows for automated testing and publishing
+  - `ci.yml`: Runs lint, build, and tests on Node.js 18/20/22 for push/PR to main
+  - `publish.yml`: Automated npm publish on version tags (v*)
+
+#### Cross-Platform Support
+- Added `shx` for cross-platform build scripts (Windows compatible)
+
+### Changed
+
+#### Internationalization
+- **Tool definitions**: All 9 tool descriptions translated to English
+  - `search_crs`, `get_crs_detail`, `list_crs_by_region`
+  - `recommend_crs`, `validate_crs_usage`
+  - `suggest_transformation`, `compare_crs`
+  - `get_best_practices`, `troubleshoot`
+- **Input schemas**: All parameter descriptions translated to English
+  - Enables AI agents in any language to properly discover and use tools
+  - Examples in descriptions remain language-neutral (EPSG codes, etc.)
+
+#### Build System
+- Version now dynamically loaded from `package.json` (eliminates dual maintenance)
+- Build script uses `shx` instead of Unix-specific `cp` and `chmod`
+
+### Technical Details
+- New dependency: `shx@^0.4.0` (devDependency)
+- `src/index.ts`: Uses `createRequire` to import package.json version
+- All 379 tests passing
+
+---
+
+## [0.3.0] - 2026-02-01
 
 ### Added
 
 #### Tools
-- `get_best_practices` - CRS利用のベストプラクティス提供
-  - 10トピック対応:
-    - `japan_survey`: 日本での測量
-    - `web_mapping`: Web地図作成
-    - `data_exchange`: データ交換
-    - `coordinate_storage`: 座標の保存
-    - `mobile_gps`: モバイルGPS
-    - `cross_border`: 越境データ
-    - `historical_data`: 歴史的データ
-    - `gis_integration`: GIS統合
-    - `precision_requirements`: 精度要件
-    - `projection_selection`: 投影法選択
-  - 各トピックに対し:
-    - 推奨プラクティス（must/should/may優先度付き）
-    - よくある間違いと解決策
-    - 関連トピック
-    - 参考資料（official/article/tool）
-- `troubleshoot` - CRS関連問題のトラブルシューティング
-  - 6つの症状カテゴリ:
-    - `coordinate_shift_large`: 座標が数百m〜数kmずれる
-    - `coordinate_shift_medium`: 座標が1〜数mずれる
-    - `coordinate_shift_small`: 座標が数cm〜数十cmずれる
-    - `area_distance_error`: 面積・距離計算エラー
-    - `display_blank`: データが表示されない
-    - `transformation_error`: 座標変換エラー
-  - キーワードマッチング（長いキーワード優先）
-  - コンテキストに基づく可能性調整:
-    - sourceCrs/targetCrs: 変換元/先CRS
-    - location: 対象地域
-    - magnitude: ずれの大きさ
-    - tool: 使用ツール
-  - 診断信頼度（high/medium/low）算出
-  - 関連ベストプラクティスへのリンク
+- `get_best_practices` - CRS usage best practices
+  - 10 topics:
+    - `japan_survey`: Surveying in Japan
+    - `web_mapping`: Web map creation
+    - `data_exchange`: Data exchange
+    - `coordinate_storage`: Coordinate storage
+    - `mobile_gps`: Mobile GPS
+    - `cross_border`: Cross-border data
+    - `historical_data`: Historical data
+    - `gis_integration`: GIS integration
+    - `precision_requirements`: Precision requirements
+    - `projection_selection`: Projection selection
+  - For each topic:
+    - Recommended practices (must/should/may priority)
+    - Common mistakes and solutions
+    - Related topics
+    - References (official/article/tool)
+- `troubleshoot` - CRS problem troubleshooting
+  - 6 symptom categories:
+    - `coordinate_shift_large`: Coordinates shift by hundreds of meters to kilometers
+    - `coordinate_shift_medium`: Coordinates shift by 1-several meters
+    - `coordinate_shift_small`: Coordinates shift by centimeters to tens of centimeters
+    - `area_distance_error`: Area/distance calculation errors
+    - `display_blank`: Data doesn't display
+    - `transformation_error`: Coordinate transformation errors
+  - Keyword matching (longer keywords prioritized)
+  - Context-based likelihood adjustment:
+    - sourceCrs/targetCrs: Source/target CRS
+    - location: Target region
+    - magnitude: Shift magnitude
+    - tool: Tool being used
+  - Diagnostic confidence (high/medium/low) calculation
+  - Links to related best practices
 
 #### Data
-- `best-practices.json` - ベストプラクティスデータ
-  - 10トピックの完全なベストプラクティス集
-  - 各トピック: description, practices[], commonMistakes[], relatedTopics[], references[]
-- `troubleshooting.json` - トラブルシューティングデータ
-  - 6症状カテゴリの診断データ
-  - キーワードマッピング（25キーワード）
-  - 各症状: possibleCauses[], diagnosticSteps[], solutions[]
+- `best-practices.json` - Best practices data
+  - Complete best practices for 10 topics
+  - Each topic: description, practices[], commonMistakes[], relatedTopics[], references[]
+- `troubleshooting.json` - Troubleshooting data
+  - Diagnostic data for 6 symptom categories
+  - Keyword mapping (25 keywords)
+  - Each symptom: possibleCauses[], diagnosticSteps[], solutions[]
 
 ### Technical Details
-- 新規サービス: `best-practices-service.ts`
-  - `getBestPractices()` - トピック別ベストプラクティス取得
-  - `listBestPracticeTopics()` - トピック一覧取得
-- 新規サービス: `troubleshooting-service.ts`
-  - `sortKeywordsByLength()` - キーワード長さ順ソート
-  - `matchSymptom()` - 症状マッチング（スコアリング付き）
-  - `adjustCauseLikelihood()` - コンテキストベース可能性調整
-  - `sortCausesByLikelihood()` - 可能性順ソート
-  - `getSolutionsForCauses()` - 原因に対する解決策取得
-  - `calculateConfidence()` - 診断信頼度計算
-  - `troubleshoot()` - メインAPI
-  - `listSymptomCategories()` - 症状カテゴリ一覧
-- 型ガード: `isBestPracticeTopic()` - `as const`パターン
-- 入力バリデーション: symptom 2〜500文字
-- テスト数: 306 → 379（+73テスト）
+- New service: `best-practices-service.ts`
+  - `getBestPractices()` - Get best practices by topic
+  - `listBestPracticeTopics()` - List available topics
+- New service: `troubleshooting-service.ts`
+  - `sortKeywordsByLength()` - Sort keywords by length
+  - `matchSymptom()` - Symptom matching with scoring
+  - `adjustCauseLikelihood()` - Context-based likelihood adjustment
+  - `sortCausesByLikelihood()` - Sort by likelihood
+  - `getSolutionsForCauses()` - Get solutions for causes
+  - `calculateConfidence()` - Calculate diagnostic confidence
+  - `troubleshoot()` - Main API
+  - `listSymptomCategories()` - List symptom categories
+- Type guard: `isBestPracticeTopic()` - `as const` pattern
+- Input validation: symptom 2-500 characters
+- Test count: 306 → 379 (+73 tests)
+
+---
+
+## [0.2.0] - 2026-02-01
+
+### Added
+
+#### Tools
+- `suggest_transformation` - CRS transformation path suggestion
+  - BFS graph search for transformation paths up to 4 steps
+  - Reverse transformation support (reversible: true edges are bidirectional)
+  - Returns both direct path (directPath) and indirect paths (viaPaths)
+  - Automatic recommended path selection
+  - Accuracy accumulation calculation (1-2m, few cm, etc.)
+  - Complexity assessment (simple/moderate/complex)
+  - Warning system:
+    - Deprecated CRS (Tokyo Datum, JGD2000) warnings
+    - Large area data transformation accuracy warnings
+    - Complex transformation path cumulative error warnings
+- `compare_crs` - CRS comparison
+  - 7 comparison aspects:
+    - `datum`: Datum comparison (WGS84 vs JGD2011 practically identical, etc.)
+    - `projection`: Projection comparison
+    - `area_of_use`: Area of use comparison
+    - `accuracy`: Accuracy characteristics comparison
+    - `distortion`: Distortion characteristics comparison
+    - `compatibility`: GIS/Web/CAD/GPS compatibility comparison
+    - `use_cases`: Use case suitability scoring comparison
+  - Summary and recommendation generation
+  - Transformation notes (transformationNote)
+
+#### Data
+- `transformations.json` - Transformation path data
+  - 12 transformation records
+  - Tokyo→JGD2000, JGD2000→JGD2011, WGS84→JGD2011, WGS84→Web Mercator, etc.
+  - JGD2011→Plane Rectangular CS (Zones IX, XI, XII, XIII, XV, XVI)
+  - Hub CRS definitions (EPSG:4326, EPSG:6668, EPSG:4612)
+  - Deprecated transformation info (EPSG:4301, EPSG:4612)
+- `comparisons.json` - CRS comparison data
+  - Characteristics for 7 CRS (4326, 6668, 4612, 4301, 3857, 6677, 6679)
+  - Distortion: area, distance, shape, note
+  - Compatibility: gis, web, cad, gps
+  - Use case scores: Scores for 8 use cases
+  - Comparison templates: 5 patterns
+
+### Technical Details
+- New service: `transformation-service.ts`
+  - `normalizeCrsCode()` - EPSG code normalization
+  - `isWideArea()` - Wide area detection
+  - `buildTransformationGraph()` - Graph construction
+  - `findPaths()` - BFS path search
+  - `suggestTransformation()` - Transformation suggestion
+- New service: `comparison-service.ts`
+  - `inferDatumName()` - Datum name inference
+  - `compareDatum()`, `compareProjection()`, `compareAreaOfUse()`, etc. (7 comparison functions)
+  - `generateSummary()`, `generateRecommendation()`
+  - `compareCrs()` - Main API
+- Test count: 261 → 306 (+45 tests)
+
+---
+
+## [0.1.0] - 2026-02-01
+
+### Added
+
+#### Tools
+- `recommend_crs` - Optimal CRS recommendation based on purpose and location
+  - 8 purpose types (web_mapping, distance_calculation, area_calculation, survey, navigation, data_exchange, data_storage, visualization)
+  - Hokkaido 3 zones (XI, XII, XIII) support (subprefecture/municipality based)
+  - Okinawa 3 zones (XV, XVI, XVII) support (Main Island/Sakishima/Daito)
+  - Warnings and fallback suggestions for wide area calculations
+  - Recommendations with pros/cons
+- `validate_crs_usage` - CRS usage validation
+  - 18 ValidationIssueCode types
+  - Severity classification (error/warning/info)
+  - Score calculation (0-100)
+  - Automatic alternative suggestions for low scores
+
+#### Validation Rules
+- `DEPRECATED_CRS` - Deprecated CRS detection
+- `LEGACY_DATUM` - Legacy datum (Tokyo Datum) detection
+- `AREA_MISMATCH` - Out-of-area usage detection
+- `AREA_DISTORTION` - Web Mercator area distortion warning
+- `DISTANCE_DISTORTION` - Web Mercator distance distortion warning
+- `ZONE_MISMATCH` - Plane Rectangular CS zone mismatch warning
+- `CROSS_ZONE_CALCULATION` - Cross-zone calculation warning
+- `GEOJSON_INCOMPATIBLE` - GeoJSON incompatibility warning
+- `NOT_OFFICIAL_SURVEY_CRS` - Unofficial survey CRS in Japan warning
+- 9 other types
+
+#### Data
+- `recommendations.json` extension
+  - Added pros/cons for each purpose
+  - `multiZonePrefectures` - Hokkaido/Okinawa subprefecture/municipality→zone mapping
+  - `validationRules` - Validation rule settings and score weights
+
+### Changed
+- Added `city` field to `LocationSpec` (multi-zone support)
+- Added `distortionTolerance` field to `Requirements`
+
+### Technical Details
+- New service: `recommendation-service.ts`
+- New utility: `validation.ts`
+- Test count: 171 → 261 (+90 tests)
+
+---
+
+## [0.0.1] - 2026-02-01
+
+### Added
+
+#### Tools
+- `search_crs` - Search CRS by keyword
+  - EPSG code, name, region, prefecture search support
+  - Type (geographic/projected) and region (Japan/Global) filtering
+  - Scoring-based relevance sorting
+- `get_crs_detail` - Get CRS details by EPSG code
+  - Datum, projection, area of use, accuracy characteristics
+  - Use cases, related CRS, remarks
+- `list_crs_by_region` - Get CRS list by region with purpose-based recommendations
+  - Japan/Global toggle
+  - Deprecated CRS show/hide option
+  - Purpose-based (general, survey, web mapping) CRS recommendations
+
+#### Data
+- Japan CRS data (`japan-crs.json`)
+  - JGD2011 (EPSG:6668) Geographic CRS
+  - Plane Rectangular CS I-XIX (EPSG:6669-6687)
+  - JGD2000 (EPSG:4612) Legacy support
+  - Tokyo Datum (EPSG:4301) Legacy support
+  - 47 prefecture Plane Rectangular CS mapping
+- Global CRS data (`global-crs.json`)
+  - WGS 84 (EPSG:4326)
+  - Web Mercator (EPSG:3857)
+  - UTM zones 52N-54N (EPSG:32652-32654)
+  - NAD83, ETRS89
+- Purpose-based recommendation rules (`recommendations.json`)
+  - Web mapping, distance calculation, area calculation, survey, navigation, data storage, data exchange, visualization
+
+#### Infrastructure
+- TypeScript + ES Modules configuration
+- MCP server implementation with @modelcontextprotocol/sdk
+- Schema validation with Zod
+- Testing with Vitest (19 tests)
+- Local JSON database (no external API required)
+
+### Technical Details
+- Node.js 18+ support
+- MCP communication via stdio transport
+- Fast response with startup data preloading
+- Error handling (ValidationError, NotFoundError, DataLoadError)

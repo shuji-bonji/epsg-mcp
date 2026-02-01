@@ -1,10 +1,13 @@
 # EPSG MCP Server
 
 [![npm version](https://img.shields.io/npm/v/@shuji-bonji/epsg-mcp.svg)](https://www.npmjs.com/package/@shuji-bonji/epsg-mcp)
+[![CI](https://github.com/shuji-bonji/epsg-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/shuji-bonji/epsg-mcp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-18%2B-green.svg)](https://nodejs.org/)
 [![MCP](https://img.shields.io/badge/MCP-Compatible-blue.svg)](https://modelcontextprotocol.io/)
 [![Built with Claude Code](https://img.shields.io/badge/Built%20with-Claude%20Code-blueviolet?logo=anthropic)](https://claude.ai/code)
+
+[English README](README.md)
 
 座標参照系（CRS: Coordinate Reference System）に関する知識提供を行うMCPサーバーです。
 
@@ -23,6 +26,7 @@
 - **トラブルシューティング**: 症状からCRS問題を診断（座標ずれ、計算エラー等）
 - **日本重視**: JGD2011、平面直角座標系I〜XIX系の完全サポート
 - **オフライン動作**: ローカルデータベースで外部API不要
+- **国際化対応**: ツール定義・パラメータ説明は英語化済み（AIエージェントが言語に依存せず利用可能）
 
 ## Installation
 
