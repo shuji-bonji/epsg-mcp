@@ -99,7 +99,8 @@ describe('Data Loader', () => {
 		it('should include survey recommendations for Japan', async () => {
 			const data = await loadRecommendations();
 			expect(data.rules.survey).toBeDefined();
-			expect(data.rules.survey.japan?.primary).toContain('6669-6687');
+			expect(data.rules.survey.japan?.primary).toContain('平面直角座標系');
+			expect(data.rules.survey.japan?.codePattern).toBe('EPSG:6669-6687');
 		});
 
 		it('should include all purpose types', async () => {

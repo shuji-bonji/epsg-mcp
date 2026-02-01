@@ -74,4 +74,161 @@ export const tools: Tool[] = [
 			required: ['region'],
 		},
 	},
+	{
+		name: 'recommend_crs',
+		description:
+			'用途と場所に応じた最適なCRSを推奨します。Web地図表示、距離計算、面積計算、測量など用途別に、日本の平面直角座標系やグローバルなUTMなど最適な座標系を提案します。北海道や沖縄など複数の系にまたがる地域にも対応。',
+		inputSchema: {
+			type: 'object',
+			properties: {
+				purpose: {
+					type: 'string',
+					enum: [
+						'web_mapping',
+						'distance_calculation',
+						'area_calculation',
+						'survey',
+						'navigation',
+						'data_exchange',
+						'data_storage',
+						'visualization',
+					],
+					description:
+						'使用目的（web_mapping: Web地図表示、distance_calculation: 距離計算、area_calculation: 面積計算、survey: 測量、navigation: ナビゲーション、data_exchange: データ交換、data_storage: データ保存、visualization: 可視化）',
+				},
+				location: {
+					type: 'object',
+					description: '対象地域の指定',
+					properties: {
+						country: {
+							type: 'string',
+							description: '国名（"Japan" または "Global"）',
+						},
+						region: {
+							type: 'string',
+							description: '地域名（"Kanto", "Hokkaido", "本島", "先島" など）',
+						},
+						prefecture: {
+							type: 'string',
+							description: '都道府県名（"東京都", "北海道", "沖縄県" など）',
+						},
+						city: {
+							type: 'string',
+							description:
+								'市区町村名（"札幌市", "那覇市" など、複数の系にまたがる地域での判定用）',
+						},
+						boundingBox: {
+							type: 'object',
+							description: '対象領域の境界ボックス',
+							properties: {
+								north: { type: 'number', description: '北端緯度' },
+								south: { type: 'number', description: '南端緯度' },
+								east: { type: 'number', description: '東端経度' },
+								west: { type: 'number', description: '西端経度' },
+							},
+						},
+						centerPoint: {
+							type: 'object',
+							description: '中心座標',
+							properties: {
+								lat: { type: 'number', description: '緯度' },
+								lng: { type: 'number', description: '経度' },
+							},
+						},
+					},
+				},
+				requirements: {
+					type: 'object',
+					description: '追加要件',
+					properties: {
+						accuracy: {
+							type: 'string',
+							enum: ['high', 'medium', 'low'],
+							description: '精度要件',
+						},
+						distortionTolerance: {
+							type: 'string',
+							enum: ['minimal', 'moderate', 'flexible'],
+							description: '歪み許容度',
+						},
+						interoperability: {
+							type: 'array',
+							items: { type: 'string' },
+							description: '相互運用性要件（"GIS", "CAD", "Web" など）',
+						},
+					},
+				},
+			},
+			required: ['purpose', 'location'],
+		},
+	},
+	{
+		name: 'validate_crs_usage',
+		description:
+			'指定されたCRSが特定の用途・場所で適切かどうかを検証します。非推奨CRSの使用、面積・距離計算時の歪み、測量での不適切な系の選択などを検出し、改善提案を行います。',
+		inputSchema: {
+			type: 'object',
+			properties: {
+				crs: {
+					type: 'string',
+					description: '検証対象のEPSGコード（例: "EPSG:3857" または "3857"）',
+				},
+				purpose: {
+					type: 'string',
+					enum: [
+						'web_mapping',
+						'distance_calculation',
+						'area_calculation',
+						'survey',
+						'navigation',
+						'data_exchange',
+						'data_storage',
+						'visualization',
+					],
+					description: '使用目的',
+				},
+				location: {
+					type: 'object',
+					description: '対象地域の指定',
+					properties: {
+						country: {
+							type: 'string',
+							description: '国名（"Japan" または "Global"）',
+						},
+						region: {
+							type: 'string',
+							description: '地域名',
+						},
+						prefecture: {
+							type: 'string',
+							description: '都道府県名',
+						},
+						city: {
+							type: 'string',
+							description: '市区町村名',
+						},
+						boundingBox: {
+							type: 'object',
+							description: '対象領域の境界ボックス',
+							properties: {
+								north: { type: 'number' },
+								south: { type: 'number' },
+								east: { type: 'number' },
+								west: { type: 'number' },
+							},
+						},
+						centerPoint: {
+							type: 'object',
+							description: '中心座標',
+							properties: {
+								lat: { type: 'number' },
+								lng: { type: 'number' },
+							},
+						},
+					},
+				},
+			},
+			required: ['crs', 'purpose', 'location'],
+		},
+	},
 ];

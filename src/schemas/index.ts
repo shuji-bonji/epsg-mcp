@@ -56,6 +56,7 @@ export const LocationSchema = z.object({
 	country: z.string().optional(),
 	region: z.string().optional(),
 	prefecture: z.string().optional(),
+	city: z.string().optional(), // 複数系をまたぐ地域での判定用
 	boundingBox: BoundingBoxSchema.optional(),
 	centerPoint: z
 		.object({
@@ -65,18 +66,52 @@ export const LocationSchema = z.object({
 		.optional(),
 });
 
+export const RequirementsSchema = z.object({
+	accuracy: z.enum(['high', 'medium', 'low']).optional(),
+	distortionTolerance: z.enum(['minimal', 'moderate', 'flexible']).optional(),
+	interoperability: z.array(z.string()).optional(),
+});
+
 export const RecommendCrsSchema = z.object({
 	purpose: PurposeSchema,
 	location: LocationSchema,
-	requirements: z
-		.object({
-			accuracy: z.enum(['high', 'medium', 'low']).optional(),
-			interoperability: z.array(z.string()).optional(),
-		})
-		.optional(),
+	requirements: RequirementsSchema.optional(),
+});
+
+export const ValidationIssueCodeSchema = z.enum([
+	'DEPRECATED_CRS',
+	'LEGACY_DATUM',
+	'AREA_MISMATCH',
+	'AREA_DISTORTION',
+	'DISTANCE_DISTORTION',
+	'PRECISION_LOSS',
+	'ZONE_MISMATCH',
+	'CROSS_ZONE_CALCULATION',
+	'DEPRECATED_STORAGE',
+	'GEOJSON_INCOMPATIBLE',
+	'NOT_OFFICIAL_SURVEY_CRS',
+	'GEOGRAPHIC_AREA',
+	'GEOGRAPHIC_DISTANCE',
+	'BETTER_ALTERNATIVE',
+	'GPS_CONVERSION_NEEDED',
+	'PROJECTED_STORAGE',
+	'NON_STANDARD_EXCHANGE',
+	'NON_STANDARD_WEB_CRS',
+]);
+
+export const ValidateCrsUsageSchema = z.object({
+	crs: z
+		.string()
+		.min(1, 'EPSG code is required')
+		.refine((val) => /^(EPSG:)?\d+$/.test(val), {
+			message: 'Invalid EPSG code format. Use "EPSG:4326" or "4326"',
+		}),
+	purpose: PurposeSchema,
+	location: LocationSchema,
 });
 
 export type SearchCrsInput = z.infer<typeof SearchCrsSchema>;
 export type GetCrsDetailInput = z.infer<typeof GetCrsDetailSchema>;
 export type ListCrsByRegionInput = z.infer<typeof ListCrsByRegionSchema>;
 export type RecommendCrsInput = z.infer<typeof RecommendCrsSchema>;
+export type ValidateCrsUsageInput = z.infer<typeof ValidateCrsUsageSchema>;

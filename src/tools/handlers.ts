@@ -3,8 +3,16 @@
  */
 
 import { NotFoundError, ValidationError } from '../errors/index.js';
-import { GetCrsDetailSchema, ListCrsByRegionSchema, SearchCrsSchema } from '../schemas/index.js';
+import {
+	GetCrsDetailSchema,
+	ListCrsByRegionSchema,
+	RecommendCrsSchema,
+	SearchCrsSchema,
+	ValidateCrsUsageSchema,
+} from '../schemas/index.js';
+import { recommendCrs } from '../services/recommendation-service.js';
 import { getCrsDetail, listCrsByRegion, searchCrs } from '../services/search-service.js';
+import { validateCrsUsage } from '../utils/validation.js';
 
 export async function handleSearchCrs(args: unknown) {
 	const result = SearchCrsSchema.safeParse(args);
@@ -42,8 +50,30 @@ export async function handleListCrsByRegion(args: unknown) {
 	return await listCrsByRegion(region, { type, includeDeprecated });
 }
 
+export async function handleRecommendCrs(args: unknown) {
+	const result = RecommendCrsSchema.safeParse(args);
+	if (!result.success) {
+		throw new ValidationError(result.error);
+	}
+
+	const { purpose, location, requirements } = result.data;
+	return await recommendCrs(purpose, location, requirements);
+}
+
+export async function handleValidateCrsUsage(args: unknown) {
+	const result = ValidateCrsUsageSchema.safeParse(args);
+	if (!result.success) {
+		throw new ValidationError(result.error);
+	}
+
+	const { crs, purpose, location } = result.data;
+	return await validateCrsUsage(crs, purpose, location);
+}
+
 export const toolHandlers: Record<string, (args: unknown) => Promise<unknown>> = {
 	search_crs: handleSearchCrs,
 	get_crs_detail: handleGetCrsDetail,
 	list_crs_by_region: handleListCrsByRegion,
+	recommend_crs: handleRecommendCrs,
+	validate_crs_usage: handleValidateCrsUsage,
 };

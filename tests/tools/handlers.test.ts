@@ -4,7 +4,9 @@ import { NotFoundError, ValidationError } from '../../src/errors/index.js';
 import {
 	handleGetCrsDetail,
 	handleListCrsByRegion,
+	handleRecommendCrs,
 	handleSearchCrs,
+	handleValidateCrsUsage,
 	toolHandlers,
 } from '../../src/tools/handlers.js';
 
@@ -31,6 +33,16 @@ describe('Tool Handlers', () => {
 		it('should have list_crs_by_region handler', () => {
 			expect(toolHandlers.list_crs_by_region).toBeDefined();
 			expect(typeof toolHandlers.list_crs_by_region).toBe('function');
+		});
+
+		it('should have recommend_crs handler', () => {
+			expect(toolHandlers.recommend_crs).toBeDefined();
+			expect(typeof toolHandlers.recommend_crs).toBe('function');
+		});
+
+		it('should have validate_crs_usage handler', () => {
+			expect(toolHandlers.validate_crs_usage).toBeDefined();
+			expect(typeof toolHandlers.validate_crs_usage).toBe('function');
 		});
 
 		it('should call correct handler via registry', async () => {
@@ -376,6 +388,219 @@ describe('Tool Handlers', () => {
 			await expect(handleListCrsByRegion({ region: 'Japan', type: 'invalid' })).rejects.toThrow(
 				ValidationError
 			);
+		});
+	});
+
+	describe('recommend_crs', () => {
+		it('should recommend Web Mercator for web mapping in Tokyo', async () => {
+			const result = (await handleRecommendCrs({
+				purpose: 'web_mapping',
+				location: { prefecture: '東京都' },
+			})) as {
+				primary: { code: string };
+				reasoning: string;
+			};
+			expect(result.primary.code).toBe('EPSG:3857');
+			expect(result.reasoning).toContain('Web Mercator');
+		});
+
+		it('should recommend plane rectangular for survey in Tokyo', async () => {
+			const result = (await handleRecommendCrs({
+				purpose: 'survey',
+				location: { prefecture: '東京都' },
+			})) as {
+				primary: { code: string };
+			};
+			expect(result.primary.code).toBe('EPSG:6677');
+		});
+
+		it('should recommend zone XI for survey in Sapporo', async () => {
+			const result = (await handleRecommendCrs({
+				purpose: 'survey',
+				location: { prefecture: '北海道', city: '札幌市' },
+			})) as {
+				primary: { code: string };
+			};
+			expect(result.primary.code).toBe('EPSG:6679');
+		});
+
+		it('should recommend zone XVI for survey in Miyakojima', async () => {
+			const result = (await handleRecommendCrs({
+				purpose: 'survey',
+				location: { prefecture: '沖縄県', city: '宮古島市' },
+			})) as {
+				primary: { code: string };
+			};
+			expect(result.primary.code).toBe('EPSG:6684');
+		});
+
+		it('should recommend JGD2011 for data storage in Japan', async () => {
+			const result = (await handleRecommendCrs({
+				purpose: 'data_storage',
+				location: { country: 'Japan' },
+			})) as {
+				primary: { code: string };
+			};
+			expect(result.primary.code).toBe('EPSG:6668');
+		});
+
+		it('should recommend WGS84 for global data storage', async () => {
+			const result = (await handleRecommendCrs({
+				purpose: 'data_storage',
+				location: { country: 'Global' },
+			})) as {
+				primary: { code: string };
+			};
+			expect(result.primary.code).toBe('EPSG:4326');
+		});
+
+		it('should include warnings for multi-zone prefectures', async () => {
+			const result = (await handleRecommendCrs({
+				purpose: 'survey',
+				location: { prefecture: '北海道' },
+			})) as {
+				warnings?: string[];
+			};
+			expect(result.warnings).toBeDefined();
+			expect(result.warnings?.some((w) => w.includes('3系'))).toBe(true);
+		});
+
+		it('should throw ValidationError for invalid purpose', async () => {
+			await expect(
+				handleRecommendCrs({
+					purpose: 'invalid_purpose',
+					location: { country: 'Japan' },
+				})
+			).rejects.toThrow(ValidationError);
+		});
+
+		it('should throw ValidationError for missing purpose', async () => {
+			await expect(
+				handleRecommendCrs({
+					location: { country: 'Japan' },
+				})
+			).rejects.toThrow(ValidationError);
+		});
+
+		it('should throw ValidationError for missing location', async () => {
+			await expect(
+				handleRecommendCrs({
+					purpose: 'web_mapping',
+				})
+			).rejects.toThrow(ValidationError);
+		});
+	});
+
+	describe('validate_crs_usage', () => {
+		it('should validate appropriate usage', async () => {
+			const result = (await handleValidateCrsUsage({
+				crs: 'EPSG:6677',
+				purpose: 'survey',
+				location: { prefecture: '東京都' },
+			})) as {
+				isValid: boolean;
+				score: number;
+			};
+			expect(result.isValid).toBe(true);
+			expect(result.score).toBeGreaterThanOrEqual(80);
+		});
+
+		it('should warn about Web Mercator for area calculation', async () => {
+			const result = (await handleValidateCrsUsage({
+				crs: 'EPSG:3857',
+				purpose: 'area_calculation',
+				location: { country: 'Japan' },
+			})) as {
+				issues: Array<{ code: string; severity: string }>;
+			};
+			expect(result.issues.some((i) => i.code === 'AREA_DISTORTION')).toBe(true);
+		});
+
+		it('should error for deprecated CRS', async () => {
+			const result = (await handleValidateCrsUsage({
+				crs: 'EPSG:4612',
+				purpose: 'data_storage',
+				location: { country: 'Japan' },
+			})) as {
+				isValid: boolean;
+				issues: Array<{ code: string; severity: string }>;
+			};
+			expect(result.isValid).toBe(false);
+			expect(result.issues.some((i) => i.code === 'DEPRECATED_CRS')).toBe(true);
+		});
+
+		it('should warn about zone mismatch', async () => {
+			const result = (await handleValidateCrsUsage({
+				crs: 'EPSG:6669',
+				purpose: 'survey',
+				location: { prefecture: '東京都' },
+			})) as {
+				issues: Array<{ code: string }>;
+			};
+			expect(result.issues.some((i) => i.code === 'ZONE_MISMATCH')).toBe(true);
+		});
+
+		it('should pass for WGS84 GeoJSON', async () => {
+			const result = (await handleValidateCrsUsage({
+				crs: 'EPSG:4326',
+				purpose: 'data_exchange',
+				location: { country: 'Global' },
+			})) as {
+				isValid: boolean;
+				score: number;
+			};
+			expect(result.isValid).toBe(true);
+			expect(result.score).toBe(100);
+		});
+
+		it('should provide suggestions', async () => {
+			const result = (await handleValidateCrsUsage({
+				crs: 'EPSG:3857',
+				purpose: 'area_calculation',
+				location: { country: 'Japan' },
+			})) as {
+				suggestions: string[];
+			};
+			expect(result.suggestions.length).toBeGreaterThan(0);
+		});
+
+		it('should throw NotFoundError for unknown CRS', async () => {
+			await expect(
+				handleValidateCrsUsage({
+					crs: 'EPSG:99999',
+					purpose: 'survey',
+					location: { country: 'Japan' },
+				})
+			).rejects.toThrow(NotFoundError);
+		});
+
+		it('should throw ValidationError for invalid CRS format', async () => {
+			await expect(
+				handleValidateCrsUsage({
+					crs: 'invalid',
+					purpose: 'survey',
+					location: { country: 'Japan' },
+				})
+			).rejects.toThrow(ValidationError);
+		});
+
+		it('should throw ValidationError for missing crs', async () => {
+			await expect(
+				handleValidateCrsUsage({
+					purpose: 'survey',
+					location: { country: 'Japan' },
+				})
+			).rejects.toThrow(ValidationError);
+		});
+
+		it('should throw ValidationError for invalid purpose', async () => {
+			await expect(
+				handleValidateCrsUsage({
+					crs: 'EPSG:4326',
+					purpose: 'invalid',
+					location: { country: 'Japan' },
+				})
+			).rejects.toThrow(ValidationError);
 		});
 	});
 });

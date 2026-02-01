@@ -7,7 +7,8 @@
 実装にあたって以下のドキュメントを参照すること：
 
 - [docs/EPSG-MCP-Design-Specification.md](docs/EPSG-MCP-Design-Specification.md) - 機能設計書（ツール定義、データ構造）
-- [docs/implementation-plan.md](docs/implementation-plan.md) - 実装計画書（タスク一覧、ディレクトリ構造）
+- [docs/implementation-plan.md](docs/implementation-plan.md) - Phase 1 実装計画書
+- [docs/phase2-implementation-plan.md](docs/phase2-implementation-plan.md) - Phase 2 実装計画書
 
 ## 技術スタック
 
@@ -45,11 +46,16 @@ src/
 └── tools/            # MCPツール定義・ハンドラー
 ```
 
-## Phase 1 ツール
+## 実装状況
 
+### Phase 1（完了）
 - `search_crs` - CRS検索
 - `get_crs_detail` - CRS詳細取得
 - `list_crs_by_region` - 地域別CRS一覧
+
+### Phase 2（計画中）
+- `recommend_crs` - 用途・場所に応じた最適CRS推奨
+- `validate_crs_usage` - CRS選択の妥当性検証
 
 ## データソース
 

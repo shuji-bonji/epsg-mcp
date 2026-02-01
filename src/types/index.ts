@@ -143,17 +143,77 @@ export interface LocationSpec {
 	country?: string;
 	region?: string;
 	prefecture?: string;
+	city?: string; // 複数系をまたぐ地域での判定用（札幌市、那覇市など）
 	boundingBox?: BoundingBox;
 	centerPoint?: { lat: number; lng: number };
+}
+
+export interface Requirements {
+	accuracy?: 'high' | 'medium' | 'low';
+	distortionTolerance?: 'minimal' | 'moderate' | 'flexible';
+	interoperability?: string[]; // ["GIS", "CAD", "Web"]
 }
 
 export interface RecommendCrsArgs {
 	purpose: Purpose;
 	location: LocationSpec;
-	requirements?: {
-		accuracy?: 'high' | 'medium' | 'low';
-		interoperability?: string[];
-	};
+	requirements?: Requirements;
+}
+
+// ========================================
+// Phase 2: 推奨出力
+// ========================================
+
+export interface RecommendCrsOutput {
+	primary: RecommendedCrs;
+	alternatives: RecommendedCrs[];
+	reasoning: string;
+	warnings?: string[];
+}
+
+// ========================================
+// Phase 2: 検証
+// ========================================
+
+export type ValidationIssueCode =
+	| 'DEPRECATED_CRS'
+	| 'LEGACY_DATUM'
+	| 'AREA_MISMATCH'
+	| 'AREA_DISTORTION'
+	| 'DISTANCE_DISTORTION'
+	| 'PRECISION_LOSS'
+	| 'ZONE_MISMATCH'
+	| 'CROSS_ZONE_CALCULATION'
+	| 'DEPRECATED_STORAGE'
+	| 'GEOJSON_INCOMPATIBLE'
+	| 'NOT_OFFICIAL_SURVEY_CRS'
+	| 'GEOGRAPHIC_AREA'
+	| 'GEOGRAPHIC_DISTANCE'
+	| 'BETTER_ALTERNATIVE'
+	| 'GPS_CONVERSION_NEEDED'
+	| 'PROJECTED_STORAGE'
+	| 'NON_STANDARD_EXCHANGE'
+	| 'NON_STANDARD_WEB_CRS';
+
+export interface ValidationIssue {
+	severity: 'error' | 'warning' | 'info';
+	code: ValidationIssueCode;
+	message: string;
+	recommendation: string;
+}
+
+export interface ValidateCrsUsageArgs {
+	crs: string;
+	purpose: Purpose;
+	location: LocationSpec;
+}
+
+export interface ValidateCrsUsageOutput {
+	isValid: boolean;
+	score: number; // 適合度 0-100
+	issues: ValidationIssue[];
+	suggestions: string[];
+	betterAlternatives?: RecommendedCrs[];
 }
 
 // ========================================
@@ -175,24 +235,50 @@ export interface GlobalCrsData {
 	projectedCRS: Record<string, CrsDetail>;
 }
 
+export interface RecommendationRuleRegion {
+	primary: string;
+	alternatives?: string[];
+	reasoning: string;
+	pros?: string[];
+	cons?: string[];
+	warnings?: string[];
+	codePattern?: string;
+	fallback?: string;
+	examples?: string[];
+	requirements?: string[];
+	note?: string;
+	zoneSelection?: string;
+}
+
 export interface RecommendationRule {
 	description: string;
-	global?: {
-		primary: string;
-		alternatives?: string[];
-		reasoning: string;
-		warnings?: string[];
+	global?: RecommendationRuleRegion;
+	japan?: RecommendationRuleRegion;
+}
+
+export interface MultiZonePrefecture {
+	note: string;
+	subRegions: Record<string, string>;
+	cities: Record<string, string>;
+	default: string;
+}
+
+export interface ValidationRulesConfig {
+	deprecatedCrs: string[];
+	legacyDatumPatterns: string[];
+	webMappingCrs: string[];
+	navigationCrs: string[];
+	dataExchangeCrs: string[];
+	planeRectangularRange: {
+		start: number;
+		end: number;
 	};
-	japan?: {
-		primary: string;
-		codePattern?: string;
-		alternatives?: string[];
-		reasoning: string;
-		requirements?: string[];
-	};
+	scoreWeights: Record<string, number>;
 }
 
 export interface RecommendationsData {
 	version: string;
-	rules: Record<string, RecommendationRule>;
+	rules: Record<Purpose, RecommendationRule>;
+	multiZonePrefectures: Record<string, MultiZonePrefecture>;
+	validationRules: ValidationRulesConfig;
 }

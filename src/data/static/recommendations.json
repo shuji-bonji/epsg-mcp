@@ -1,5 +1,5 @@
 {
-	"version": "1.0.0",
+	"version": "2.0.0",
 	"rules": {
 		"web_mapping": {
 			"description": "Web地図表示に最適なCRS",
@@ -7,6 +7,8 @@
 				"primary": "EPSG:3857",
 				"alternatives": ["EPSG:4326"],
 				"reasoning": "Web Mercatorは主要な地図タイルサービス（Google Maps、OpenStreetMap等）の標準。Leaflet、Mapbox、OpenLayersなどのライブラリで直接サポート。",
+				"pros": ["広範囲サポート", "高速レンダリング", "タイル互換"],
+				"cons": ["面積歪み大", "極地域使用不可"],
 				"warnings": [
 					"面積・距離計算には不適切",
 					"高緯度地域（北海道北部など）で大きな歪み",
@@ -16,7 +18,9 @@
 			"japan": {
 				"primary": "EPSG:3857",
 				"alternatives": ["EPSG:6668"],
-				"reasoning": "日本でもWeb地図表示にはWeb Mercatorが事実上の標準。データ保存はEPSG:6668（JGD2011）を推奨。"
+				"reasoning": "日本でもWeb地図表示にはWeb Mercatorが事実上の標準。データ保存はEPSG:6668（JGD2011）を推奨。",
+				"pros": ["主要ライブラリ対応", "タイルサービス互換"],
+				"cons": ["北海道で歪み顕著", "面積計算不可"]
 			}
 		},
 		"distance_calculation": {
@@ -25,33 +29,56 @@
 				"primary": "適切なUTMゾーン",
 				"alternatives": ["測地線計算（楕円体上）"],
 				"reasoning": "UTMは横メルカトル図法で、ゾーン内の距離歪みが0.04%以下。広域では測地線計算を推奨。",
+				"pros": ["高精度", "世界共通システム"],
+				"cons": ["ゾーンをまたぐ計算は不可"],
 				"warnings": ["Web Mercator(EPSG:3857)での距離計算は不正確"]
 			},
 			"japan": {
 				"primary": "該当する平面直角座標系",
 				"codePattern": "EPSG:6669-6687",
-				"alternatives": ["EPSG:32652-32654 (UTM)"],
+				"alternatives": ["EPSG:32652-32654 (UTM)", "EPSG:6668"],
+				"fallback": "EPSG:6668",
 				"reasoning": "日本の測量標準。公共測量ではこれを使用。適用範囲内で1mm未満の歪み。",
-				"requirements": ["作業地域に応じた系を選択", "系をまたぐ場合はJGD2011地理座標系で計算"]
+				"pros": ["高精度", "法的根拠", "公共測量対応"],
+				"cons": ["系ごとの選択必要", "広域では系をまたぐ"],
+				"requirements": ["作業地域に応じた系を選択", "系をまたぐ場合はJGD2011地理座標系で計算"],
+				"note": "地理座標系使用時はHaversine/Vincentyなど楕円体計算が必要"
 			}
 		},
 		"area_calculation": {
 			"description": "正確な面積計算",
 			"global": {
 				"primary": "正積図法（Lambert等積など）",
+				"examples": ["EPSG:6933"],
+				"reasoning": "面積計算には正積図法が最適。メルカトル系は大きな歪みが生じる。",
+				"pros": ["面積保存", "統計分析に適する"],
+				"cons": ["形状歪みあり"],
 				"warnings": ["Web Mercator(EPSG:3857)は面積が大きく歪む（赤道付近と比べ高緯度では数倍に）"]
 			},
 			"japan": {
 				"primary": "該当する平面直角座標系",
 				"codePattern": "EPSG:6669-6687",
-				"reasoning": "日本国内の面積計算には平面直角座標系が最適。1km²あたり数cm²の誤差に抑えられる。"
+				"reasoning": "日本国内の面積計算には平面直角座標系が最適。1km²あたり数cm²の誤差に抑えられる。",
+				"pros": ["高精度", "日本国内で標準"],
+				"cons": ["系またぎ不可"],
+				"warning": "Web Mercator(3857)は面積計算に不適切"
 			}
 		},
 		"survey": {
 			"description": "測量業務",
+			"global": {
+				"primary": "UTM",
+				"reasoning": "UTMゾーンは全世界をカバーし、測量に適した精度を提供。",
+				"pros": ["世界標準", "高精度"],
+				"cons": ["ゾーン境界で調整必要"]
+			},
 			"japan": {
-				"primary": "該当する平面直角座標系(EPSG:6669-6687)",
-				"reasoning": "公共測量作業規程に準拠。測量法で定められた座標系。",
+				"primary": "該当する平面直角座標系",
+				"codePattern": "EPSG:6669-6687",
+				"zoneSelection": "prefecture_based",
+				"reasoning": "公共測量作業規程に準拠。測量法で定められた座標系。平面直角座標系は国土地理院の公式測量座標系。",
+				"pros": ["高精度", "法的根拠", "公共測量対応"],
+				"cons": ["系ごとの選択必要", "広域では系をまたぐ"],
 				"requirements": [
 					"作業地域に応じた系を選択",
 					"JGD2011を使用（JGD2000は非推奨）",
@@ -62,49 +89,178 @@
 		"navigation": {
 			"description": "ナビゲーション・GPS",
 			"global": {
-				"primary": "EPSG:4326 (WGS 84)",
-				"reasoning": "GPSはWGS84座標系を使用。カーナビ・スマートフォンの位置情報はこの座標系で取得される。"
+				"primary": "EPSG:4326",
+				"reasoning": "GPSはWGS84座標系を使用。カーナビ・スマートフォンの位置情報はこの座標系で取得される。",
+				"pros": ["GPS標準", "全世界対応"],
+				"cons": ["投影なし（地図表示には変換必要）"]
 			},
 			"japan": {
-				"primary": "EPSG:6668 (JGD2011)",
-				"alternatives": ["EPSG:4326 (WGS 84)"],
-				"reasoning": "JGD2011はWGS84と実用上ほぼ同一。日本国内ではJGD2011を使用することで、国土地理院データとの整合性が保たれる。"
+				"primary": "EPSG:6668",
+				"alternatives": ["EPSG:4326"],
+				"reasoning": "JGD2011はWGS84と実用上ほぼ同一。日本国内ではJGD2011を使用することで、国土地理院データとの整合性が保たれる。",
+				"pros": ["国土地理院データ互換", "WGS84と実質同等"],
+				"cons": ["海外データと混在時に注意"],
+				"note": "JGD2011はWGS84と実用上同一"
 			}
 		},
 		"data_storage": {
 			"description": "データの長期保存",
 			"global": {
-				"primary": "EPSG:4326 (WGS 84)",
-				"reasoning": "地理座標系で保存し、用途に応じて投影変換。最も広く認識される座標系。"
+				"primary": "EPSG:4326",
+				"reasoning": "地理座標系で保存し、用途に応じて投影変換。最も広く認識される座標系。WGS84は最も広く互換性があり、長期保存に適する。",
+				"pros": ["最高の互換性", "将来性"],
+				"cons": ["計算前に投影変換必要"]
 			},
 			"japan": {
-				"primary": "EPSG:6668 (JGD2011)",
-				"alternatives": ["EPSG:4326 (WGS 84)"],
-				"reasoning": "日本国内データはJGD2011で保存を推奨。メタデータにCRS情報を必ず記録。"
+				"primary": "EPSG:6668",
+				"alternatives": ["EPSG:4326"],
+				"reasoning": "日本国内データはJGD2011で保存を推奨。メタデータにCRS情報を必ず記録。JGD2011は日本の測地基準。4326との変換は実質等価。",
+				"pros": ["国内標準", "国土地理院互換"],
+				"cons": ["国際データ交換時に変換必要な場合あり"]
 			}
 		},
 		"data_exchange": {
 			"description": "データ交換・相互運用",
 			"global": {
-				"primary": "EPSG:4326 (WGS 84)",
-				"reasoning": "GeoJSONの標準座標系。国際的なデータ交換で最も広く使用。"
+				"primary": "EPSG:4326",
+				"reasoning": "GeoJSONの標準座標系。国際的なデータ交換で最も広く使用。国際的なデータ交換標準。",
+				"pros": ["GeoJSON標準", "最広範互換性"],
+				"cons": ["投影座標系データは変換必要"]
 			},
 			"japan": {
-				"primary": "EPSG:6668 (JGD2011)",
-				"alternatives": ["EPSG:4326 (WGS 84)"],
-				"reasoning": "国内機関間ではJGD2011、国際的な交換ではWGS84を使用。両者の差は実用上無視できる。"
+				"primary": "EPSG:6668",
+				"alternatives": ["EPSG:4326"],
+				"reasoning": "国内機関間ではJGD2011、国際的な交換ではWGS84を使用。両者の差は実用上無視できる。国内データはJGD2011、国際連携は4326。",
+				"pros": ["国内標準", "4326とほぼ同等"],
+				"cons": ["厳密には4326と異なる"]
 			}
 		},
 		"visualization": {
 			"description": "データ可視化・地図作成",
 			"global": {
-				"primary": "用途に応じた投影法を選択",
-				"reasoning": "表示目的により最適な投影法が異なる。全球表示には様々な投影法、地域表示にはUTMや地域固有の投影が適切。"
+				"primary": "EPSG:3857",
+				"alternatives": ["EPSG:4326"],
+				"reasoning": "表示目的により最適な投影法が異なる。全球表示には様々な投影法、地域表示にはUTMや地域固有の投影が適切。Web表示は3857、印刷地図は4326ベースの投影を検討。",
+				"pros": ["Web標準", "ズーム対応"],
+				"cons": ["高緯度で歪み"]
 			},
 			"japan": {
-				"primary": "EPSG:3857 (Web表示) または 平面直角座標系 (印刷物)",
-				"reasoning": "インタラクティブなWeb地図はEPSG:3857、精密な印刷地図は平面直角座標系を使用。"
+				"primary": "EPSG:3857",
+				"alternatives": ["EPSG:6669-6687"],
+				"reasoning": "インタラクティブなWeb地図はEPSG:3857、精密な印刷地図は平面直角座標系を使用。",
+				"pros": ["Web互換", "操作性良好"],
+				"cons": ["北海道で歪み顕著"]
 			}
+		}
+	},
+	"multiZonePrefectures": {
+		"北海道": {
+			"note": "3系にまたがる（西部=XI、中部=XII、東部=XIII）",
+			"subRegions": {
+				"石狩": "EPSG:6679",
+				"空知": "EPSG:6679",
+				"後志": "EPSG:6679",
+				"胆振": "EPSG:6679",
+				"日高": "EPSG:6679",
+				"渡島": "EPSG:6679",
+				"檜山": "EPSG:6679",
+				"上川": "EPSG:6680",
+				"留萌": "EPSG:6680",
+				"宗谷": "EPSG:6680",
+				"オホーツク": "EPSG:6680",
+				"十勝": "EPSG:6681",
+				"釧路": "EPSG:6681",
+				"根室": "EPSG:6681"
+			},
+			"cities": {
+				"札幌市": "EPSG:6679",
+				"旭川市": "EPSG:6680",
+				"釧路市": "EPSG:6681",
+				"函館市": "EPSG:6679",
+				"帯広市": "EPSG:6681",
+				"小樽市": "EPSG:6679",
+				"北見市": "EPSG:6680",
+				"江別市": "EPSG:6679",
+				"苫小牧市": "EPSG:6679",
+				"網走市": "EPSG:6680",
+				"稚内市": "EPSG:6680",
+				"根室市": "EPSG:6681"
+			},
+			"default": "EPSG:6679"
+		},
+		"沖縄県": {
+			"note": "3系にまたがる（本島=XV、先島=XVI、大東=XVII）",
+			"subRegions": {
+				"本島": "EPSG:6683",
+				"先島": "EPSG:6684",
+				"大東": "EPSG:6685",
+				"宮古": "EPSG:6684",
+				"八重山": "EPSG:6684"
+			},
+			"cities": {
+				"那覇市": "EPSG:6683",
+				"宜野湾市": "EPSG:6683",
+				"浦添市": "EPSG:6683",
+				"沖縄市": "EPSG:6683",
+				"うるま市": "EPSG:6683",
+				"名護市": "EPSG:6683",
+				"糸満市": "EPSG:6683",
+				"豊見城市": "EPSG:6683",
+				"宮古島市": "EPSG:6684",
+				"石垣市": "EPSG:6684",
+				"南城市": "EPSG:6683"
+			},
+			"default": "EPSG:6683"
+		}
+	},
+	"validationRules": {
+		"deprecatedCrs": [
+			"EPSG:4612",
+			"EPSG:4301",
+			"EPSG:2443",
+			"EPSG:2444",
+			"EPSG:2445",
+			"EPSG:2446",
+			"EPSG:2447",
+			"EPSG:2448",
+			"EPSG:2449",
+			"EPSG:2450",
+			"EPSG:2451",
+			"EPSG:2452",
+			"EPSG:2453",
+			"EPSG:2454",
+			"EPSG:2455",
+			"EPSG:2456",
+			"EPSG:2457",
+			"EPSG:2458",
+			"EPSG:2459",
+			"EPSG:2460",
+			"EPSG:2461"
+		],
+		"legacyDatumPatterns": ["EPSG:26", "EPSG:4301"],
+		"webMappingCrs": ["EPSG:3857", "EPSG:4326"],
+		"navigationCrs": ["EPSG:4326", "EPSG:6668"],
+		"dataExchangeCrs": ["EPSG:4326", "EPSG:6668"],
+		"planeRectangularRange": {
+			"start": 6669,
+			"end": 6687
+		},
+		"scoreWeights": {
+			"deprecated": -50,
+			"areaMismatch": -40,
+			"legacyDatum": -50,
+			"areaDistortion": -20,
+			"distanceDistortion": -20,
+			"zoneMismatch": -15,
+			"crossZone": -10,
+			"geojsonIncompatible": -15,
+			"notOfficialSurvey": -10,
+			"geographicCalc": -5,
+			"betterAlternative": -5,
+			"gpsConversionNeeded": -5,
+			"projectedStorage": -5,
+			"nonStandardExchange": -5,
+			"nonStandardWeb": -5
 		}
 	}
 }
