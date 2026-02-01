@@ -5,6 +5,7 @@
  * 座標参照系（CRS）に関する知識提供MCPサーバー
  */
 
+import { createRequire } from 'node:module';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
@@ -14,10 +15,13 @@ import { tools } from './tools/definitions.js';
 import { toolHandlers } from './tools/handlers.js';
 import { error, info, PerformanceTimer } from './utils/logger.js';
 
+const require = createRequire(import.meta.url);
+const { version } = require('../package.json');
+
 const server = new Server(
 	{
 		name: 'epsg-mcp',
-		version: '1.0.0',
+		version,
 	},
 	{
 		capabilities: {

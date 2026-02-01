@@ -1,5 +1,5 @@
 /**
- * MCP ツール定義
+ * MCP Tool Definitions
  */
 
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
@@ -8,26 +8,26 @@ export const tools: Tool[] = [
 	{
 		name: 'search_crs',
 		description:
-			'EPSG座標参照系（CRS）をキーワードで検索します。EPSGコード、名前、地域名、都道府県名などで検索可能。日本のJGD2011系CRSや、グローバルなWGS84、Web Mercatorなどを検索できます。',
+			'Search EPSG Coordinate Reference Systems (CRS) by keyword. Searchable by EPSG code, name, region name, or prefecture name. Covers Japanese JGD2011 CRS family, global WGS84, Web Mercator, and more.',
 		inputSchema: {
 			type: 'object',
 			properties: {
 				query: {
 					type: 'string',
-					description: '検索キーワード（例: "JGD2011", "4326", "Tokyo", "東京", "平面直角"）',
+					description: 'Search keyword (e.g., "JGD2011", "4326", "Tokyo", "plane rectangular")',
 				},
 				type: {
 					type: 'string',
 					enum: ['geographic', 'projected', 'compound', 'vertical', 'engineering'],
-					description: 'CRSタイプでフィルタ（geographic: 地理座標系、projected: 投影座標系）',
+					description: 'Filter by CRS type (geographic: lat/lon, projected: x/y meters)',
 				},
 				region: {
 					type: 'string',
-					description: '地域でフィルタ（"Japan" または "Global"）',
+					description: 'Filter by region ("Japan" or "Global")',
 				},
 				limit: {
 					type: 'number',
-					description: '結果数上限（デフォルト: 10、最大: 100）',
+					description: 'Maximum number of results (default: 10, max: 100)',
 					default: 10,
 				},
 			},
@@ -37,13 +37,13 @@ export const tools: Tool[] = [
 	{
 		name: 'get_crs_detail',
 		description:
-			'指定されたEPSGコードのCRS詳細情報を取得します。測地系（datum）、投影法、適用範囲、精度特性、使用目的などの詳細情報が含まれます。',
+			'Get detailed information for a specific EPSG code. Includes datum, projection method, area of use, accuracy characteristics, and intended use cases.',
 		inputSchema: {
 			type: 'object',
 			properties: {
 				code: {
 					type: 'string',
-					description: 'EPSGコード（例: "EPSG:6677" または "6677"）',
+					description: 'EPSG code (e.g., "EPSG:6677" or "6677")',
 				},
 			},
 			required: ['code'],
@@ -52,22 +52,22 @@ export const tools: Tool[] = [
 	{
 		name: 'list_crs_by_region',
 		description:
-			'指定された地域で利用可能なCRS一覧と、用途別の推奨CRSを取得します。日本では平面直角座標系（I-XIX系）、グローバルではWGS84やUTMなどが含まれます。',
+			'Get available CRS list for a region with purpose-based recommendations. Japan includes Plane Rectangular CS (Zones I-XIX), Global includes WGS84 and UTM zones.',
 		inputSchema: {
 			type: 'object',
 			properties: {
 				region: {
 					type: 'string',
-					description: '地域名（"Japan" または "Global"）',
+					description: 'Region name ("Japan" or "Global")',
 				},
 				type: {
 					type: 'string',
 					enum: ['geographic', 'projected', 'compound', 'vertical', 'engineering'],
-					description: 'CRSタイプでフィルタ',
+					description: 'Filter by CRS type',
 				},
 				includeDeprecated: {
 					type: 'boolean',
-					description: '非推奨のCRSも含めるか（デフォルト: false）',
+					description: 'Include deprecated CRS (default: false)',
 					default: false,
 				},
 			},
@@ -77,7 +77,7 @@ export const tools: Tool[] = [
 	{
 		name: 'recommend_crs',
 		description:
-			'用途と場所に応じた最適なCRSを推奨します。Web地図表示、距離計算、面積計算、測量など用途別に、日本の平面直角座標系やグローバルなUTMなど最適な座標系を提案します。北海道や沖縄など複数の系にまたがる地域にも対応。',
+			'Recommend the optimal CRS based on purpose and location. Supports web mapping, distance/area calculation, surveying, navigation, data exchange, etc. Full support for Japan Plane Rectangular CS (Zones I-XIX) including multi-zone regions like Hokkaido and Okinawa.',
 		inputSchema: {
 			type: 'object',
 			properties: {
@@ -94,67 +94,67 @@ export const tools: Tool[] = [
 						'visualization',
 					],
 					description:
-						'使用目的（web_mapping: Web地図表示、distance_calculation: 距離計算、area_calculation: 面積計算、survey: 測量、navigation: ナビゲーション、data_exchange: データ交換、data_storage: データ保存、visualization: 可視化）',
+						'Intended use (web_mapping: web map display, distance_calculation: distance calc, area_calculation: area calc, survey: surveying, navigation: GPS/navigation, data_exchange: interoperability, data_storage: archival, visualization: display)',
 				},
 				location: {
 					type: 'object',
-					description: '対象地域の指定',
+					description: 'Target location specification',
 					properties: {
 						country: {
 							type: 'string',
-							description: '国名（"Japan" または "Global"）',
+							description: 'Country ("Japan" or "Global")',
 						},
 						region: {
 							type: 'string',
-							description: '地域名（"Kanto", "Hokkaido", "本島", "先島" など）',
+							description: 'Region name (e.g., "Kanto", "Hokkaido", "Main Island", "Sakishima")',
 						},
 						prefecture: {
 							type: 'string',
-							description: '都道府県名（"東京都", "北海道", "沖縄県" など）',
+							description: 'Prefecture name (e.g., "Tokyo", "Hokkaido", "Okinawa")',
 						},
 						city: {
 							type: 'string',
 							description:
-								'市区町村名（"札幌市", "那覇市" など、複数の系にまたがる地域での判定用）',
+								'City/municipality name (e.g., "Sapporo", "Naha") for multi-zone region disambiguation',
 						},
 						boundingBox: {
 							type: 'object',
-							description: '対象領域の境界ボックス',
+							description: 'Bounding box of target area',
 							properties: {
-								north: { type: 'number', description: '北端緯度' },
-								south: { type: 'number', description: '南端緯度' },
-								east: { type: 'number', description: '東端経度' },
-								west: { type: 'number', description: '西端経度' },
+								north: { type: 'number', description: 'North latitude' },
+								south: { type: 'number', description: 'South latitude' },
+								east: { type: 'number', description: 'East longitude' },
+								west: { type: 'number', description: 'West longitude' },
 							},
 						},
 						centerPoint: {
 							type: 'object',
-							description: '中心座標',
+							description: 'Center coordinates',
 							properties: {
-								lat: { type: 'number', description: '緯度' },
-								lng: { type: 'number', description: '経度' },
+								lat: { type: 'number', description: 'Latitude' },
+								lng: { type: 'number', description: 'Longitude' },
 							},
 						},
 					},
 				},
 				requirements: {
 					type: 'object',
-					description: '追加要件',
+					description: 'Additional requirements',
 					properties: {
 						accuracy: {
 							type: 'string',
 							enum: ['high', 'medium', 'low'],
-							description: '精度要件',
+							description: 'Accuracy requirement',
 						},
 						distortionTolerance: {
 							type: 'string',
 							enum: ['minimal', 'moderate', 'flexible'],
-							description: '歪み許容度',
+							description: 'Distortion tolerance',
 						},
 						interoperability: {
 							type: 'array',
 							items: { type: 'string' },
-							description: '相互運用性要件（"GIS", "CAD", "Web" など）',
+							description: 'Interoperability requirements (e.g., "GIS", "CAD", "Web")',
 						},
 					},
 				},
@@ -165,13 +165,13 @@ export const tools: Tool[] = [
 	{
 		name: 'validate_crs_usage',
 		description:
-			'指定されたCRSが特定の用途・場所で適切かどうかを検証します。非推奨CRSの使用、面積・距離計算時の歪み、測量での不適切な系の選択などを検出し、改善提案を行います。',
+			'Validate whether a CRS is appropriate for a specific purpose and location. Detects deprecated CRS usage, area/distance calculation distortion issues, inappropriate zone selection for surveying, and provides improvement suggestions.',
 		inputSchema: {
 			type: 'object',
 			properties: {
 				crs: {
 					type: 'string',
-					description: '検証対象のEPSGコード（例: "EPSG:3857" または "3857"）',
+					description: 'EPSG code to validate (e.g., "EPSG:3857" or "3857")',
 				},
 				purpose: {
 					type: 'string',
@@ -185,31 +185,31 @@ export const tools: Tool[] = [
 						'data_storage',
 						'visualization',
 					],
-					description: '使用目的',
+					description: 'Intended use',
 				},
 				location: {
 					type: 'object',
-					description: '対象地域の指定',
+					description: 'Target location specification',
 					properties: {
 						country: {
 							type: 'string',
-							description: '国名（"Japan" または "Global"）',
+							description: 'Country ("Japan" or "Global")',
 						},
 						region: {
 							type: 'string',
-							description: '地域名',
+							description: 'Region name',
 						},
 						prefecture: {
 							type: 'string',
-							description: '都道府県名',
+							description: 'Prefecture name',
 						},
 						city: {
 							type: 'string',
-							description: '市区町村名',
+							description: 'City/municipality name',
 						},
 						boundingBox: {
 							type: 'object',
-							description: '対象領域の境界ボックス',
+							description: 'Bounding box of target area',
 							properties: {
 								north: { type: 'number' },
 								south: { type: 'number' },
@@ -219,7 +219,7 @@ export const tools: Tool[] = [
 						},
 						centerPoint: {
 							type: 'object',
-							description: '中心座標',
+							description: 'Center coordinates',
 							properties: {
 								lat: { type: 'number' },
 								lng: { type: 'number' },
@@ -234,33 +234,33 @@ export const tools: Tool[] = [
 	{
 		name: 'suggest_transformation',
 		description:
-			'2つのCRS間の変換経路を提案します。Tokyo Datum→JGD2011、WGS84→平面直角座標系など、最適な変換経路と精度情報を提供します。複数ステップの変換経路も探索し、累積誤差の警告も行います。',
+			'Suggest transformation paths between two CRS. Covers Tokyo Datum to JGD2011, WGS84 to Plane Rectangular CS, etc. Searches multi-step paths, provides accuracy info, and warns about cumulative errors.',
 		inputSchema: {
 			type: 'object',
 			properties: {
 				sourceCrs: {
 					type: 'string',
-					description: '変換元のEPSGコード（例: "EPSG:4301" または "4301"）',
+					description: 'Source EPSG code (e.g., "EPSG:4301" or "4301")',
 				},
 				targetCrs: {
 					type: 'string',
-					description: '変換先のEPSGコード（例: "EPSG:6668" または "6668"）',
+					description: 'Target EPSG code (e.g., "EPSG:6668" or "6668")',
 				},
 				location: {
 					type: 'object',
-					description: '変換対象の位置（精度向上のため、任意）',
+					description: 'Location of data being transformed (optional, for accuracy improvement)',
 					properties: {
 						country: {
 							type: 'string',
-							description: '国名（"Japan" または "Global"）',
+							description: 'Country ("Japan" or "Global")',
 						},
 						prefecture: {
 							type: 'string',
-							description: '都道府県名',
+							description: 'Prefecture name',
 						},
 						boundingBox: {
 							type: 'object',
-							description: '対象領域の境界ボックス',
+							description: 'Bounding box of target area',
 							properties: {
 								north: { type: 'number' },
 								south: { type: 'number' },
@@ -270,7 +270,7 @@ export const tools: Tool[] = [
 						},
 						centerPoint: {
 							type: 'object',
-							description: '中心座標',
+							description: 'Center coordinates',
 							properties: {
 								lat: { type: 'number' },
 								lng: { type: 'number' },
@@ -285,17 +285,17 @@ export const tools: Tool[] = [
 	{
 		name: 'compare_crs',
 		description:
-			'2つのCRSを様々な観点から比較します。測地系、投影法、適用範囲、精度、歪み特性、互換性、用途適性などを比較し、どちらがどの用途に適しているかを説明します。',
+			'Compare two CRS from various perspectives. Compares datum, projection method, area of use, accuracy, distortion characteristics, compatibility, and use case suitability. Explains which is better suited for specific purposes.',
 		inputSchema: {
 			type: 'object',
 			properties: {
 				crs1: {
 					type: 'string',
-					description: '比較対象のEPSGコード1（例: "EPSG:4326" または "4326"）',
+					description: 'First EPSG code to compare (e.g., "EPSG:4326" or "4326")',
 				},
 				crs2: {
 					type: 'string',
-					description: '比較対象のEPSGコード2（例: "EPSG:6668" または "6668"）',
+					description: 'Second EPSG code to compare (e.g., "EPSG:6668" or "6668")',
 				},
 				aspects: {
 					type: 'array',
@@ -312,7 +312,7 @@ export const tools: Tool[] = [
 						],
 					},
 					description:
-						'比較する観点（省略時は全て）。accuracy: 精度、area_of_use: 適用範囲、distortion: 歪み特性、compatibility: 互換性、use_cases: 用途、datum: 測地系、projection: 投影法',
+						'Comparison aspects (all if omitted). accuracy: precision, area_of_use: coverage, distortion: distortion properties, compatibility: interoperability, use_cases: suitability, datum: geodetic datum, projection: projection method',
 				},
 			},
 			required: ['crs1', 'crs2'],
@@ -321,7 +321,7 @@ export const tools: Tool[] = [
 	{
 		name: 'get_best_practices',
 		description:
-			'CRS利用のベストプラクティスを取得します。日本の測量、Web地図作成、データ交換、座標の保存、モバイルGPS、越境データ、歴史的データ、GIS統合、精度要件、投影法選択などのトピックについて、推奨プラクティス、よくある間違い、参考情報を提供します。',
+			'Get CRS best practices for specific topics. Covers surveying in Japan, web mapping, data exchange, coordinate storage, mobile GPS, cross-border data, historical data, GIS integration, precision requirements, and projection selection. Provides recommended practices, common mistakes, and reference materials.',
 		inputSchema: {
 			type: 'object',
 			properties: {
@@ -340,11 +340,11 @@ export const tools: Tool[] = [
 						'projection_selection',
 					],
 					description:
-						'ベストプラクティスのトピック。japan_survey: 日本での測量、web_mapping: Web地図作成、data_exchange: データ交換、coordinate_storage: 座標の保存、mobile_gps: モバイルGPS、cross_border: 越境データ、historical_data: 歴史的データ、gis_integration: GIS統合、precision_requirements: 精度要件、projection_selection: 投影法選択',
+						'Best practice topic. japan_survey: surveying in Japan, web_mapping: web map creation, data_exchange: interoperability, coordinate_storage: archival, mobile_gps: mobile GPS apps, cross_border: cross-border data, historical_data: legacy data, gis_integration: GIS system integration, precision_requirements: accuracy specs, projection_selection: choosing projections',
 				},
 				context: {
 					type: 'string',
-					description: '追加のコンテキスト情報（任意、最大500文字）',
+					description: 'Additional context information (optional, max 500 chars)',
 					maxLength: 500,
 				},
 			},
@@ -354,40 +354,40 @@ export const tools: Tool[] = [
 	{
 		name: 'troubleshoot',
 		description:
-			'CRS関連の問題をトラブルシューティングします。座標のずれ（cm、m、km単位）、面積・距離計算の誤り、データが表示されない問題、変換エラーなどの症状から、原因の特定、診断手順、解決策を提供します。',
+			'Troubleshoot CRS-related problems. Diagnoses coordinate shifts (cm, m, km scale), area/distance calculation errors, data not displaying, and transformation errors. Identifies causes, provides diagnostic steps, and solutions.',
 		inputSchema: {
 			type: 'object',
 			properties: {
 				symptom: {
 					type: 'string',
 					description:
-						'問題の症状を記述（例: "座標が400mずれる"、"面積計算の結果がおかしい"、"データが表示されない"）。2文字以上500文字以内で記述してください。',
+						'Describe the problem (e.g., "coordinates shifted by 400m", "area calculation results are wrong", "data not displaying"). 2-500 characters.',
 					minLength: 2,
 					maxLength: 500,
 				},
 				context: {
 					type: 'object',
-					description: '問題の文脈情報（任意）',
+					description: 'Problem context (optional)',
 					properties: {
 						sourceCrs: {
 							type: 'string',
-							description: '変換元CRS（例: "EPSG:4301"）',
+							description: 'Source CRS (e.g., "EPSG:4301")',
 						},
 						targetCrs: {
 							type: 'string',
-							description: '変換先CRS（例: "EPSG:6668"）',
+							description: 'Target CRS (e.g., "EPSG:6668")',
 						},
 						location: {
 							type: 'string',
-							description: '対象地域（例: "東北地方"、"東京都"）',
+							description: 'Target region (e.g., "Tohoku region", "Tokyo")',
 						},
 						tool: {
 							type: 'string',
-							description: '使用しているツール（例: "QGIS"、"PostGIS"）',
+							description: 'Tool being used (e.g., "QGIS", "PostGIS")',
 						},
 						magnitude: {
 							type: 'string',
-							description: 'ずれの大きさ（例: "400m"、"数cm"、"1-2m"）',
+							description: 'Magnitude of shift (e.g., "400m", "few cm", "1-2m")',
 						},
 					},
 				},
