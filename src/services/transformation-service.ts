@@ -17,6 +17,7 @@ import type {
 
 interface TransformationSearchOptions {
 	maxSteps?: number; // デフォルト: 4
+	maxPaths?: number; // デフォルト: 10（早期終了用）
 }
 
 interface GraphEdge {
@@ -24,6 +25,10 @@ interface GraphEdge {
 	record: TransformationRecord;
 	isReverse: boolean;
 }
+
+// グラフキャッシュ（モジュールレベル）
+let cachedGraph: Map<string, GraphEdge[]> | null = null;
+let cachedDataVersion: string | null = null;
 
 /**
  * EPSGコードを正規化（EPSG:プレフィックスを追加）
@@ -34,9 +39,14 @@ export function normalizeCrsCode(code: string): string {
 }
 
 /**
- * 変換グラフを構築（逆方向変換も含む）
+ * 変換グラフを構築（逆方向変換も含む）- キャッシュ付き
  */
 function buildTransformationGraph(data: TransformationsData): Map<string, GraphEdge[]> {
+	// キャッシュが有効ならそれを返す
+	if (cachedGraph && cachedDataVersion === data.version) {
+		return cachedGraph;
+	}
+
 	const graph = new Map<string, GraphEdge[]>();
 
 	for (const t of data.transformations) {
@@ -51,7 +61,19 @@ function buildTransformationGraph(data: TransformationsData): Map<string, GraphE
 		}
 	}
 
+	// キャッシュに保存
+	cachedGraph = graph;
+	cachedDataVersion = data.version;
+
 	return graph;
+}
+
+/**
+ * グラフキャッシュをクリア（テスト用）
+ */
+export function clearGraphCache(): void {
+	cachedGraph = null;
+	cachedDataVersion = null;
 }
 
 /**
@@ -110,6 +132,7 @@ export function isWideArea(location: LocationSpec): boolean {
 
 /**
  * BFSで変換経路を探索（最大 maxSteps ステップ）
+ * 最適化版: グラフキャッシュ、インデックスベースキュー、早期終了
  */
 function findPaths(
 	source: string,
@@ -118,17 +141,25 @@ function findPaths(
 	options: TransformationSearchOptions = {}
 ): TransformationPath[] {
 	const maxSteps = options.maxSteps ?? 4;
+	const maxPaths = options.maxPaths ?? 10; // 最大パス数
 	const graph = buildTransformationGraph(data);
 	const paths: TransformationPath[] = [];
 
+	// 最短パス長を記録（早期終了用）
+	let shortestPathLength = Number.POSITIVE_INFINITY;
+
 	// BFS用のキュー: [現在のCRS, これまでのステップ, 訪問済みセット]
+	// インデックスベースでshift()のO(n)を回避
 	const queue: Array<[string, TransformationStep[], Set<string>]> = [
 		[source, [], new Set([source])],
 	];
+	let queueIndex = 0;
 
-	while (queue.length > 0) {
-		const [current, steps, visited] = queue.shift()!;
+	while (queueIndex < queue.length) {
+		const [current, steps, visited] = queue[queueIndex++];
 
+		// 最短パスより長くなったら探索終了（早期終了）
+		if (steps.length >= shortestPathLength) continue;
 		if (steps.length >= maxSteps) continue;
 
 		const edges = graph.get(current) || [];
@@ -146,23 +177,34 @@ function findPaths(
 				isReverse: edge.isReverse,
 			};
 
-			const newSteps = [...steps, step];
-
+			// 目的地到達時のみ新配列を作成（最適化）
 			if (edge.to === target) {
-				// 目的地に到達
+				const newSteps = [...steps, step];
 				paths.push({
 					steps: newSteps,
 					totalAccuracy: calculateTotalAccuracy(newSteps),
 					complexity: determineComplexity(newSteps.length),
 					estimatedPrecisionLoss: newSteps.length > 1 ? '累積誤差に注意' : undefined,
 				});
+
+				// 最短パス長を更新
+				if (newSteps.length < shortestPathLength) {
+					shortestPathLength = newSteps.length;
+				}
+
+				// 十分なパスが見つかったら終了
+				if (paths.length >= maxPaths) break;
 			} else {
 				// 探索を続行
+				const newSteps = [...steps, step];
 				const newVisited = new Set(visited);
 				newVisited.add(edge.to);
 				queue.push([edge.to, newSteps, newVisited]);
 			}
 		}
+
+		// 十分なパスが見つかったら終了
+		if (paths.length >= maxPaths) break;
 	}
 
 	// ステップ数、精度優先度でソート（短い経路、高精度を優先）
