@@ -5,6 +5,64 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-02-01
+
+### Added
+
+#### Tools
+- `suggest_transformation` - CRS間の変換経路提案
+  - BFSグラフ探索で最大4ステップの変換経路を探索
+  - 逆方向変換サポート（reversible: true のエッジは双方向探索）
+  - 直接経路（directPath）と間接経路（viaPaths）の両方を返却
+  - 推奨経路（recommended）の自動選択
+  - 精度累積計算（1-2m、数cm等の精度情報を伝播）
+  - 複雑度判定（simple/moderate/complex）
+  - 警告システム:
+    - 非推奨CRS（Tokyo Datum, JGD2000）使用時の警告
+    - 広域データ変換時の精度警告
+    - 複雑な変換経路での累積誤差警告
+- `compare_crs` - CRS比較
+  - 7つの比較観点:
+    - `datum`: 測地系比較（WGS84 vs JGD2011は実用上同一など）
+    - `projection`: 投影法比較
+    - `area_of_use`: 適用範囲比較
+    - `accuracy`: 精度特性比較
+    - `distortion`: 歪み特性比較
+    - `compatibility`: GIS/Web/CAD/GPS互換性比較
+    - `use_cases`: 用途適性スコアリング比較
+  - サマリー・推奨生成
+  - 変換に関する注記（transformationNote）
+
+#### Data
+- `transformations.json` - 変換経路データ
+  - 12件の変換レコード
+  - Tokyo→JGD2000、JGD2000→JGD2011、WGS84→JGD2011、WGS84→Web Mercator等
+  - JGD2011→平面直角座標系（IX, XI, XII, XIII, XV, XVI系）
+  - ハブCRS定義（EPSG:4326, EPSG:6668, EPSG:4612）
+  - 非推奨変換情報（EPSG:4301, EPSG:4612）
+- `comparisons.json` - CRS比較データ
+  - 7つのCRSの特性データ（4326, 6668, 4612, 4301, 3857, 6677, 6679）
+  - 歪み特性（distortion）: area, distance, shape, note
+  - 互換性（compatibility）: gis, web, cad, gps
+  - 用途スコア（useCasesScore）: 8種類の用途ごとのスコア
+  - 比較テンプレート（comparisonTemplates）: 5パターン
+
+### Technical Details
+- 新規サービス: `transformation-service.ts`
+  - `normalizeCrsCode()` - EPSGコード正規化
+  - `isWideArea()` - 広域判定
+  - `buildTransformationGraph()` - グラフ構築
+  - `findPaths()` - BFS経路探索
+  - `suggestTransformation()` - 変換提案
+- 新規サービス: `comparison-service.ts`
+  - `inferDatumName()` - データム名推論
+  - `compareDatum()`, `compareProjection()`, `compareAreaOfUse()` 等7つの比較関数
+  - `generateSummary()`, `generateRecommendation()`
+  - `compareCrs()` - メインAPI
+- テスト数: 261 → 306（+45テスト）
+
+---
+
 ## [1.1.0] - 2026-02-01
 
 ### Added
@@ -97,10 +155,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - エラーハンドリング（ValidationError, NotFoundError, DataLoadError）
 
 ## [Unreleased]
-
-### Planned for Phase 3
-- `suggest_transformation` - 変換経路提案
-- `compare_crs` - CRS比較
 
 ### Planned for Phase 4
 - `get_best_practices` - ベストプラクティス提供

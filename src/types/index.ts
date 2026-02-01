@@ -282,3 +282,140 @@ export interface RecommendationsData {
 	multiZonePrefectures: Record<string, MultiZonePrefecture>;
 	validationRules: ValidationRulesConfig;
 }
+
+// ========================================
+// Phase 3: 変換経路提案
+// ========================================
+
+export interface TransformationStep {
+	from: string; // "EPSG:4301"
+	to: string; // "EPSG:6668"
+	method: string; // "Geocentric translation", "Helmert 7-parameter"
+	accuracy: string; // "1-2m", "数cm"
+	epsgCode?: string; // 変換操作のEPSGコード（例: "EPSG:15483"）
+	notes?: string; // 特記事項
+	isReverse?: boolean; // 逆方向変換か
+}
+
+export type TransformationComplexity = 'simple' | 'moderate' | 'complex';
+
+export interface TransformationPath {
+	steps: TransformationStep[];
+	totalAccuracy: string; // "1m", "数cm" など
+	complexity: TransformationComplexity;
+	estimatedPrecisionLoss?: string; // 累積精度損失の説明
+}
+
+export interface SuggestTransformationArgs {
+	sourceCrs: string; // "EPSG:4301", "4301"
+	targetCrs: string; // "EPSG:6668", "6668"
+	location?: LocationSpec; // 変換対象の位置（精度向上のため）
+}
+
+export interface SuggestTransformationOutput {
+	directPath: TransformationPath | null; // 直接変換可能な場合
+	viaPaths: TransformationPath[]; // 中間CRSを経由する変換
+	recommended: TransformationPath; // 推奨される変換経路
+	warnings: string[]; // 注意事項
+}
+
+// ========================================
+// Phase 3: CRS比較
+// ========================================
+
+export type ComparisonAspect =
+	| 'accuracy' // 精度
+	| 'area_of_use' // 適用範囲
+	| 'distortion' // 歪み特性
+	| 'compatibility' // 互換性
+	| 'use_cases' // 用途
+	| 'datum' // 測地系
+	| 'projection'; // 投影法
+
+export interface ComparisonResult {
+	aspect: string;
+	crs1Value: string;
+	crs2Value: string;
+	verdict: string; // 判定・説明
+}
+
+export interface CompareCrsArgs {
+	crs1: string; // "EPSG:4326", "4326"
+	crs2: string; // "EPSG:6668", "6668"
+	aspects?: ComparisonAspect[]; // 比較する観点（省略時は全て）
+}
+
+export interface CompareCrsOutput {
+	comparison: ComparisonResult[];
+	summary: string;
+	recommendation: string;
+	transformationNote?: string; // 変換に関する注記
+}
+
+// ========================================
+// Phase 3: データ構造（静的JSON用）
+// ========================================
+
+export interface TransformationRecord {
+	id: string;
+	from: string;
+	to: string;
+	method: string;
+	accuracy: string;
+	reversible: boolean; // 逆方向変換可能か
+	reverseNote?: string; // 逆方向特有の注記
+	parameters?: Record<string, unknown>;
+	description: string;
+	notes?: string;
+}
+
+export interface CommonPath {
+	description: string;
+	steps: string[];
+	totalAccuracy: string;
+	notes?: string;
+}
+
+export interface DeprecationInfo {
+	note: string;
+	migrateTo: string;
+}
+
+export interface TransformationsData {
+	version: string;
+	transformations: TransformationRecord[];
+	commonPaths: Record<string, CommonPath>;
+	hubCrs: string[];
+	deprecatedTransformations: Record<string, DeprecationInfo>;
+}
+
+export interface DistortionInfo {
+	area: string;
+	distance: string;
+	shape: string;
+	note?: string;
+}
+
+export interface CompatibilityInfo {
+	gis: string;
+	web: string;
+	cad: string;
+	gps: string;
+}
+
+export interface CrsCharacteristics {
+	distortion: DistortionInfo;
+	compatibility: CompatibilityInfo;
+	useCasesScore: Record<Purpose, number>;
+}
+
+export interface ComparisonTemplate {
+	summary: string;
+	considerations: string[];
+}
+
+export interface ComparisonsData {
+	version: string;
+	crsCharacteristics: Record<string, CrsCharacteristics>;
+	comparisonTemplates: Record<string, ComparisonTemplate>;
+}

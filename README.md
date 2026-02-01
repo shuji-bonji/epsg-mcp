@@ -17,6 +17,8 @@
 - **地域別一覧**: 日本/グローバルで利用可能なCRS一覧と用途別推奨
 - **CRS推奨**: 用途・場所に応じた最適なCRSを推奨（北海道・沖縄の複数系対応）
 - **使用検証**: CRS選択の妥当性を検証し、問題点と改善提案を提示
+- **変換経路提案**: BFSグラフ探索で最適な変換経路を提案（逆変換対応）
+- **CRS比較**: 7つの観点（測地系、投影法、精度、歪み、互換性など）でCRSを比較
 - **日本重視**: JGD2011、平面直角座標系I〜XIX系の完全サポート
 - **オフライン動作**: ローカルデータベースで外部API不要
 
@@ -207,6 +209,84 @@ EPSGコードでCRSの詳細情報を取得します。
 - 「Web Mercatorを北海道の面積計算に使って大丈夫？」
 - 「EPSG:4326で日本の測量データを保存しても問題ない？」
 
+### suggest_transformation
+
+2つのCRS間の最適な変換経路を提案します。
+
+```typescript
+// 入力
+{
+  sourceCrs: string;    // "EPSG:4301" または "4301"
+  targetCrs: string;    // "EPSG:6668" または "6668"
+  location?: {
+    country?: string;
+    prefecture?: string;
+    boundingBox?: BoundingBox;
+  };
+}
+
+// 出力
+{
+  directPath: TransformationPath | null;  // 直接変換経路
+  viaPaths: TransformationPath[];         // 間接変換経路
+  recommended: TransformationPath;        // 推奨経路
+  warnings: string[];
+}
+```
+
+**TransformationPath**:
+- `steps`: 変換ステップの配列（from, to, method, accuracy, isReverse）
+- `totalAccuracy`: 総合精度
+- `complexity`: "simple" | "moderate" | "complex"
+
+**特徴**:
+- BFSグラフ探索で最大4ステップまでの経路を探索
+- 逆方向変換（reversible: true）も自動的に考慮
+- 非推奨CRS（Tokyo Datum, JGD2000）使用時に警告
+- 広域データ変換時の精度警告
+
+**使用例**:
+- 「Tokyo DatumからJGD2011への変換方法は？」
+- 「WGS84からWeb Mercatorへの変換経路を教えて」
+
+### compare_crs
+
+2つのCRSを様々な観点から比較します。
+
+```typescript
+// 入力
+{
+  crs1: string;  // "EPSG:4326" または "4326"
+  crs2: string;  // "EPSG:6668" または "6668"
+  aspects?: ComparisonAspect[];  // 比較観点を指定（省略時は全て）
+}
+
+// ComparisonAspect
+"datum" | "projection" | "area_of_use" | "accuracy" | "distortion" | "compatibility" | "use_cases"
+
+// 出力
+{
+  comparison: ComparisonResult[];  // 各観点の比較結果
+  summary: string;                 // サマリー
+  recommendation: string;          // 推奨
+  transformationNote?: string;     // 変換に関する注記
+}
+```
+
+**比較観点**:
+- `datum`: 測地系の比較（WGS84 vs JGD2011は実用上同一など）
+- `projection`: 投影法の比較
+- `area_of_use`: 適用範囲の比較
+- `accuracy`: 精度特性の比較
+- `distortion`: 歪み特性の比較
+- `compatibility`: GIS/Web/CAD/GPS互換性の比較
+- `use_cases`: 用途適性の比較（スコアベース）
+
+**使用例**:
+- 「WGS84とJGD2011の違いは？」
+- 「Web Mercatorと地理座標系の比較をして」
+- 「JGD2000とJGD2011を測地系の観点で比較して」
+
 ## Supported CRS
 
 ### Japan (JGD2011)
@@ -250,7 +330,7 @@ npm run test:watch
 
 - **Phase 1** ✅: search_crs, get_crs_detail, list_crs_by_region
 - **Phase 2** ✅: recommend_crs, validate_crs_usage
-- **Phase 3**: suggest_transformation, compare_crs
+- **Phase 3** ✅: suggest_transformation, compare_crs
 - **Phase 4**: get_best_practices, troubleshoot
 
 ## Related Projects

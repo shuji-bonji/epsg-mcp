@@ -231,4 +231,91 @@ export const tools: Tool[] = [
 			required: ['crs', 'purpose', 'location'],
 		},
 	},
+	{
+		name: 'suggest_transformation',
+		description:
+			'2つのCRS間の変換経路を提案します。Tokyo Datum→JGD2011、WGS84→平面直角座標系など、最適な変換経路と精度情報を提供します。複数ステップの変換経路も探索し、累積誤差の警告も行います。',
+		inputSchema: {
+			type: 'object',
+			properties: {
+				sourceCrs: {
+					type: 'string',
+					description: '変換元のEPSGコード（例: "EPSG:4301" または "4301"）',
+				},
+				targetCrs: {
+					type: 'string',
+					description: '変換先のEPSGコード（例: "EPSG:6668" または "6668"）',
+				},
+				location: {
+					type: 'object',
+					description: '変換対象の位置（精度向上のため、任意）',
+					properties: {
+						country: {
+							type: 'string',
+							description: '国名（"Japan" または "Global"）',
+						},
+						prefecture: {
+							type: 'string',
+							description: '都道府県名',
+						},
+						boundingBox: {
+							type: 'object',
+							description: '対象領域の境界ボックス',
+							properties: {
+								north: { type: 'number' },
+								south: { type: 'number' },
+								east: { type: 'number' },
+								west: { type: 'number' },
+							},
+						},
+						centerPoint: {
+							type: 'object',
+							description: '中心座標',
+							properties: {
+								lat: { type: 'number' },
+								lng: { type: 'number' },
+							},
+						},
+					},
+				},
+			},
+			required: ['sourceCrs', 'targetCrs'],
+		},
+	},
+	{
+		name: 'compare_crs',
+		description:
+			'2つのCRSを様々な観点から比較します。測地系、投影法、適用範囲、精度、歪み特性、互換性、用途適性などを比較し、どちらがどの用途に適しているかを説明します。',
+		inputSchema: {
+			type: 'object',
+			properties: {
+				crs1: {
+					type: 'string',
+					description: '比較対象のEPSGコード1（例: "EPSG:4326" または "4326"）',
+				},
+				crs2: {
+					type: 'string',
+					description: '比較対象のEPSGコード2（例: "EPSG:6668" または "6668"）',
+				},
+				aspects: {
+					type: 'array',
+					items: {
+						type: 'string',
+						enum: [
+							'accuracy',
+							'area_of_use',
+							'distortion',
+							'compatibility',
+							'use_cases',
+							'datum',
+							'projection',
+						],
+					},
+					description:
+						'比較する観点（省略時は全て）。accuracy: 精度、area_of_use: 適用範囲、distortion: 歪み特性、compatibility: 互換性、use_cases: 用途、datum: 測地系、projection: 投影法',
+				},
+			},
+			required: ['crs1', 'crs2'],
+		},
+	},
 ];

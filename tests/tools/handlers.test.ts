@@ -45,6 +45,16 @@ describe('Tool Handlers', () => {
 			expect(typeof toolHandlers.validate_crs_usage).toBe('function');
 		});
 
+		it('should have suggest_transformation handler', () => {
+			expect(toolHandlers.suggest_transformation).toBeDefined();
+			expect(typeof toolHandlers.suggest_transformation).toBe('function');
+		});
+
+		it('should have compare_crs handler', () => {
+			expect(toolHandlers.compare_crs).toBeDefined();
+			expect(typeof toolHandlers.compare_crs).toBe('function');
+		});
+
 		it('should call correct handler via registry', async () => {
 			const result = await toolHandlers.search_crs({ query: '4326' });
 			expect(result).toBeDefined();

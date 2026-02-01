@@ -9,6 +9,7 @@
 - [docs/EPSG-MCP-Design-Specification.md](docs/EPSG-MCP-Design-Specification.md) - 機能設計書（ツール定義、データ構造）
 - [docs/implementation-plan.md](docs/implementation-plan.md) - Phase 1 実装計画書
 - [docs/phase2-implementation-plan.md](docs/phase2-implementation-plan.md) - Phase 2 実装計画書
+- [docs/phase3-implementation-plan.md](docs/phase3-implementation-plan.md) - Phase 3 実装計画書
 
 ## 技術スタック
 
@@ -46,10 +47,14 @@ src/
 │   └── static/
 │       ├── japan-crs.json       # 日本CRSデータ
 │       ├── global-crs.json      # グローバルCRSデータ
-│       └── recommendations.json # 推奨ルール・検証ルール
+│       ├── recommendations.json # 推奨ルール・検証ルール
+│       ├── transformations.json # 変換経路データ（Phase 3）
+│       └── comparisons.json     # CRS比較データ（Phase 3）
 ├── services/
 │   ├── search-service.ts        # 検索サービス
-│   └── recommendation-service.ts # 推奨サービス（Phase 2）
+│   ├── recommendation-service.ts # 推奨サービス（Phase 2）
+│   ├── transformation-service.ts # 変換経路サービス（Phase 3）
+│   └── comparison-service.ts    # CRS比較サービス（Phase 3）
 └── tools/
     ├── definitions.ts      # ツール定義
     └── handlers.ts         # ツールハンドラー
@@ -72,9 +77,16 @@ src/
   - スコア計算（0-100）
   - 代替案提案
 
-### Phase 3（計画中）
+### Phase 3（完了）
 - `suggest_transformation` - 変換経路提案
+  - BFSグラフ探索（最大4ステップ）
+  - 逆方向変換サポート（reversible: true）
+  - 非推奨CRS警告・広域データ警告
+  - 精度累積計算
 - `compare_crs` - CRS比較
+  - 7つの比較観点（datum, projection, area_of_use, accuracy, distortion, compatibility, use_cases）
+  - 用途別スコアリング比較
+  - サマリー・推奨生成
 
 ## データソース
 

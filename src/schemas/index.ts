@@ -110,8 +110,47 @@ export const ValidateCrsUsageSchema = z.object({
 	location: LocationSchema,
 });
 
+// ========================================
+// Phase 3: 変換経路提案
+// ========================================
+
+export const EpsgCodeSchema = z
+	.string()
+	.min(1, 'EPSG code is required')
+	.refine((val) => /^(EPSG:)?\d+$/.test(val), {
+		message: 'Invalid EPSG code format. Use "EPSG:4326" or "4326"',
+	});
+
+export const SuggestTransformationSchema = z.object({
+	sourceCrs: EpsgCodeSchema,
+	targetCrs: EpsgCodeSchema,
+	location: LocationSchema.optional(),
+});
+
+// ========================================
+// Phase 3: CRS比較
+// ========================================
+
+export const ComparisonAspectSchema = z.enum([
+	'accuracy',
+	'area_of_use',
+	'distortion',
+	'compatibility',
+	'use_cases',
+	'datum',
+	'projection',
+]);
+
+export const CompareCrsSchema = z.object({
+	crs1: EpsgCodeSchema,
+	crs2: EpsgCodeSchema,
+	aspects: z.array(ComparisonAspectSchema).optional(),
+});
+
 export type SearchCrsInput = z.infer<typeof SearchCrsSchema>;
 export type GetCrsDetailInput = z.infer<typeof GetCrsDetailSchema>;
 export type ListCrsByRegionInput = z.infer<typeof ListCrsByRegionSchema>;
 export type RecommendCrsInput = z.infer<typeof RecommendCrsSchema>;
 export type ValidateCrsUsageInput = z.infer<typeof ValidateCrsUsageSchema>;
+export type SuggestTransformationInput = z.infer<typeof SuggestTransformationSchema>;
+export type CompareCrsInput = z.infer<typeof CompareCrsSchema>;

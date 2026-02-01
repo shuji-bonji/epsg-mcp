@@ -4,7 +4,7 @@
 	"description": "MCP server for EPSG Coordinate Reference System knowledge - providing CRS information for Japan (JGD2011, Plane Rectangular CS) and global systems (WGS84, Web Mercator)",
 	"main": "build/index.js",
 	"scripts": {
-		"build": "tsc && chmod 755 build/index.js",
+		"build": "tsc && cp -r src/data/static build/data/ && chmod 755 build/index.js",
 		"prepublishOnly": "npm run build",
 		"test": "vitest run",
 		"test:watch": "vitest",

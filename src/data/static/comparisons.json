@@ -1,0 +1,215 @@
+{
+	"version": "1.0.0",
+	"crsCharacteristics": {
+		"EPSG:4326": {
+			"distortion": {
+				"area": "なし（地理座標系）",
+				"distance": "なし（地理座標系）",
+				"shape": "なし（地理座標系）",
+				"note": "地理座標系のため投影歪みはないが、平面計算には不向き"
+			},
+			"compatibility": {
+				"gis": "高（ほぼ全てのGISで対応）",
+				"web": "高（GeoJSON標準）",
+				"cad": "中（変換が必要な場合あり）",
+				"gps": "高（GPS標準出力）"
+			},
+			"useCasesScore": {
+				"web_mapping": 80,
+				"distance_calculation": 60,
+				"area_calculation": 60,
+				"survey": 40,
+				"navigation": 100,
+				"data_exchange": 100,
+				"data_storage": 90,
+				"visualization": 70
+			}
+		},
+		"EPSG:6668": {
+			"distortion": {
+				"area": "なし（地理座標系）",
+				"distance": "なし（地理座標系）",
+				"shape": "なし（地理座標系）",
+				"note": "WGS84と実用上同一だが、日本国内の公式測地系"
+			},
+			"compatibility": {
+				"gis": "高（日本向けGISで標準）",
+				"web": "高（4326と実用上同一）",
+				"cad": "高（日本CADで対応）",
+				"gps": "高（WGS84と実用上同一）"
+			},
+			"useCasesScore": {
+				"web_mapping": 80,
+				"distance_calculation": 60,
+				"area_calculation": 60,
+				"survey": 90,
+				"navigation": 100,
+				"data_exchange": 85,
+				"data_storage": 95,
+				"visualization": 70
+			}
+		},
+		"EPSG:4612": {
+			"distortion": {
+				"area": "なし（地理座標系）",
+				"distance": "なし（地理座標系）",
+				"shape": "なし（地理座標系）",
+				"note": "JGD2000は非推奨。JGD2011へ移行が必要"
+			},
+			"compatibility": {
+				"gis": "高（日本GISでサポート）",
+				"web": "中（変換推奨）",
+				"cad": "中（古いシステムで使用）",
+				"gps": "中（変換必要）"
+			},
+			"useCasesScore": {
+				"web_mapping": 50,
+				"distance_calculation": 50,
+				"area_calculation": 50,
+				"survey": 30,
+				"navigation": 60,
+				"data_exchange": 40,
+				"data_storage": 30,
+				"visualization": 50
+			}
+		},
+		"EPSG:4301": {
+			"distortion": {
+				"area": "なし（地理座標系）",
+				"distance": "なし（地理座標系）",
+				"shape": "なし（地理座標系）",
+				"note": "Tokyo Datumは旧測地系。JGD2011との差は1-2m程度"
+			},
+			"compatibility": {
+				"gis": "中（レガシーサポート）",
+				"web": "低（変換必須）",
+				"cad": "中（古いデータ用）",
+				"gps": "低（変換必須）"
+			},
+			"useCasesScore": {
+				"web_mapping": 20,
+				"distance_calculation": 30,
+				"area_calculation": 30,
+				"survey": 10,
+				"navigation": 20,
+				"data_exchange": 10,
+				"data_storage": 10,
+				"visualization": 20
+			}
+		},
+		"EPSG:3857": {
+			"distortion": {
+				"area": "大（高緯度で著しい）",
+				"distance": "中（緯度により変化）",
+				"shape": "小（正角図法）",
+				"note": "緯度35度で約23%、60度で約4倍の面積歪み"
+			},
+			"compatibility": {
+				"gis": "高（Web GISで標準）",
+				"web": "最高（全Webマッピングライブラリ対応）",
+				"cad": "低（Web専用）",
+				"gps": "低（変換必要）"
+			},
+			"useCasesScore": {
+				"web_mapping": 100,
+				"distance_calculation": 30,
+				"area_calculation": 10,
+				"survey": 10,
+				"navigation": 40,
+				"data_exchange": 50,
+				"data_storage": 30,
+				"visualization": 100
+			}
+		},
+		"EPSG:6677": {
+			"distortion": {
+				"area": "小（限定範囲で使用）",
+				"distance": "小（高精度）",
+				"shape": "小（正角図法）",
+				"note": "平面直角座標系IX系。東京都、神奈川県、千葉県、埼玉県で高精度"
+			},
+			"compatibility": {
+				"gis": "高（日本GIS対応）",
+				"web": "中（変換必要）",
+				"cad": "高（日本CAD標準）",
+				"gps": "中（変換必要）"
+			},
+			"useCasesScore": {
+				"web_mapping": 40,
+				"distance_calculation": 95,
+				"area_calculation": 90,
+				"survey": 100,
+				"navigation": 50,
+				"data_exchange": 40,
+				"data_storage": 60,
+				"visualization": 50
+			}
+		},
+		"EPSG:6679": {
+			"distortion": {
+				"area": "小（限定範囲で使用）",
+				"distance": "小（高精度）",
+				"shape": "小（正角図法）",
+				"note": "平面直角座標系XI系。北海道西部（札幌等）で高精度"
+			},
+			"compatibility": {
+				"gis": "高（日本GIS対応）",
+				"web": "中（変換必要）",
+				"cad": "高（日本CAD標準）",
+				"gps": "中（変換必要）"
+			},
+			"useCasesScore": {
+				"web_mapping": 40,
+				"distance_calculation": 95,
+				"area_calculation": 90,
+				"survey": 100,
+				"navigation": 50,
+				"data_exchange": 40,
+				"data_storage": 60,
+				"visualization": 50
+			}
+		}
+	},
+	"comparisonTemplates": {
+		"geographic_vs_projected": {
+			"summary": "地理座標系と投影座標系の比較。用途に応じて使い分けが必要。",
+			"considerations": [
+				"地理座標系は度単位、投影座標系はメートル単位",
+				"距離・面積計算は投影座標系が簡便",
+				"広域データ保存は地理座標系が推奨"
+			]
+		},
+		"wgs84_vs_jgd2011": {
+			"summary": "WGS84とJGD2011は実用上同一（数cm以内）。日本国内データはJGD2011推奨。",
+			"considerations": [
+				"測地学的には異なる測地系",
+				"実用上の座標差は数cm以内",
+				"日本の公式測量・地図作成はJGD2011が基準"
+			]
+		},
+		"jgd2000_vs_jgd2011": {
+			"summary": "JGD2000からJGD2011への移行は2011年地震後の地殻変動補正のため。",
+			"considerations": [
+				"東北地方では最大5m以上の座標ずれ",
+				"地殻変動補正が含まれる",
+				"新規データはJGD2011を使用すべき"
+			]
+		},
+		"tokyo_vs_jgd2011": {
+			"summary": "Tokyo Datum（旧日本測地系）からJGD2011への変換には1-2mの誤差がある。",
+			"considerations": [
+				"Tokyo Datumは旧測地系で非推奨",
+				"変換時に累積誤差が発生",
+				"新規データにはJGD2011を使用"
+			]
+		},
+		"web_mercator_vs_geographic": {
+			"summary": "Web MercatorはWeb地図表示専用。面積・距離計算には不適。",
+			"considerations": [
+				"Web MercatorはWeb地図表示で標準",
+				"高緯度で著しい面積歪み",
+				"距離・面積計算には地理座標系または等積図法を使用"
+			]
+		}
+	}
+}

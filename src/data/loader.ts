@@ -8,11 +8,13 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DataLoadError } from '../errors/index.js';
 import type {
+	ComparisonsData,
 	CrsDetail,
 	CrsInfo,
 	GlobalCrsData,
 	JapanCrsData,
 	RecommendationsData,
+	TransformationsData,
 } from '../types/index.js';
 import { debug } from '../utils/logger.js';
 
@@ -23,6 +25,8 @@ const STATIC_DIR = join(__dirname, 'static');
 let japanCrsData: JapanCrsData | null = null;
 let globalCrsData: GlobalCrsData | null = null;
 let recommendationsData: RecommendationsData | null = null;
+let transformationsData: TransformationsData | null = null;
+let comparisonsData: ComparisonsData | null = null;
 
 let crsIndex: Map<string, CrsDetail> | null = null;
 let regionIndex: Map<string, CrsInfo[]> | null = null;
@@ -59,6 +63,22 @@ export async function loadRecommendations(): Promise<RecommendationsData> {
 		debug('Loaded recommendations.json');
 	}
 	return recommendationsData;
+}
+
+export async function loadTransformations(): Promise<TransformationsData> {
+	if (!transformationsData) {
+		transformationsData = await loadJsonFile<TransformationsData>('transformations.json');
+		debug('Loaded transformations.json');
+	}
+	return transformationsData;
+}
+
+export async function loadComparisons(): Promise<ComparisonsData> {
+	if (!comparisonsData) {
+		comparisonsData = await loadJsonFile<ComparisonsData>('comparisons.json');
+		debug('Loaded comparisons.json');
+	}
+	return comparisonsData;
 }
 
 function normalizeCode(code: string): string {
@@ -136,7 +156,13 @@ export async function getZoneMapping(): Promise<
 }
 
 export async function preloadAll(): Promise<void> {
-	await Promise.all([loadJapanCrs(), loadGlobalCrs(), loadRecommendations()]);
+	await Promise.all([
+		loadJapanCrs(),
+		loadGlobalCrs(),
+		loadRecommendations(),
+		loadTransformations(),
+		loadComparisons(),
+	]);
 	await buildCrsIndex();
 }
 
@@ -144,6 +170,8 @@ export function clearCache(): void {
 	japanCrsData = null;
 	globalCrsData = null;
 	recommendationsData = null;
+	transformationsData = null;
+	comparisonsData = null;
 	crsIndex = null;
 	regionIndex = null;
 	debug('Cache cleared');

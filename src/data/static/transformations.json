@@ -1,0 +1,171 @@
+{
+	"version": "1.0.0",
+	"transformations": [
+		{
+			"id": "EPSG:15483",
+			"from": "EPSG:4301",
+			"to": "EPSG:4612",
+			"method": "Geocentric translations (geog2D domain)",
+			"accuracy": "1-2m",
+			"reversible": true,
+			"parameters": {
+				"dx": -146.414,
+				"dy": 507.337,
+				"dz": 680.507
+			},
+			"description": "Tokyo → JGD2000 (Japan)",
+			"notes": "日本国土地理院による公式パラメータ"
+		},
+		{
+			"id": "EPSG:6190",
+			"from": "EPSG:4612",
+			"to": "EPSG:6668",
+			"method": "Time-dependent Coordinate Frame rotation",
+			"accuracy": "数cm",
+			"reversible": true,
+			"parameters": {
+				"note": "地殻変動補正を含む"
+			},
+			"description": "JGD2000 → JGD2011 (Japan)",
+			"notes": "東北地方太平洋沖地震による地殻変動対応"
+		},
+		{
+			"id": "identity-wgs84-jgd2011",
+			"from": "EPSG:4326",
+			"to": "EPSG:6668",
+			"method": "Identity (実用上同一)",
+			"accuracy": "実用上同一（数cm以内）",
+			"reversible": true,
+			"description": "WGS84 → JGD2011",
+			"notes": "測地学的には異なるが、実用上の差は無視可能"
+		},
+		{
+			"id": "EPSG:9688",
+			"from": "EPSG:4326",
+			"to": "EPSG:3857",
+			"method": "Popular Visualisation Pseudo-Mercator",
+			"accuracy": "なし（座標変換のみ）",
+			"reversible": true,
+			"reverseNote": "高緯度では逆変換時に精度低下の可能性あり",
+			"description": "WGS84 → Web Mercator",
+			"notes": "Web地図表示用。面積・距離計算には不適"
+		},
+		{
+			"id": "jgd2011-to-plane-rect-9",
+			"from": "EPSG:6668",
+			"to": "EPSG:6677",
+			"method": "Transverse Mercator",
+			"accuracy": "高精度",
+			"reversible": true,
+			"description": "JGD2011 → 平面直角座標系IX系（東京等）",
+			"notes": "系IXは東京都、神奈川県、千葉県、埼玉県などで使用"
+		},
+		{
+			"id": "jgd2011-to-plane-rect-11",
+			"from": "EPSG:6668",
+			"to": "EPSG:6679",
+			"method": "Transverse Mercator",
+			"accuracy": "高精度",
+			"reversible": true,
+			"description": "JGD2011 → 平面直角座標系XI系（北海道西部）",
+			"notes": "系XIは北海道の石狩、空知、後志などで使用"
+		},
+		{
+			"id": "jgd2011-to-plane-rect-12",
+			"from": "EPSG:6668",
+			"to": "EPSG:6680",
+			"method": "Transverse Mercator",
+			"accuracy": "高精度",
+			"reversible": true,
+			"description": "JGD2011 → 平面直角座標系XII系（北海道中部）",
+			"notes": "系XIIは北海道の上川、宗谷、オホーツクなどで使用"
+		},
+		{
+			"id": "jgd2011-to-plane-rect-13",
+			"from": "EPSG:6668",
+			"to": "EPSG:6681",
+			"method": "Transverse Mercator",
+			"accuracy": "高精度",
+			"reversible": true,
+			"description": "JGD2011 → 平面直角座標系XIII系（北海道東部）",
+			"notes": "系XIIIは北海道の十勝、釧路、根室で使用"
+		},
+		{
+			"id": "jgd2011-to-plane-rect-15",
+			"from": "EPSG:6668",
+			"to": "EPSG:6683",
+			"method": "Transverse Mercator",
+			"accuracy": "高精度",
+			"reversible": true,
+			"description": "JGD2011 → 平面直角座標系XV系（沖縄本島）",
+			"notes": "系XVは沖縄県本島周辺で使用"
+		},
+		{
+			"id": "jgd2011-to-plane-rect-16",
+			"from": "EPSG:6668",
+			"to": "EPSG:6684",
+			"method": "Transverse Mercator",
+			"accuracy": "高精度",
+			"reversible": true,
+			"description": "JGD2011 → 平面直角座標系XVI系（沖縄先島）",
+			"notes": "系XVIは沖縄県宮古・八重山で使用"
+		},
+		{
+			"id": "wgs84-to-jgd2000",
+			"from": "EPSG:4326",
+			"to": "EPSG:4612",
+			"method": "Identity (実用上同一)",
+			"accuracy": "数cm〜数十cm",
+			"reversible": true,
+			"description": "WGS84 → JGD2000",
+			"notes": "WGS84とJGD2000は実用上ほぼ同一"
+		},
+		{
+			"id": "jgd2011-to-web-mercator",
+			"from": "EPSG:6668",
+			"to": "EPSG:3857",
+			"method": "Pseudo-Mercator via WGS84",
+			"accuracy": "なし（座標変換のみ）",
+			"reversible": true,
+			"description": "JGD2011 → Web Mercator",
+			"notes": "JGD2011→WGS84（実用上同一）→Web Mercatorの2段階"
+		}
+	],
+	"commonPaths": {
+		"tokyo_to_jgd2011": {
+			"description": "Tokyo Datum → JGD2011 変換",
+			"steps": ["EPSG:4301 → EPSG:4612", "EPSG:4612 → EPSG:6668"],
+			"totalAccuracy": "1-2m",
+			"notes": "旧測地系から現行測地系への標準的な変換経路"
+		},
+		"jgd2000_to_jgd2011": {
+			"description": "JGD2000 → JGD2011 変換",
+			"steps": ["EPSG:4612 → EPSG:6668"],
+			"totalAccuracy": "数cm",
+			"notes": "2011年東北地方太平洋沖地震後の測地系移行"
+		},
+		"wgs84_to_web_mercator": {
+			"description": "WGS84 → Web Mercator 変換",
+			"steps": ["EPSG:4326 → EPSG:3857"],
+			"totalAccuracy": "座標変換のみ",
+			"notes": "Web地図表示用の標準変換"
+		},
+		"tokyo_to_plane_rect": {
+			"description": "Tokyo Datum → 平面直角座標系 変換",
+			"steps": ["EPSG:4301 → EPSG:4612", "EPSG:4612 → EPSG:6668", "EPSG:6668 → EPSG:66XX"],
+			"totalAccuracy": "1-2m以上",
+			"notes": "旧測地系から平面直角座標系への変換。累積誤差に注意"
+		}
+	},
+	"hubCrs": ["EPSG:4326", "EPSG:6668", "EPSG:4612"],
+	"deprecatedTransformations": {
+		"EPSG:4301": {
+			"note": "Tokyo Datumは非推奨。新規データには使用しないこと",
+			"migrateTo": "EPSG:6668"
+		},
+		"EPSG:4612": {
+			"note": "JGD2000は非推奨。JGD2011への移行を推奨",
+			"migrateTo": "EPSG:6668"
+		}
+	}
+}

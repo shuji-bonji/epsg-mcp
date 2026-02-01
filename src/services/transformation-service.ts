@@ -1,0 +1,276 @@
+/**
+ * 変換経路提案サービス
+ * CRS間の最適な変換経路をBFSで探索
+ */
+
+import { loadTransformations } from '../data/loader.js';
+import { NotFoundError } from '../errors/index.js';
+import type {
+	LocationSpec,
+	SuggestTransformationOutput,
+	TransformationComplexity,
+	TransformationPath,
+	TransformationRecord,
+	TransformationStep,
+	TransformationsData,
+} from '../types/index.js';
+
+interface TransformationSearchOptions {
+	maxSteps?: number; // デフォルト: 4
+}
+
+interface GraphEdge {
+	to: string;
+	record: TransformationRecord;
+	isReverse: boolean;
+}
+
+/**
+ * EPSGコードを正規化（EPSG:プレフィックスを追加）
+ */
+export function normalizeCrsCode(code: string): string {
+	const numericCode = code.replace(/^EPSG:/i, '').trim();
+	return `EPSG:${numericCode}`;
+}
+
+/**
+ * 変換グラフを構築（逆方向変換も含む）
+ */
+function buildTransformationGraph(data: TransformationsData): Map<string, GraphEdge[]> {
+	const graph = new Map<string, GraphEdge[]>();
+
+	for (const t of data.transformations) {
+		// 順方向
+		if (!graph.has(t.from)) graph.set(t.from, []);
+		graph.get(t.from)!.push({ to: t.to, record: t, isReverse: false });
+
+		// 逆方向（reversible: true の場合）
+		if (t.reversible) {
+			if (!graph.has(t.to)) graph.set(t.to, []);
+			graph.get(t.to)!.push({ to: t.from, record: t, isReverse: true });
+		}
+	}
+
+	return graph;
+}
+
+/**
+ * 精度文字列から優先度を算出（低いほど高精度）
+ */
+function getAccuracyPriority(accuracy: string): number {
+	if (accuracy.includes('実用上同一') || accuracy.includes('高精度')) return 1;
+	if (accuracy.includes('cm')) return 2;
+	if (accuracy.includes('なし')) return 3;
+	if (accuracy.includes('1-2m') || accuracy.includes('数m')) return 4;
+	return 5;
+}
+
+/**
+ * 複数ステップの精度を統合（最も悪い精度を採用）
+ */
+function calculateTotalAccuracy(steps: TransformationStep[]): string {
+	if (steps.length === 0) return '変換不要';
+	if (steps.length === 1) return steps[0].accuracy;
+
+	const accuracies = steps.map((s) => s.accuracy);
+	const hasLargeError = accuracies.some(
+		(a) => a.includes('1-2m') || a.includes('数m') || a.includes('以上')
+	);
+	const hasCmError = accuracies.some((a) => a.includes('cm'));
+	const hasNoError = accuracies.some((a) => a.includes('なし') || a.includes('座標変換のみ'));
+
+	if (hasLargeError) return '1-2m以上（累積誤差注意）';
+	if (hasCmError) return '数cm〜数m';
+	if (hasNoError) return accuracies[0];
+	return '不明';
+}
+
+/**
+ * 複雑度を決定
+ */
+function determineComplexity(stepCount: number): TransformationComplexity {
+	if (stepCount <= 1) return 'simple';
+	if (stepCount === 2) return 'moderate';
+	return 'complex';
+}
+
+/**
+ * 広域データかどうかを判定
+ */
+export function isWideArea(location: LocationSpec): boolean {
+	if (location.boundingBox) {
+		const { north, south, east, west } = location.boundingBox;
+		const latSpan = north - south;
+		const lngSpan = east - west;
+		// 緯度3度または経度5度以上を広域とみなす
+		return latSpan > 3 || lngSpan > 5;
+	}
+	return false;
+}
+
+/**
+ * BFSで変換経路を探索（最大 maxSteps ステップ）
+ */
+function findPaths(
+	source: string,
+	target: string,
+	data: TransformationsData,
+	options: TransformationSearchOptions = {}
+): TransformationPath[] {
+	const maxSteps = options.maxSteps ?? 4;
+	const graph = buildTransformationGraph(data);
+	const paths: TransformationPath[] = [];
+
+	// BFS用のキュー: [現在のCRS, これまでのステップ, 訪問済みセット]
+	const queue: Array<[string, TransformationStep[], Set<string>]> = [
+		[source, [], new Set([source])],
+	];
+
+	while (queue.length > 0) {
+		const [current, steps, visited] = queue.shift()!;
+
+		if (steps.length >= maxSteps) continue;
+
+		const edges = graph.get(current) || [];
+		for (const edge of edges) {
+			// 既に訪問済みならスキップ
+			if (visited.has(edge.to)) continue;
+
+			const step: TransformationStep = {
+				from: current,
+				to: edge.to,
+				method: edge.isReverse ? `${edge.record.method} (逆変換)` : edge.record.method,
+				accuracy: edge.record.accuracy,
+				epsgCode: edge.record.id,
+				notes: edge.isReverse ? edge.record.reverseNote : edge.record.notes,
+				isReverse: edge.isReverse,
+			};
+
+			const newSteps = [...steps, step];
+
+			if (edge.to === target) {
+				// 目的地に到達
+				paths.push({
+					steps: newSteps,
+					totalAccuracy: calculateTotalAccuracy(newSteps),
+					complexity: determineComplexity(newSteps.length),
+					estimatedPrecisionLoss: newSteps.length > 1 ? '累積誤差に注意' : undefined,
+				});
+			} else {
+				// 探索を続行
+				const newVisited = new Set(visited);
+				newVisited.add(edge.to);
+				queue.push([edge.to, newSteps, newVisited]);
+			}
+		}
+	}
+
+	// ステップ数、精度優先度でソート（短い経路、高精度を優先）
+	return paths.sort((a, b) => {
+		// まずステップ数で比較
+		if (a.steps.length !== b.steps.length) {
+			return a.steps.length - b.steps.length;
+		}
+		// 同じステップ数なら精度で比較
+		const aPriority = Math.max(...a.steps.map((s) => getAccuracyPriority(s.accuracy)));
+		const bPriority = Math.max(...b.steps.map((s) => getAccuracyPriority(s.accuracy)));
+		return aPriority - bPriority;
+	});
+}
+
+/**
+ * 推奨パスを選択
+ */
+function selectRecommendedPath(
+	directPath: TransformationPath | null,
+	viaPaths: TransformationPath[]
+): TransformationPath {
+	// 直接パスがあれば最優先
+	if (directPath) {
+		return directPath;
+	}
+
+	// viaPathsから最適なものを選択
+	if (viaPaths.length > 0) {
+		return viaPaths[0]; // 既にソート済み
+	}
+
+	// パスが見つからない場合のフォールバック
+	return {
+		steps: [],
+		totalAccuracy: '変換経路が見つかりません',
+		complexity: 'complex',
+	};
+}
+
+/**
+ * 変換経路を提案
+ */
+export async function suggestTransformation(
+	sourceCrs: string,
+	targetCrs: string,
+	location?: LocationSpec
+): Promise<SuggestTransformationOutput> {
+	const source = normalizeCrsCode(sourceCrs);
+	const target = normalizeCrsCode(targetCrs);
+	const warnings: string[] = [];
+
+	// 同一CRSチェック
+	if (source === target) {
+		return {
+			directPath: null,
+			viaPaths: [],
+			recommended: {
+				steps: [],
+				totalAccuracy: '変換不要',
+				complexity: 'simple',
+			},
+			warnings: ['同一のCRSが指定されました。変換は不要です。'],
+		};
+	}
+
+	const transformData = await loadTransformations();
+
+	// 非推奨チェック
+	if (transformData.deprecatedTransformations[source]) {
+		const info = transformData.deprecatedTransformations[source];
+		warnings.push(
+			`${source} は非推奨です。${info.note} 新規データには ${info.migrateTo} を使用してください。`
+		);
+	}
+
+	// 全パスを探索
+	const allPaths = findPaths(source, target, transformData, { maxSteps: 4 });
+
+	// 直接パスとviaパスを分離
+	const directPath = allPaths.find((p) => p.steps.length === 1) || null;
+	const viaPaths = allPaths.filter((p) => p.steps.length > 1);
+
+	// パスが見つからない場合
+	if (allPaths.length === 0) {
+		throw new NotFoundError(
+			'Transformation',
+			`${source} から ${target} への変換経路が見つかりません`
+		);
+	}
+
+	// 推奨パスを決定
+	const recommended = selectRecommendedPath(directPath, viaPaths);
+
+	// 位置特有の警告
+	if (location && isWideArea(location)) {
+		warnings.push('広域のデータを変換する場合、位置によって精度が異なる場合があります。');
+	}
+
+	// 複雑な経路の警告
+	if (recommended.complexity === 'complex') {
+		warnings.push('変換が複数ステップにわたるため、累積誤差に注意してください。');
+	}
+
+	return {
+		directPath,
+		viaPaths,
+		recommended,
+		warnings,
+	};
+}
