@@ -1,0 +1,690 @@
+{
+	"version": "1.0.0",
+	"lastUpdated": "2026-02-01",
+	"datums": {
+		"JGD2011": {
+			"code": "EPSG:1128",
+			"name": "Japanese Geodetic Datum 2011",
+			"type": "geodetic",
+			"ellipsoid": {
+				"name": "GRS 1980",
+				"code": "EPSG:7019",
+				"semiMajorAxis": 6378137,
+				"inverseFlattening": 298.257222101
+			},
+			"primeMeridian": "Greenwich",
+			"remarks": "2011年東日本大震災後に制定。JGD2000から地殻変動を反映。",
+			"history": "JGD2000→JGD2011変換にはNTv2グリッド(touhokutaiheiyouoki2011.par)が推奨",
+			"succeeds": "EPSG:6612"
+		},
+		"JGD2000": {
+			"code": "EPSG:6612",
+			"name": "Japanese Geodetic Datum 2000",
+			"type": "geodetic",
+			"ellipsoid": {
+				"name": "GRS 1980",
+				"code": "EPSG:7019",
+				"semiMajorAxis": 6378137,
+				"inverseFlattening": 298.257222101
+			},
+			"primeMeridian": "Greenwich",
+			"remarks": "2011年以前の日本の測地系。現在はJGD2011への移行を推奨。"
+		},
+		"TokyoDatum": {
+			"code": "EPSG:6301",
+			"name": "Tokyo",
+			"type": "geodetic",
+			"ellipsoid": {
+				"name": "Bessel 1841",
+				"code": "EPSG:7004",
+				"semiMajorAxis": 6377397.155,
+				"inverseFlattening": 299.1528128
+			},
+			"primeMeridian": "Greenwich",
+			"remarks": "旧日本測地系。現在は使用非推奨。変換時は注意が必要。"
+		}
+	},
+	"geographicCRS": {
+		"EPSG:6668": {
+			"code": "EPSG:6668",
+			"name": "JGD2011",
+			"type": "geographic",
+			"deprecated": false,
+			"coordinateSystem": "ellipsoidal 2D (latitude, longitude)",
+			"areaOfUse": {
+				"description": "Japan - onshore and offshore",
+				"boundingBox": {
+					"north": 46.05,
+					"south": 17.09,
+					"east": 157.65,
+					"west": 122.38
+				}
+			},
+			"remarks": "日本全域で使用可能な地理座標系。GPSデータの基準として推奨。測量法で定められた公式測地系。",
+			"useCases": ["data_storage", "data_exchange", "navigation"]
+		},
+		"EPSG:4612": {
+			"code": "EPSG:4612",
+			"name": "JGD2000",
+			"type": "geographic",
+			"deprecated": true,
+			"supersededBy": "EPSG:6668",
+			"coordinateSystem": "ellipsoidal 2D (latitude, longitude)",
+			"areaOfUse": {
+				"description": "Japan - onshore and offshore",
+				"boundingBox": {
+					"north": 46.05,
+					"south": 17.09,
+					"east": 157.65,
+					"west": 122.38
+				}
+			},
+			"remarks": "JGD2000に基づく地理座標系。2011年以降はJGD2011(EPSG:6668)の使用を推奨。",
+			"useCases": ["data_storage"]
+		},
+		"EPSG:4301": {
+			"code": "EPSG:4301",
+			"name": "Tokyo",
+			"type": "geographic",
+			"deprecated": true,
+			"supersededBy": "EPSG:4612",
+			"coordinateSystem": "ellipsoidal 2D (latitude, longitude)",
+			"areaOfUse": {
+				"description": "Japan - onshore",
+				"boundingBox": {
+					"north": 46.05,
+					"south": 20.37,
+					"east": 154.05,
+					"west": 122.83
+				}
+			},
+			"remarks": "旧日本測地系（Tokyo Datum）。現在は非推奨。JGD2011への変換にはTKY2JGDを使用。",
+			"useCases": []
+		}
+	},
+	"projectedCRS": {
+		"EPSG:6669": {
+			"code": "EPSG:6669",
+			"name": "JGD2011 / Japan Plane Rectangular CS I",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 129.5,
+				"latitudeOfOrigin": 33.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone I",
+				"prefectures": ["長崎県", "佐賀県"],
+				"boundingBox": {
+					"north": 34.74,
+					"south": 31.15,
+					"east": 131.19,
+					"west": 127.64
+				}
+			},
+			"accuracy": {
+				"horizontal": "適用範囲内で1mm未満の歪み",
+				"notes": "中央子午線から約130km以内で最高精度"
+			},
+			"remarks": "平面直角座標系第I系。長崎県・佐賀県の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6670": {
+			"code": "EPSG:6670",
+			"name": "JGD2011 / Japan Plane Rectangular CS II",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 131.0,
+				"latitudeOfOrigin": 33.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone II",
+				"prefectures": ["福岡県", "熊本県", "大分県", "宮崎県", "鹿児島県"],
+				"boundingBox": {
+					"north": 34.27,
+					"south": 30.19,
+					"east": 132.15,
+					"west": 129.31
+				}
+			},
+			"accuracy": {
+				"horizontal": "適用範囲内で1mm未満の歪み",
+				"notes": "中央子午線から約130km以内で最高精度"
+			},
+			"remarks": "平面直角座標系第II系。九州北部・中部の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6671": {
+			"code": "EPSG:6671",
+			"name": "JGD2011 / Japan Plane Rectangular CS III",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 132.166667,
+				"latitudeOfOrigin": 36.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone III",
+				"prefectures": ["山口県", "島根県", "広島県"],
+				"boundingBox": {
+					"north": 37.09,
+					"south": 33.71,
+					"east": 133.44,
+					"west": 130.78
+				}
+			},
+			"remarks": "平面直角座標系第III系。中国地方西部の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6672": {
+			"code": "EPSG:6672",
+			"name": "JGD2011 / Japan Plane Rectangular CS IV",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 133.5,
+				"latitudeOfOrigin": 33.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone IV",
+				"prefectures": ["香川県", "愛媛県", "徳島県", "高知県"],
+				"boundingBox": {
+					"north": 34.45,
+					"south": 32.71,
+					"east": 134.88,
+					"west": 132.03
+				}
+			},
+			"remarks": "平面直角座標系第IV系。四国地方の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6673": {
+			"code": "EPSG:6673",
+			"name": "JGD2011 / Japan Plane Rectangular CS V",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 134.333333,
+				"latitudeOfOrigin": 36.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone V",
+				"prefectures": ["兵庫県", "鳥取県", "岡山県"],
+				"boundingBox": {
+					"north": 36.17,
+					"south": 34.15,
+					"east": 135.47,
+					"west": 133.17
+				}
+			},
+			"remarks": "平面直角座標系第V系。中国地方東部・兵庫県の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6674": {
+			"code": "EPSG:6674",
+			"name": "JGD2011 / Japan Plane Rectangular CS VI",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 136.0,
+				"latitudeOfOrigin": 36.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone VI",
+				"prefectures": ["京都府", "大阪府", "福井県", "滋賀県", "三重県", "奈良県", "和歌山県"],
+				"boundingBox": {
+					"north": 36.25,
+					"south": 33.43,
+					"east": 136.99,
+					"west": 134.77
+				}
+			},
+			"remarks": "平面直角座標系第VI系。近畿地方・福井県の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6675": {
+			"code": "EPSG:6675",
+			"name": "JGD2011 / Japan Plane Rectangular CS VII",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 137.166667,
+				"latitudeOfOrigin": 36.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone VII",
+				"prefectures": ["石川県", "富山県", "岐阜県", "愛知県"],
+				"boundingBox": {
+					"north": 37.86,
+					"south": 34.57,
+					"east": 138.24,
+					"west": 135.77
+				}
+			},
+			"remarks": "平面直角座標系第VII系。中部地方北部の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6676": {
+			"code": "EPSG:6676",
+			"name": "JGD2011 / Japan Plane Rectangular CS VIII",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 138.5,
+				"latitudeOfOrigin": 36.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone VIII",
+				"prefectures": ["新潟県", "長野県", "山梨県", "静岡県"],
+				"boundingBox": {
+					"north": 38.56,
+					"south": 34.58,
+					"east": 140.05,
+					"west": 137.32
+				}
+			},
+			"remarks": "平面直角座標系第VIII系。中部地方東部の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6677": {
+			"code": "EPSG:6677",
+			"name": "JGD2011 / Japan Plane Rectangular CS IX",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 139.833333,
+				"latitudeOfOrigin": 36.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone IX",
+				"prefectures": [
+					"東京都",
+					"神奈川県",
+					"千葉県",
+					"埼玉県",
+					"茨城県",
+					"栃木県",
+					"群馬県",
+					"福島県"
+				],
+				"boundingBox": {
+					"north": 37.97,
+					"south": 34.83,
+					"east": 141.11,
+					"west": 138.4
+				}
+			},
+			"accuracy": {
+				"horizontal": "適用範囲内で1mm未満の歪み",
+				"notes": "首都圏での測量に最適。中央子午線から約130km以内で最高精度"
+			},
+			"remarks": "平面直角座標系第IX系。関東地方・福島県の測量に使用。東京を含む最も利用頻度の高い系。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6678": {
+			"code": "EPSG:6678",
+			"name": "JGD2011 / Japan Plane Rectangular CS X",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 140.833333,
+				"latitudeOfOrigin": 40.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone X",
+				"prefectures": ["青森県", "秋田県", "山形県", "岩手県", "宮城県"],
+				"boundingBox": {
+					"north": 41.56,
+					"south": 37.73,
+					"east": 142.07,
+					"west": 139.35
+				}
+			},
+			"remarks": "平面直角座標系第X系。東北地方の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6679": {
+			"code": "EPSG:6679",
+			"name": "JGD2011 / Japan Plane Rectangular CS XI",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 140.25,
+				"latitudeOfOrigin": 44.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone XI",
+				"prefectures": ["北海道（西部）"],
+				"boundingBox": {
+					"north": 45.54,
+					"south": 41.34,
+					"east": 141.91,
+					"west": 139.33
+				}
+			},
+			"remarks": "平面直角座標系第XI系。北海道西部（小樽・札幌方面）の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6680": {
+			"code": "EPSG:6680",
+			"name": "JGD2011 / Japan Plane Rectangular CS XII",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 142.25,
+				"latitudeOfOrigin": 44.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone XII",
+				"prefectures": ["北海道（中部）"],
+				"boundingBox": {
+					"north": 45.54,
+					"south": 42.15,
+					"east": 144.26,
+					"west": 140.87
+				}
+			},
+			"remarks": "平面直角座標系第XII系。北海道中部の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6681": {
+			"code": "EPSG:6681",
+			"name": "JGD2011 / Japan Plane Rectangular CS XIII",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 144.25,
+				"latitudeOfOrigin": 44.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone XIII",
+				"prefectures": ["北海道（東部）"],
+				"boundingBox": {
+					"north": 46.05,
+					"south": 42.87,
+					"east": 145.87,
+					"west": 143.64
+				}
+			},
+			"remarks": "平面直角座標系第XIII系。北海道東部（根室・釧路方面）の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6682": {
+			"code": "EPSG:6682",
+			"name": "JGD2011 / Japan Plane Rectangular CS XIV",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 142.0,
+				"latitudeOfOrigin": 26.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone XIV (Ogasawara Islands part 1)",
+				"prefectures": ["東京都（小笠原諸島北部）"],
+				"boundingBox": {
+					"north": 27.79,
+					"south": 26.03,
+					"east": 142.36,
+					"west": 141.2
+				}
+			},
+			"remarks": "平面直角座標系第XIV系。小笠原諸島北部の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6683": {
+			"code": "EPSG:6683",
+			"name": "JGD2011 / Japan Plane Rectangular CS XV",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 127.5,
+				"latitudeOfOrigin": 26.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone XV (Okinawa main island area)",
+				"prefectures": ["沖縄県（本島周辺）"],
+				"boundingBox": {
+					"north": 27.89,
+					"south": 25.83,
+					"east": 128.38,
+					"west": 126.14
+				}
+			},
+			"remarks": "平面直角座標系第XV系。沖縄本島周辺の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6684": {
+			"code": "EPSG:6684",
+			"name": "JGD2011 / Japan Plane Rectangular CS XVI",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 124.0,
+				"latitudeOfOrigin": 26.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone XVI (Sakishima Islands)",
+				"prefectures": ["沖縄県（先島諸島）"],
+				"boundingBox": {
+					"north": 25.58,
+					"south": 23.99,
+					"east": 125.52,
+					"west": 122.93
+				}
+			},
+			"remarks": "平面直角座標系第XVI系。先島諸島（宮古島・石垣島など）の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6685": {
+			"code": "EPSG:6685",
+			"name": "JGD2011 / Japan Plane Rectangular CS XVII",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 131.0,
+				"latitudeOfOrigin": 26.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone XVII (Daito Islands)",
+				"prefectures": ["沖縄県（大東諸島）"],
+				"boundingBox": {
+					"north": 26.0,
+					"south": 25.77,
+					"east": 131.35,
+					"west": 130.82
+				}
+			},
+			"remarks": "平面直角座標系第XVII系。大東諸島の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6686": {
+			"code": "EPSG:6686",
+			"name": "JGD2011 / Japan Plane Rectangular CS XVIII",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 136.0,
+				"latitudeOfOrigin": 20.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone XVIII (Okinotorishima)",
+				"prefectures": ["東京都（沖ノ鳥島）"],
+				"boundingBox": {
+					"north": 20.45,
+					"south": 20.4,
+					"east": 136.11,
+					"west": 136.04
+				}
+			},
+			"remarks": "平面直角座標系第XVIII系。沖ノ鳥島の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		},
+		"EPSG:6687": {
+			"code": "EPSG:6687",
+			"name": "JGD2011 / Japan Plane Rectangular CS XIX",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6668",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 154.0,
+				"latitudeOfOrigin": 26.0,
+				"scaleFactor": 0.9999,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Japan - zone XIX (Minamitorishima)",
+				"prefectures": ["東京都（南鳥島）"],
+				"boundingBox": {
+					"north": 24.32,
+					"south": 24.25,
+					"east": 153.99,
+					"west": 153.94
+				}
+			},
+			"remarks": "平面直角座標系第XIX系。南鳥島の測量に使用。",
+			"useCases": ["survey", "area_calculation", "distance_calculation"]
+		}
+	},
+	"zoneMapping": {
+		"長崎県": { "zone": "I", "code": "EPSG:6669" },
+		"佐賀県": { "zone": "I", "code": "EPSG:6669" },
+		"福岡県": { "zone": "II", "code": "EPSG:6670" },
+		"熊本県": { "zone": "II", "code": "EPSG:6670" },
+		"大分県": { "zone": "II", "code": "EPSG:6670" },
+		"宮崎県": { "zone": "II", "code": "EPSG:6670" },
+		"鹿児島県": { "zone": "II", "code": "EPSG:6670", "notes": "一部離島は系I" },
+		"山口県": { "zone": "III", "code": "EPSG:6671" },
+		"島根県": { "zone": "III", "code": "EPSG:6671" },
+		"広島県": { "zone": "III", "code": "EPSG:6671" },
+		"香川県": { "zone": "IV", "code": "EPSG:6672" },
+		"愛媛県": { "zone": "IV", "code": "EPSG:6672" },
+		"徳島県": { "zone": "IV", "code": "EPSG:6672" },
+		"高知県": { "zone": "IV", "code": "EPSG:6672" },
+		"兵庫県": { "zone": "V", "code": "EPSG:6673" },
+		"鳥取県": { "zone": "V", "code": "EPSG:6673" },
+		"岡山県": { "zone": "V", "code": "EPSG:6673" },
+		"京都府": { "zone": "VI", "code": "EPSG:6674" },
+		"大阪府": { "zone": "VI", "code": "EPSG:6674" },
+		"福井県": { "zone": "VI", "code": "EPSG:6674" },
+		"滋賀県": { "zone": "VI", "code": "EPSG:6674" },
+		"三重県": { "zone": "VI", "code": "EPSG:6674" },
+		"奈良県": { "zone": "VI", "code": "EPSG:6674" },
+		"和歌山県": { "zone": "VI", "code": "EPSG:6674" },
+		"石川県": { "zone": "VII", "code": "EPSG:6675" },
+		"富山県": { "zone": "VII", "code": "EPSG:6675" },
+		"岐阜県": { "zone": "VII", "code": "EPSG:6675" },
+		"愛知県": { "zone": "VII", "code": "EPSG:6675" },
+		"新潟県": { "zone": "VIII", "code": "EPSG:6676" },
+		"長野県": { "zone": "VIII", "code": "EPSG:6676" },
+		"山梨県": { "zone": "VIII", "code": "EPSG:6676" },
+		"静岡県": { "zone": "VIII", "code": "EPSG:6676" },
+		"東京都": { "zone": "IX", "code": "EPSG:6677", "notes": "本土部。離島は別系" },
+		"神奈川県": { "zone": "IX", "code": "EPSG:6677" },
+		"千葉県": { "zone": "IX", "code": "EPSG:6677" },
+		"埼玉県": { "zone": "IX", "code": "EPSG:6677" },
+		"茨城県": { "zone": "IX", "code": "EPSG:6677" },
+		"栃木県": { "zone": "IX", "code": "EPSG:6677" },
+		"群馬県": { "zone": "IX", "code": "EPSG:6677" },
+		"福島県": { "zone": "IX", "code": "EPSG:6677" },
+		"青森県": { "zone": "X", "code": "EPSG:6678" },
+		"秋田県": { "zone": "X", "code": "EPSG:6678" },
+		"山形県": { "zone": "X", "code": "EPSG:6678" },
+		"岩手県": { "zone": "X", "code": "EPSG:6678" },
+		"宮城県": { "zone": "X", "code": "EPSG:6678" },
+		"北海道": { "zone": "XI-XIII", "code": "EPSG:6679", "notes": "西部XI、中部XII、東部XIII" },
+		"沖縄県": { "zone": "XV-XVII", "code": "EPSG:6683", "notes": "本島XV、先島XVI、大東XVII" }
+	}
+}

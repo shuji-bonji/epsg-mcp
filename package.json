@@ -1,0 +1,62 @@
+{
+	"name": "@shuji-bonji/epsg-mcp",
+	"version": "1.0.0",
+	"description": "MCP server for EPSG Coordinate Reference System knowledge - providing CRS information for Japan (JGD2011, Plane Rectangular CS) and global systems (WGS84, Web Mercator)",
+	"main": "build/index.js",
+	"scripts": {
+		"build": "tsc && chmod 755 build/index.js",
+		"prepublishOnly": "npm run build",
+		"test": "vitest run",
+		"test:watch": "vitest",
+		"lint": "biome lint .",
+		"lint:fix": "biome lint --write .",
+		"format": "biome format --write .",
+		"check": "biome check --write ."
+	},
+	"keywords": [
+		"mcp",
+		"epsg",
+		"crs",
+		"coordinate",
+		"gis",
+		"geodesy",
+		"jgd2011",
+		"wgs84",
+		"projection",
+		"japan",
+		"spatial"
+	],
+	"author": "shuji-bonji",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/shuji-bonji/epsg-mcp.git"
+	},
+	"bugs": {
+		"url": "https://github.com/shuji-bonji/epsg-mcp/issues"
+	},
+	"homepage": "https://github.com/shuji-bonji/epsg-mcp#readme",
+	"engines": {
+		"node": ">=18.0.0"
+	},
+	"dependencies": {
+		"@modelcontextprotocol/sdk": "^1.25.3",
+		"zod": "^3.25.76"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.3.13",
+		"@types/node": "^25.1.0",
+		"typescript": "^5.9.3",
+		"vitest": "^3.0.5"
+	},
+	"type": "module",
+	"bin": {
+		"epsg-mcp": "./build/index.js"
+	},
+	"files": [
+		"build",
+		"README.md",
+		"LICENSE",
+		"CHANGELOG.md"
+	]
+}

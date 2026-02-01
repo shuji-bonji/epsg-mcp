@@ -1,0 +1,110 @@
+{
+	"version": "1.0.0",
+	"rules": {
+		"web_mapping": {
+			"description": "Web地図表示に最適なCRS",
+			"global": {
+				"primary": "EPSG:3857",
+				"alternatives": ["EPSG:4326"],
+				"reasoning": "Web Mercatorは主要な地図タイルサービス（Google Maps、OpenStreetMap等）の標準。Leaflet、Mapbox、OpenLayersなどのライブラリで直接サポート。",
+				"warnings": [
+					"面積・距離計算には不適切",
+					"高緯度地域（北海道北部など）で大きな歪み",
+					"85.06°を超える緯度は表示不可"
+				]
+			},
+			"japan": {
+				"primary": "EPSG:3857",
+				"alternatives": ["EPSG:6668"],
+				"reasoning": "日本でもWeb地図表示にはWeb Mercatorが事実上の標準。データ保存はEPSG:6668（JGD2011）を推奨。"
+			}
+		},
+		"distance_calculation": {
+			"description": "正確な距離計算",
+			"global": {
+				"primary": "適切なUTMゾーン",
+				"alternatives": ["測地線計算（楕円体上）"],
+				"reasoning": "UTMは横メルカトル図法で、ゾーン内の距離歪みが0.04%以下。広域では測地線計算を推奨。",
+				"warnings": ["Web Mercator(EPSG:3857)での距離計算は不正確"]
+			},
+			"japan": {
+				"primary": "該当する平面直角座標系",
+				"codePattern": "EPSG:6669-6687",
+				"alternatives": ["EPSG:32652-32654 (UTM)"],
+				"reasoning": "日本の測量標準。公共測量ではこれを使用。適用範囲内で1mm未満の歪み。",
+				"requirements": ["作業地域に応じた系を選択", "系をまたぐ場合はJGD2011地理座標系で計算"]
+			}
+		},
+		"area_calculation": {
+			"description": "正確な面積計算",
+			"global": {
+				"primary": "正積図法（Lambert等積など）",
+				"warnings": ["Web Mercator(EPSG:3857)は面積が大きく歪む（赤道付近と比べ高緯度では数倍に）"]
+			},
+			"japan": {
+				"primary": "該当する平面直角座標系",
+				"codePattern": "EPSG:6669-6687",
+				"reasoning": "日本国内の面積計算には平面直角座標系が最適。1km²あたり数cm²の誤差に抑えられる。"
+			}
+		},
+		"survey": {
+			"description": "測量業務",
+			"japan": {
+				"primary": "該当する平面直角座標系(EPSG:6669-6687)",
+				"reasoning": "公共測量作業規程に準拠。測量法で定められた座標系。",
+				"requirements": [
+					"作業地域に応じた系を選択",
+					"JGD2011を使用（JGD2000は非推奨）",
+					"旧日本測地系データは変換が必要"
+				]
+			}
+		},
+		"navigation": {
+			"description": "ナビゲーション・GPS",
+			"global": {
+				"primary": "EPSG:4326 (WGS 84)",
+				"reasoning": "GPSはWGS84座標系を使用。カーナビ・スマートフォンの位置情報はこの座標系で取得される。"
+			},
+			"japan": {
+				"primary": "EPSG:6668 (JGD2011)",
+				"alternatives": ["EPSG:4326 (WGS 84)"],
+				"reasoning": "JGD2011はWGS84と実用上ほぼ同一。日本国内ではJGD2011を使用することで、国土地理院データとの整合性が保たれる。"
+			}
+		},
+		"data_storage": {
+			"description": "データの長期保存",
+			"global": {
+				"primary": "EPSG:4326 (WGS 84)",
+				"reasoning": "地理座標系で保存し、用途に応じて投影変換。最も広く認識される座標系。"
+			},
+			"japan": {
+				"primary": "EPSG:6668 (JGD2011)",
+				"alternatives": ["EPSG:4326 (WGS 84)"],
+				"reasoning": "日本国内データはJGD2011で保存を推奨。メタデータにCRS情報を必ず記録。"
+			}
+		},
+		"data_exchange": {
+			"description": "データ交換・相互運用",
+			"global": {
+				"primary": "EPSG:4326 (WGS 84)",
+				"reasoning": "GeoJSONの標準座標系。国際的なデータ交換で最も広く使用。"
+			},
+			"japan": {
+				"primary": "EPSG:6668 (JGD2011)",
+				"alternatives": ["EPSG:4326 (WGS 84)"],
+				"reasoning": "国内機関間ではJGD2011、国際的な交換ではWGS84を使用。両者の差は実用上無視できる。"
+			}
+		},
+		"visualization": {
+			"description": "データ可視化・地図作成",
+			"global": {
+				"primary": "用途に応じた投影法を選択",
+				"reasoning": "表示目的により最適な投影法が異なる。全球表示には様々な投影法、地域表示にはUTMや地域固有の投影が適切。"
+			},
+			"japan": {
+				"primary": "EPSG:3857 (Web表示) または 平面直角座標系 (印刷物)",
+				"reasoning": "インタラクティブなWeb地図はEPSG:3857、精密な印刷地図は平面直角座標系を使用。"
+			}
+		}
+	}
+}

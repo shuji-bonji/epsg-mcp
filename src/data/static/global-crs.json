@@ -1,0 +1,172 @@
+{
+	"version": "1.0.0",
+	"geographicCRS": {
+		"EPSG:4326": {
+			"code": "EPSG:4326",
+			"name": "WGS 84",
+			"type": "geographic",
+			"deprecated": false,
+			"coordinateSystem": "ellipsoidal 2D (latitude, longitude)",
+			"areaOfUse": {
+				"description": "World",
+				"boundingBox": {
+					"north": 90,
+					"south": -90,
+					"east": 180,
+					"west": -180
+				}
+			},
+			"remarks": "GPS・GNSSの基準座標系。GeoJSONの標準。Webアプリケーションでのデータ交換に推奨。",
+			"useCases": ["data_storage", "data_exchange", "navigation", "web_mapping"]
+		},
+		"EPSG:4269": {
+			"code": "EPSG:4269",
+			"name": "NAD83",
+			"type": "geographic",
+			"deprecated": false,
+			"coordinateSystem": "ellipsoidal 2D (latitude, longitude)",
+			"areaOfUse": {
+				"description": "North America - onshore and offshore",
+				"boundingBox": {
+					"north": 86.46,
+					"south": 14.92,
+					"east": -47.74,
+					"west": -172.54
+				}
+			},
+			"remarks": "北米測地系1983。アメリカ・カナダ・メキシコで使用。",
+			"useCases": ["data_storage", "data_exchange"]
+		},
+		"EPSG:4258": {
+			"code": "EPSG:4258",
+			"name": "ETRS89",
+			"type": "geographic",
+			"deprecated": false,
+			"coordinateSystem": "ellipsoidal 2D (latitude, longitude)",
+			"areaOfUse": {
+				"description": "Europe - onshore and offshore",
+				"boundingBox": {
+					"north": 84.73,
+					"south": 32.88,
+					"east": 40.18,
+					"west": -16.1
+				}
+			},
+			"remarks": "欧州地域基準系1989。EU圏での標準座標系。",
+			"useCases": ["data_storage", "data_exchange"]
+		}
+	},
+	"projectedCRS": {
+		"EPSG:3857": {
+			"code": "EPSG:3857",
+			"name": "WGS 84 / Pseudo-Mercator",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:4326",
+			"projection": {
+				"method": "Popular Visualisation Pseudo-Mercator",
+				"centralMeridian": 0,
+				"latitudeOfOrigin": 0,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "World between 85.06°S and 85.06°N",
+				"boundingBox": {
+					"north": 85.06,
+					"south": -85.06,
+					"east": 180,
+					"west": -180
+				}
+			},
+			"accuracy": {
+				"notes": "距離・面積計算には不適切。高緯度地域で大きな歪みが発生。"
+			},
+			"remarks": "Web Mercator。Google Maps、OpenStreetMap等の主要Web地図サービスで採用。表示専用であり、測量・計測には使用不可。",
+			"useCases": ["web_mapping", "visualization"],
+			"relatedCrs": ["EPSG:4326"]
+		},
+		"EPSG:32654": {
+			"code": "EPSG:32654",
+			"name": "WGS 84 / UTM zone 54N",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:4326",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 141,
+				"latitudeOfOrigin": 0,
+				"scaleFactor": 0.9996,
+				"falseEasting": 500000,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Between 138°E and 144°E, northern hemisphere",
+				"boundingBox": {
+					"north": 84,
+					"south": 0,
+					"east": 144,
+					"west": 138
+				}
+			},
+			"accuracy": {
+				"horizontal": "zone内で0.04%以下の歪み",
+				"notes": "UTMゾーン内での距離・面積計算に適切"
+			},
+			"remarks": "UTM zone 54N。日本の一部（関東・東北）をカバー。国際的なデータ交換に使用。",
+			"useCases": ["distance_calculation", "area_calculation", "data_exchange"]
+		},
+		"EPSG:32653": {
+			"code": "EPSG:32653",
+			"name": "WGS 84 / UTM zone 53N",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:4326",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 135,
+				"latitudeOfOrigin": 0,
+				"scaleFactor": 0.9996,
+				"falseEasting": 500000,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Between 132°E and 138°E, northern hemisphere",
+				"boundingBox": {
+					"north": 84,
+					"south": 0,
+					"east": 138,
+					"west": 132
+				}
+			},
+			"remarks": "UTM zone 53N。日本の一部（近畿・中国・四国）をカバー。",
+			"useCases": ["distance_calculation", "area_calculation", "data_exchange"]
+		},
+		"EPSG:32652": {
+			"code": "EPSG:32652",
+			"name": "WGS 84 / UTM zone 52N",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:4326",
+			"projection": {
+				"method": "Transverse Mercator",
+				"centralMeridian": 129,
+				"latitudeOfOrigin": 0,
+				"scaleFactor": 0.9996,
+				"falseEasting": 500000,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Between 126°E and 132°E, northern hemisphere",
+				"boundingBox": {
+					"north": 84,
+					"south": 0,
+					"east": 132,
+					"west": 126
+				}
+			},
+			"remarks": "UTM zone 52N。日本の一部（九州・沖縄）をカバー。",
+			"useCases": ["distance_calculation", "area_calculation", "data_exchange"]
+		}
+	}
+}
