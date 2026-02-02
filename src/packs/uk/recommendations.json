@@ -1,0 +1,97 @@
+{
+	"rules": {
+		"web_mapping": {
+			"primary": "EPSG:3857",
+			"alternatives": ["EPSG:4326"],
+			"fallback": "EPSG:4258",
+			"reasoning": "Web Mercator (EPSG:3857) is the standard for web mapping tiles. Use WGS84 (EPSG:4326) for GeoJSON data exchange.",
+			"pros": [
+				"Universal web map tile compatibility",
+				"Consistent with Google Maps, OpenStreetMap, etc."
+			],
+			"cons": ["Significant area and distance distortion", "Not suitable for measurements"],
+			"warnings": ["Do not use Web Mercator for area or distance calculations"]
+		},
+		"distance_calculation": {
+			"primary": "EPSG:27700",
+			"alternatives": ["UTM zones"],
+			"fallback": "EPSG:4258",
+			"reasoning": "British National Grid provides excellent accuracy for distance calculations within Great Britain. UTM zones are alternative for cross-border work.",
+			"pros": [
+				"Single projection for all of Great Britain",
+				"Minimal distortion within coverage area",
+				"Survey-grade accuracy"
+			],
+			"cons": ["Not valid for Northern Ireland (use ITM)", "Not suitable outside GB mainland"]
+		},
+		"area_calculation": {
+			"primary": "EPSG:27700",
+			"alternatives": ["EPSG:2157"],
+			"fallback": "EPSG:4258",
+			"reasoning": "British National Grid is suitable for area calculations in Great Britain. Use ITM for Northern Ireland.",
+			"pros": [
+				"Good area preservation within Great Britain",
+				"Single projection for England, Scotland, Wales"
+			],
+			"cons": ["Increasing distortion at edges of coverage", "Not suitable for Northern Ireland"],
+			"warnings": ["For Northern Ireland, use Irish Transverse Mercator (EPSG:2157)"]
+		},
+		"survey": {
+			"primary": "EPSG:27700",
+			"alternatives": ["EPSG:4258"],
+			"fallback": "EPSG:4258",
+			"reasoning": "British National Grid is the official survey system for Great Britain. Use OSTN15 transformation for highest accuracy.",
+			"pros": [
+				"Official UK survey standard",
+				"Consistent with Ordnance Survey mapping",
+				"Well-established infrastructure"
+			],
+			"cons": ["Based on historic OSGB36 datum", "Requires transformation for GNSS data"],
+			"codePattern": "EPSG:27700",
+			"usesZoneMapping": true
+		},
+		"navigation": {
+			"primary": "EPSG:4326",
+			"alternatives": ["EPSG:4258"],
+			"fallback": "EPSG:4326",
+			"reasoning": "WGS84 is the standard for GPS/GNSS navigation. ETRS89 is practically equivalent for UK navigation.",
+			"pros": ["Universal GPS compatibility", "Direct use of GNSS coordinates"],
+			"cons": ["Geographic coordinates require conversion for display"]
+		},
+		"data_exchange": {
+			"primary": "EPSG:4258",
+			"alternatives": ["EPSG:4326"],
+			"fallback": "EPSG:4326",
+			"reasoning": "ETRS89 is the European standard for data exchange. Required for INSPIRE compliance. WGS84 for international data.",
+			"pros": ["INSPIRE compliant", "European interoperability", "Modern geodetic datum"],
+			"cons": ["Requires transformation from legacy OSGB36 data"]
+		},
+		"data_storage": {
+			"primary": "EPSG:4258",
+			"alternatives": ["EPSG:27700", "EPSG:4326"],
+			"fallback": "EPSG:4326",
+			"reasoning": "ETRS89 recommended for new UK data. BNG for compatibility with OS data. WGS84 for international use.",
+			"pros": ["Future-proof datum", "INSPIRE compliant"],
+			"cons": ["May require transformation for legacy applications"]
+		},
+		"visualization": {
+			"primary": "EPSG:27700",
+			"alternatives": ["EPSG:3857"],
+			"fallback": "EPSG:4326",
+			"reasoning": "British National Grid provides familiar UK map appearance. Web Mercator for interactive web maps.",
+			"pros": ["Familiar appearance for UK maps", "Consistent with Ordnance Survey products"],
+			"cons": ["Not suitable for maps extending beyond UK"]
+		}
+	},
+	"multiZoneRegions": {
+		"Northern Ireland": {
+			"note": "Northern Ireland uses Irish Transverse Mercator, not British National Grid",
+			"subRegions": {},
+			"cities": {
+				"Belfast": "EPSG:2157",
+				"Londonderry": "EPSG:2157"
+			},
+			"default": "EPSG:2157"
+		}
+	}
+}

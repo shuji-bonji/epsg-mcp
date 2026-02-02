@@ -13,6 +13,7 @@
 - [docs/phase4-implementation-plan.md](docs/phase4-implementation-plan.md) - Phase 4 実装計画書
 - [docs/phase5-implementation-plan.md](docs/phase5-implementation-plan.md) - Phase 5 実装計画書（国際化・多地域対応）
 - [docs/internationalization-design.md](docs/internationalization-design.md) - 国際化設計書
+- [docs/creating-country-packs.md](docs/creating-country-packs.md) - Country Pack作成ガイド
 
 ## 技術スタック
 
@@ -62,6 +63,27 @@ src/
 │   ├── comparison-service.ts        # CRS比較サービス（Phase 3）
 │   ├── best-practices-service.ts    # ベストプラクティスサービス（Phase 4）
 │   └── troubleshooting-service.ts   # トラブルシューティングサービス（Phase 4）
+├── packs/                       # Country Packs（Phase 5）
+│   ├── pack-manager.ts          # パック管理システム
+│   ├── jp/                      # Japan Pack
+│   │   ├── index.ts
+│   │   └── constants.ts
+│   ├── us/                      # US Pack
+│   │   ├── index.ts
+│   │   ├── constants.ts
+│   │   ├── crs-data.json
+│   │   ├── recommendations.json
+│   │   ├── transformations.json
+│   │   ├── best-practices.json
+│   │   └── troubleshooting.json
+│   └── uk/                      # UK Pack
+│       ├── index.ts
+│       ├── constants.ts
+│       ├── crs-data.json
+│       ├── recommendations.json
+│       ├── transformations.json
+│       ├── best-practices.json
+│       └── troubleshooting.json
 └── tools/
     ├── definitions.ts      # ツール定義
     └── handlers.ts         # ツールハンドラー
@@ -107,13 +129,16 @@ src/
   - コンテキストベース可能性調整
   - 診断信頼度算出（high/medium/low）
 
-### Phase 5（計画中）
+### Phase 5（完了）
 - 国際化・多地域対応
   - CountryPackアーキテクチャ（プラグイン形式の地域データ）
   - UTMフォールバック（座標からUTMゾーン自動判定）
   - 3層フォールバックモデル（CountryPack → UTM → Global）
-  - SQLite対応（大規模データの効率的管理）
-  - US/UK CountryPack対応
+  - SQLite対応（大規模データの効率的管理、オプショナル依存）
+  - Japan Pack（JGD2011、平面直角座標系19系）
+  - US Pack（NAD83、State Plane Coordinate System）
+  - UK Pack（OSGB36、British National Grid、ETRS89）
+  - 環境変数 `EPSG_PACKS` によるパック有効化制御
 
 ## データソース
 

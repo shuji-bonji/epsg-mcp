@@ -9,6 +9,42 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.0] - 2026-02-02
+
+### Added
+
+#### UK Pack Implementation (Phase 5-5)
+- Complete UK Country Knowledge Pack
+- New directory: `src/packs/uk/`
+  - `index.ts` - `createUkPack()` factory function
+  - `constants.ts` - UK geographic bounds (England, Scotland, Wales, Northern Ireland)
+  - `crs-data.json` - OSGB36, ETRS89, British National Grid, ITM
+  - `recommendations.json` - UK-specific CRS recommendations
+  - `transformations.json` - OSGB36→ETRS89 (OSTN15)
+  - `best-practices.json` - UK surveying and INSPIRE best practices
+  - `troubleshooting.json` - UK-specific troubleshooting guides
+
+#### UK CRS Data
+- Geographic CRS: OSGB36 (EPSG:4277), ETRS89 (EPSG:4258), WGS84 (EPSG:4326)
+- Projected CRS: British National Grid (EPSG:27700), Irish Transverse Mercator (EPSG:2157)
+- Zone mapping for England, Scotland, Wales, Northern Ireland
+- Northern Ireland handled separately with ITM (not BNG)
+
+#### Documentation
+- New guide: `docs/creating-country-packs.md` - Complete guide for creating Country Packs
+- Updated CLAUDE.md with Phase 5 completion status and pack architecture
+
+#### Pack Manager Updates
+- UK/GB pack loading via `EPSG_PACKS=uk` or `EPSG_PACKS=gb`
+- Support for all three packs: `EPSG_PACKS=jp,us,uk`
+
+### Technical Details
+- Build script updated to copy UK pack JSON files
+- Test count: 566 → 616 (+50 UK Pack tests)
+- All three packs (JP/US/UK) can coexist without interference
+
+---
+
 ## [0.8.0] - 2026-02-02
 
 ### Added

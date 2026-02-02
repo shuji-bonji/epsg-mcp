@@ -70,11 +70,11 @@ async function importPack(code: string): Promise<CountryPack | null> {
 				const { createUsPack } = await import('./us/index.js');
 				return createUsPack();
 			}
-			// Phase 5-5 で追加予定
-			// case 'uk': {
-			//   const { createUkPack } = await import('./uk/index.js');
-			//   return createUkPack();
-			// }
+			case 'uk':
+			case 'gb': {
+				const { createUkPack } = await import('./uk/index.js');
+				return createUkPack();
+			}
 			default:
 				debug(`Unknown pack code: ${code}`);
 				return null;

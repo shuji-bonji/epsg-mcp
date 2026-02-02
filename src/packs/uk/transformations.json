@@ -1,0 +1,96 @@
+{
+	"transformations": [
+		{
+			"from": "EPSG:4277",
+			"to": "EPSG:4258",
+			"method": "OSTN15 grid transformation",
+			"accuracy": "0.1m",
+			"notes": "OSTN15 provides centimetric accuracy. Recommended method for OSGB36 to ETRS89 in Great Britain.",
+			"epsgCode": "EPSG:7709",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:4277",
+			"to": "EPSG:4326",
+			"method": "OSTN15 via ETRS89",
+			"accuracy": "0.1m (within GB)",
+			"notes": "Transform OSGB36 to ETRS89 using OSTN15, then null transform to WGS84.",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:4258",
+			"to": "EPSG:4326",
+			"method": "Null transformation",
+			"accuracy": "Sub-meter",
+			"notes": "ETRS89 and WGS84 are practically identical for most applications. Differences at cm level due to epoch.",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:27700",
+			"to": "EPSG:4277",
+			"method": "Inverse projection",
+			"accuracy": "Exact (mathematical)",
+			"notes": "BNG to OSGB36 is an exact mathematical inverse of the Transverse Mercator projection.",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:4299",
+			"to": "EPSG:4258",
+			"method": "Polynomial transformation",
+			"accuracy": "0.2m",
+			"notes": "TM65 (Irish datum) to ETRS89 transformation.",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:29902",
+			"to": "EPSG:2157",
+			"method": "via ETRS89",
+			"accuracy": "0.2m",
+			"notes": "Irish Grid to ITM requires transformation through ETRS89.",
+			"reversible": true
+		}
+	],
+	"hubCrs": ["EPSG:4258", "EPSG:4326", "EPSG:27700"],
+	"deprecatedCrs": ["EPSG:29902"],
+	"migrationPaths": {
+		"EPSG:29902": {
+			"recommendedTarget": "EPSG:2157",
+			"reason": "Irish Grid (TM65) is superseded by Irish Transverse Mercator (ITM) for new work.",
+			"notes": "ITM is based on ETRS89 and provides better accuracy for modern surveying."
+		}
+	},
+	"datumRelationships": {
+		"OSGB36_ETRS89": {
+			"description": "OSGB36 to ETRS89 transformation",
+			"typical_shift": "0-5 meters varying across Great Britain",
+			"method": "OSTN15 grid interpolation",
+			"considerations": [
+				"OSTN15 is the definitive transformation",
+				"Shift varies across Great Britain",
+				"Maximum differences in peripheral areas",
+				"7-parameter Helmert only ~5m accuracy"
+			]
+		},
+		"ETRS89_WGS84": {
+			"description": "ETRS89 and WGS84 are practically identical",
+			"typical_shift": "0-1 meters",
+			"method": "Null transformation or epoch adjustment",
+			"considerations": [
+				"For most applications, can be treated as equivalent",
+				"ETRS89 is fixed to European plate",
+				"WGS84 follows ITRF updates",
+				"Differences accumulate over time (~2.5cm/year)"
+			]
+		},
+		"TM65_ETRS89": {
+			"description": "Irish datum TM65 to ETRS89",
+			"typical_shift": "Variable, up to 1m",
+			"method": "Polynomial transformation",
+			"considerations": [
+				"Legacy Irish data requires transformation",
+				"Use official OSi transformation parameters",
+				"Accuracy varies by location"
+			]
+		}
+	}
+}

@@ -1,0 +1,193 @@
+{
+	"geographicCRS": {
+		"EPSG:4277": {
+			"code": "EPSG:4277",
+			"name": "OSGB36",
+			"type": "geographic",
+			"datum": {
+				"name": "Ordnance Survey of Great Britain 1936",
+				"ellipsoid": "Airy 1830",
+				"type": "geodetic"
+			},
+			"areaOfUse": {
+				"description": "United Kingdom (UK) - Great Britain - England, Scotland, Wales - onshore",
+				"bbox": {
+					"north": 60.9,
+					"south": 49.8,
+					"east": 1.8,
+					"west": -8.7
+				},
+				"regions": ["England", "Scotland", "Wales"]
+			},
+			"accuracy": {
+				"horizontal": "~5m relative to ETRS89",
+				"note": "Historic datum with local distortions"
+			},
+			"remarks": "Traditional datum for Great Britain. Use ETRS89 for new high-accuracy work. OSTN15 transformation required for accurate conversion to ETRS89.",
+			"useCases": [
+				"Legacy mapping data",
+				"Ordnance Survey historic maps",
+				"British National Grid coordinates"
+			],
+			"deprecated": false
+		},
+		"EPSG:4258": {
+			"code": "EPSG:4258",
+			"name": "ETRS89",
+			"type": "geographic",
+			"datum": {
+				"name": "European Terrestrial Reference System 1989",
+				"ellipsoid": "GRS 1980",
+				"type": "geodetic"
+			},
+			"areaOfUse": {
+				"description": "Europe - onshore and offshore",
+				"bbox": {
+					"north": 84.73,
+					"south": 32.88,
+					"east": 40.18,
+					"west": -16.1
+				}
+			},
+			"accuracy": {
+				"horizontal": "1-2cm relative to ITRF",
+				"note": "European reference frame coincident with ITRF at epoch 1989.0"
+			},
+			"remarks": "Recommended datum for new surveys in the UK and Europe. Practically identical to WGS84 for most applications.",
+			"useCases": [
+				"Modern surveying",
+				"GNSS positioning",
+				"European data exchange",
+				"INSPIRE compliance"
+			],
+			"deprecated": false
+		}
+	},
+	"projectedCRS": {
+		"EPSG:27700": {
+			"code": "EPSG:27700",
+			"name": "OSGB36 / British National Grid",
+			"type": "projected",
+			"baseCRS": "EPSG:4277",
+			"projection": {
+				"name": "Transverse Mercator",
+				"method": "Transverse Mercator",
+				"parameters": {
+					"latitudeOfOrigin": 49,
+					"centralMeridian": -2,
+					"scaleFactor": 0.9996012717,
+					"falseEasting": 400000,
+					"falseNorthing": -100000
+				}
+			},
+			"areaOfUse": {
+				"description": "United Kingdom (UK) - Great Britain - England, Scotland, Wales - onshore",
+				"bbox": {
+					"north": 60.9,
+					"south": 49.8,
+					"east": 1.8,
+					"west": -8.7
+				},
+				"regions": ["England", "Scotland", "Wales"]
+			},
+			"accuracy": {
+				"horizontal": "Survey-grade within Great Britain",
+				"note": "National grid for Great Britain"
+			},
+			"remarks": "The national projected CRS for Great Britain. Used by Ordnance Survey for all mapping. Grid references use 100km squares (e.g., TQ 123 456).",
+			"useCases": [
+				"Ordnance Survey mapping",
+				"Land surveying",
+				"Planning and development",
+				"Emergency services"
+			],
+			"deprecated": false
+		},
+		"EPSG:7405": {
+			"code": "EPSG:7405",
+			"name": "OSGB36 / British National Grid + ODN height",
+			"type": "compound",
+			"baseCRS": "EPSG:27700",
+			"areaOfUse": {
+				"description": "United Kingdom (UK) - Great Britain - England, Scotland, Wales - onshore",
+				"regions": ["England", "Scotland", "Wales"]
+			},
+			"remarks": "Compound CRS combining BNG horizontal with Ordnance Datum Newlyn (ODN) heights.",
+			"useCases": ["3D surveying", "Height referencing", "Engineering projects"],
+			"deprecated": false
+		},
+		"EPSG:29902": {
+			"code": "EPSG:29902",
+			"name": "TM65 / Irish Grid",
+			"type": "projected",
+			"baseCRS": "EPSG:4299",
+			"projection": {
+				"name": "Transverse Mercator",
+				"method": "Transverse Mercator",
+				"parameters": {
+					"latitudeOfOrigin": 53.5,
+					"centralMeridian": -8,
+					"scaleFactor": 1.000035,
+					"falseEasting": 200000,
+					"falseNorthing": 250000
+				}
+			},
+			"areaOfUse": {
+				"description": "Ireland - onshore",
+				"regions": ["Northern Ireland", "Republic of Ireland"]
+			},
+			"remarks": "Historic Irish Grid. Superseded by Irish Transverse Mercator (ITM) for new work.",
+			"useCases": ["Legacy Irish mapping", "Northern Ireland historic data"],
+			"deprecated": true
+		},
+		"EPSG:2157": {
+			"code": "EPSG:2157",
+			"name": "IRENET95 / Irish Transverse Mercator",
+			"type": "projected",
+			"baseCRS": "EPSG:4173",
+			"projection": {
+				"name": "Transverse Mercator",
+				"method": "Transverse Mercator",
+				"parameters": {
+					"latitudeOfOrigin": 53.5,
+					"centralMeridian": -8,
+					"scaleFactor": 0.99982,
+					"falseEasting": 600000,
+					"falseNorthing": 750000
+				}
+			},
+			"areaOfUse": {
+				"description": "Ireland - onshore",
+				"regions": ["Northern Ireland", "Republic of Ireland"]
+			},
+			"remarks": "Modern Irish projection based on ETRS89. Recommended for all new work in Ireland including Northern Ireland.",
+			"useCases": ["Modern Irish surveying", "Cross-border projects", "GNSS surveys"],
+			"deprecated": false
+		}
+	},
+	"zoneMapping": {
+		"England": { "zone": "BNG", "code": "EPSG:27700" },
+		"Scotland": { "zone": "BNG", "code": "EPSG:27700" },
+		"Wales": { "zone": "BNG", "code": "EPSG:27700" },
+		"Northern Ireland": {
+			"zone": "ITM",
+			"code": "EPSG:2157",
+			"notes": "Irish Transverse Mercator"
+		},
+		"Greater London": { "zone": "BNG", "code": "EPSG:27700" },
+		"South East": { "zone": "BNG", "code": "EPSG:27700" },
+		"South West": { "zone": "BNG", "code": "EPSG:27700" },
+		"East of England": { "zone": "BNG", "code": "EPSG:27700" },
+		"East Midlands": { "zone": "BNG", "code": "EPSG:27700" },
+		"West Midlands": { "zone": "BNG", "code": "EPSG:27700" },
+		"Yorkshire and the Humber": { "zone": "BNG", "code": "EPSG:27700" },
+		"North West": { "zone": "BNG", "code": "EPSG:27700" },
+		"North East": { "zone": "BNG", "code": "EPSG:27700" },
+		"Highlands": { "zone": "BNG", "code": "EPSG:27700" },
+		"Central Belt": { "zone": "BNG", "code": "EPSG:27700" },
+		"Scottish Borders": { "zone": "BNG", "code": "EPSG:27700" },
+		"North Wales": { "zone": "BNG", "code": "EPSG:27700" },
+		"South Wales": { "zone": "BNG", "code": "EPSG:27700" },
+		"Mid Wales": { "zone": "BNG", "code": "EPSG:27700" }
+	}
+}

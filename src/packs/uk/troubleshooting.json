@@ -1,0 +1,138 @@
+{
+	"symptoms": [
+		{
+			"symptomId": "osgb36_etrs89_shift",
+			"description": "Coordinates shifted by 1-5 meters",
+			"keywords": ["OSGB36", "ETRS89", "shifted", "BNG", "meters"],
+			"causes": [
+				{
+					"likelihood": "high",
+					"cause": "OSGB36 and ETRS89 datum difference not accounted for",
+					"description": "Direct comparison of OSGB36 and ETRS89 coordinates without transformation",
+					"indicators": [
+						"Shift varies across the UK (larger at edges)",
+						"Systematic offset in one direction",
+						"Data from different sources"
+					]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Using Helmert transformation instead of OSTN15",
+					"description": "7-parameter Helmert transformation is only accurate to ~5m",
+					"indicators": ["Residual errors after transformation", "Errors vary spatially"]
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "OSGB36 and ETRS89 datum difference not accounted for",
+					"steps": [
+						"Identify the datum of each dataset (OSGB36 vs ETRS89)",
+						"Use OSTN15 transformation for conversion",
+						"Apply transformation using official OS tools or PROJ"
+					],
+					"prevention": "Always document datum and use OSTN15 for transformations"
+				},
+				{
+					"forCause": "Using Helmert transformation instead of OSTN15",
+					"steps": [
+						"Identify that Helmert was used",
+						"Re-transform using OSTN15 grid",
+						"Validate against known control points"
+					],
+					"prevention": "Always use OSTN15 for OSGB36/ETRS89 transformations in GB"
+				}
+			]
+		},
+		{
+			"symptomId": "bng_ni_mismatch",
+			"description": "Northern Ireland data doesn't align with GB data",
+			"keywords": ["Northern Ireland", "BNG", "ITM", "Ireland", "doesn't align"],
+			"causes": [
+				{
+					"likelihood": "high",
+					"cause": "Using BNG for Northern Ireland data",
+					"description": "British National Grid does not cover Northern Ireland",
+					"indicators": ["Data is for Northern Ireland locations", "Attempting to use EPSG:27700"]
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Using BNG for Northern Ireland data",
+					"steps": [
+						"Use Irish Transverse Mercator (EPSG:2157) for Northern Ireland",
+						"Transform both datasets to ETRS89 for cross-border work",
+						"Reprojects if needed for UK-wide analysis"
+					],
+					"prevention": "Use ITM for Northern Ireland, BNG for GB only"
+				}
+			]
+		},
+		{
+			"symptomId": "grid_reference_error",
+			"description": "BNG grid reference not recognized or incorrect",
+			"keywords": ["grid reference", "OS grid", "TQ", "invalid", "format"],
+			"causes": [
+				{
+					"likelihood": "high",
+					"cause": "Invalid grid reference format",
+					"description": "BNG grid references must follow specific format (e.g., TQ 123 456)",
+					"indicators": ["Error parsing grid reference", "Unexpected coordinate values"]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Grid reference precision mismatch",
+					"description": "Grid references can be 6, 8, or 10 figures with different precision",
+					"indicators": ["Coordinates seem rounded", "Location is approximate"]
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Invalid grid reference format",
+					"steps": [
+						"Verify grid reference follows format: 2 letters + even number of digits",
+						"Check letter pair is valid for UK (e.g., TQ, SO, NY)",
+						"Ensure correct number of digits (6, 8, or 10)"
+					],
+					"prevention": "Validate grid references before processing"
+				},
+				{
+					"forCause": "Grid reference precision mismatch",
+					"steps": [
+						"Determine required precision",
+						"Use 10-figure grid references for maximum precision (1m)",
+						"Document precision level in metadata"
+					],
+					"prevention": "Standardize grid reference precision for project"
+				}
+			]
+		},
+		{
+			"symptomId": "wgs84_etrs89_drift",
+			"description": "Small but systematic offset between GPS data and UK survey data",
+			"keywords": ["GPS", "WGS84", "ETRS89", "drift", "small offset", "cm"],
+			"causes": [
+				{
+					"likelihood": "high",
+					"cause": "ETRS89/WGS84 epoch difference",
+					"description": "ETRS89 is fixed to European plate while WGS84 follows global ITRF",
+					"indicators": [
+						"Offset is small (few cm to dm)",
+						"Consistent across area",
+						"Increasing over time"
+					]
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "ETRS89/WGS84 epoch difference",
+					"steps": [
+						"For most applications (>1m accuracy), treat as equivalent",
+						"For high-precision work, apply epoch transformation",
+						"Document which realization is being used"
+					],
+					"prevention": "Specify datum realization in project documentation"
+				}
+			]
+		}
+	]
+}

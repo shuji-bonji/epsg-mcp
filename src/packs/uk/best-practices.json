@@ -1,0 +1,137 @@
+{
+	"practices": [
+		{
+			"topic": "uk_survey",
+			"title": "UK Land Surveying Best Practices",
+			"description": "Guidelines for selecting and using CRS for land surveying in the United Kingdom",
+			"recommendations": [
+				{
+					"priority": "must",
+					"text": "Use British National Grid (EPSG:27700) for surveys in England, Scotland, and Wales"
+				},
+				{
+					"priority": "must",
+					"text": "Use OSTN15 transformation for converting GNSS data to OSGB36/BNG"
+				},
+				{
+					"priority": "should",
+					"text": "Store raw GNSS observations in ETRS89 before transformation"
+				},
+				{
+					"priority": "should",
+					"text": "Use Ordnance Survey Net (OS Net) for GNSS corrections"
+				},
+				{
+					"priority": "may",
+					"text": "Use ETRS89 directly for new high-accuracy projects"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Using 7-parameter Helmert transformation instead of OSTN15",
+					"problem": "Helmert transformation only accurate to ~5m, OSTN15 accurate to ~0.1m",
+					"solution": "Always use OSTN15 for OSGB36/ETRS89 transformations in Great Britain"
+				},
+				{
+					"mistake": "Treating ETRS89 and WGS84 as identical for high-precision work",
+					"problem": "Differences accumulate over time due to plate motion (~2.5cm/year)",
+					"solution": "Use explicit transformation for sub-metre accuracy requirements"
+				},
+				{
+					"mistake": "Using BNG for Northern Ireland",
+					"problem": "Northern Ireland is not covered by British National Grid",
+					"solution": "Use Irish Transverse Mercator (EPSG:2157) for Northern Ireland"
+				}
+			],
+			"references": [
+				{
+					"type": "official",
+					"title": "Ordnance Survey Coordinate Systems",
+					"url": "https://www.ordnancesurvey.co.uk/gps/transformation/",
+					"description": "Official OS transformation guidance"
+				},
+				{
+					"type": "official",
+					"title": "OSTN15 Documentation",
+					"url": "https://www.ordnancesurvey.co.uk/documents/resources/guide-coordinate-systems-great-britain.pdf",
+					"description": "Guide to coordinate systems in Great Britain"
+				}
+			]
+		},
+		{
+			"topic": "uk_inspire",
+			"title": "INSPIRE Compliance in the UK",
+			"description": "Guidelines for INSPIRE-compliant spatial data in the UK",
+			"recommendations": [
+				{
+					"priority": "must",
+					"text": "Use ETRS89 (EPSG:4258) for INSPIRE-compliant data exchange"
+				},
+				{
+					"priority": "must",
+					"text": "Document coordinate reference system in metadata"
+				},
+				{
+					"priority": "should",
+					"text": "Transform legacy OSGB36 data to ETRS89 for publication"
+				},
+				{
+					"priority": "should",
+					"text": "Include transformation accuracy in metadata"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Publishing OSGB36 data without transformation",
+					"problem": "INSPIRE requires ETRS89 for pan-European interoperability",
+					"solution": "Transform to ETRS89 using OSTN15 before publication"
+				}
+			],
+			"references": [
+				{
+					"type": "official",
+					"title": "UK Location Programme",
+					"description": "UK implementation of INSPIRE directive"
+				}
+			]
+		},
+		{
+			"topic": "uk_web_mapping",
+			"title": "Web Mapping in the UK",
+			"description": "Guidelines for CRS selection in UK web mapping applications",
+			"recommendations": [
+				{
+					"priority": "must",
+					"text": "Use EPSG:3857 (Web Mercator) for tile-based web maps"
+				},
+				{
+					"priority": "must",
+					"text": "Use EPSG:4326 (WGS84) for GeoJSON data exchange"
+				},
+				{
+					"priority": "should",
+					"text": "Support BNG grid reference display for UK users"
+				},
+				{
+					"priority": "may",
+					"text": "Offer BNG projection option for UK-focused applications"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Calculating distances or areas in Web Mercator",
+					"problem": "Web Mercator significantly distorts distances and areas",
+					"solution": "Transform to BNG or use geodesic calculations for measurements"
+				}
+			],
+			"references": [
+				{
+					"type": "tool",
+					"title": "Ordnance Survey APIs",
+					"url": "https://osdatahub.os.uk/",
+					"description": "OS mapping data and APIs"
+				}
+			]
+		}
+	]
+}
