@@ -11,6 +11,7 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { preloadAll } from './data/loader.js';
 import { formatErrorResponse } from './errors/index.js';
+import { getRegisteredPacks, loadPacksFromEnv } from './packs/pack-manager.js';
 import { tools } from './tools/definitions.js';
 import { toolHandlers } from './tools/handlers.js';
 import { error, info, PerformanceTimer } from './utils/logger.js';
@@ -61,10 +62,14 @@ async function main() {
 	info('EPSG MCP Server: Preloading data...');
 	const timer = new PerformanceTimer('preload');
 
-	await preloadAll();
+	// Load country packs and static data in parallel
+	await Promise.all([loadPacksFromEnv(), preloadAll()]);
 
 	const loadTime = timer.end();
-	info(`EPSG MCP Server: Data loaded in ${loadTime}ms`);
+	const packs = getRegisteredPacks();
+	info(
+		`EPSG MCP Server: Data loaded in ${loadTime}ms (${packs.length} pack(s): ${packs.map((p) => p.countryCode).join(', ') || 'none'})`
+	);
 
 	const transport = new StdioServerTransport();
 	await server.connect(transport);

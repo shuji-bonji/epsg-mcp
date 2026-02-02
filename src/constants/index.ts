@@ -189,3 +189,41 @@ export const PREFECTURES = {
 	HOKKAIDO: '北海道',
 	OKINAWA: '沖縄県',
 } as const;
+
+// UTM関連
+export const UTM = {
+	/** 北半球のEPSGコードベース（EPSG:32601 = UTM 1N） */
+	EPSG_BASE_NORTH: 32600,
+	/** 南半球のEPSGコードベース（EPSG:32701 = UTM 1S） */
+	EPSG_BASE_SOUTH: 32700,
+	/** UTMの適用範囲（北緯上限） */
+	MAX_LAT: 84,
+	/** UTMの適用範囲（南緯下限） */
+	MIN_LAT: -80,
+	/** UTMゾーンの幅（度） */
+	ZONE_WIDTH: 6,
+	/** 中央子午線でのスケールファクター */
+	SCALE_FACTOR: 0.9996,
+	/** False Easting（メートル） */
+	FALSE_EASTING: 500000,
+	/** 南半球のFalse Northing（メートル） */
+	FALSE_NORTHING_SOUTH: 10000000,
+} as const;
+
+// 国コードエイリアス（後方互換性用）
+export const COUNTRY_ALIASES: Record<string, string> = {
+	japan: 'JP',
+	日本: 'JP',
+	global: 'GLOBAL',
+	'united states': 'US',
+	usa: 'US',
+	'united kingdom': 'GB',
+	uk: 'GB',
+	germany: 'DE',
+	france: 'FR',
+	australia: 'AU',
+	korea: 'KR',
+	'south korea': 'KR',
+	china: 'CN',
+	canada: 'CA',
+} as const;

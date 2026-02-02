@@ -14,6 +14,8 @@ import type {
 	RecommendedCrs,
 	Requirements,
 } from '../types/index.js';
+import { normalizeLocation } from '../utils/location-normalizer.js';
+import { canUseUtmFallback, recommendWithUtmFallback } from './utm-service.js';
 
 /**
  * 複数系をまたぐ都道府県かどうかを判定
@@ -192,7 +194,7 @@ function adjustScoreForRequirements(
 	// 歪み許容度
 	if (requirements.distortionTolerance === 'minimal') {
 		// 平面直角座標系を優先
-		const codeNum = parseInt(crsDetail?.code?.replace('EPSG:', '') || '0');
+		const codeNum = parseInt(crsDetail?.code?.replace('EPSG:', '') || '0', 10);
 		if (codeNum >= EPSG.PLANE_RECT.RANGE_START && codeNum <= EPSG.PLANE_RECT.RANGE_END) {
 			score += VALIDATION_SCORE.MINIMAL_DISTORTION_BONUS;
 		}
@@ -202,15 +204,21 @@ function adjustScoreForRequirements(
 }
 
 /**
- * 場所が日本かどうかを判定
+ * 場所が日本かどうかを判定（正規化済み LocationSpec に対応）
  */
 function isJapanLocation(location: LocationSpec): boolean {
+	// 正規化後は 'JP' になっている
+	if (location.country === 'JP') {
+		return true;
+	}
+	// 後方互換: 正規化されていない場合もサポート
 	const countryLower = location.country?.toLowerCase();
 	if (countryLower === 'japan' || countryLower === '日本') {
 		return true;
 	}
-	if (location.prefecture) {
-		return true; // 都道府県が指定されていれば日本
+	// 都道府県/行政区画が指定されていれば日本（日本語の都道府県名を想定）
+	if (location.prefecture || location.subdivision) {
+		return true;
 	}
 	if (location.centerPoint) {
 		const { lat, lng } = location.centerPoint;
@@ -228,6 +236,9 @@ export async function recommendCrs(
 	location: LocationSpec,
 	requirements?: Requirements
 ): Promise<RecommendCrsOutput> {
+	// 1. LocationSpec 正規化
+	const normalized = normalizeLocation(location);
+
 	const recommendations = await loadRecommendations();
 	const rule = recommendations.rules[purpose];
 
@@ -235,7 +246,14 @@ export async function recommendCrs(
 		throw new Error(`Unknown purpose: ${purpose}`);
 	}
 
-	const isJapan = isJapanLocation(location);
+	const isJapan = isJapanLocation(normalized);
+
+	// 2. 日本以外でPackがない場合はUTMフォールバック
+	// Phase 5-2 でPack対応を追加予定。現段階では日本以外はUTMフォールバック
+	if (!isJapan && canUseUtmFallback(normalized)) {
+		return recommendWithUtmFallback(purpose, normalized, requirements);
+	}
+
 	const ruleRegion = isJapan && rule.japan ? rule.japan : rule.global;
 
 	if (!ruleRegion) {

@@ -21,6 +21,7 @@ import type {
 	TransformationStep,
 	TransformationsData,
 } from '../types/index.js';
+import { normalizeLocation } from '../utils/location-normalizer.js';
 
 interface TransformationSearchOptions {
 	maxSteps?: number; // デフォルト: TRANSFORMATION.MAX_STEPS
@@ -266,6 +267,9 @@ export async function suggestTransformation(
 	const target = normalizeCrsCode(targetCrs);
 	const warnings: string[] = [];
 
+	// LocationSpec 正規化（指定されている場合のみ）
+	const normalizedLocation = location ? normalizeLocation(location) : undefined;
+
 	// 同一CRSチェック
 	if (source === target) {
 		return {
@@ -307,7 +311,7 @@ export async function suggestTransformation(
 	const recommended = selectRecommendedPath(directPath, viaPaths);
 
 	// 位置特有の警告
-	if (location && isWideArea(location)) {
+	if (normalizedLocation && isWideArea(normalizedLocation)) {
 		warnings.push(MESSAGES.transformation.WIDE_AREA_WARNING);
 	}
 

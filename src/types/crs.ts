@@ -71,10 +71,41 @@ export interface CrsDetail extends CrsInfo {
 }
 
 export interface LocationSpec {
+	/**
+	 * 国コード（ISO 3166-1 alpha-2）
+	 * 例: "JP", "US", "GB", "DE", "FR", "AU"
+	 * 後方互換: "Japan" → "JP", "Global" → "GLOBAL" に内部変換
+	 */
 	country?: string;
+
+	/**
+	 * 地方名 ("Kanto", "Northeast US", "Western Europe")
+	 */
 	region?: string;
+
+	/**
+	 * 行政区画（都道府県/州/県/省の統一フィールド）
+	 * 日本: "東京都", "北海道"
+	 * 米国: "California", "New York"
+	 * 英国: "England", "Scotland"
+	 */
+	subdivision?: string;
+
+	/**
+	 * @deprecated Use `subdivision` instead.
+	 * 後方互換のため残す。内部で subdivision に変換。
+	 */
 	prefecture?: string;
-	city?: string; // 複数系をまたぐ地域での判定用（札幌市、那覇市など）
+
+	/**
+	 * 市区町村/都市
+	 * 複数系をまたぐ地域での判定用（札幌市、那覇市など）
+	 */
+	city?: string;
+
+	/** バウンディングボックス */
 	boundingBox?: BoundingBox;
+
+	/** 中心座標 */
 	centerPoint?: { lat: number; lng: number };
 }

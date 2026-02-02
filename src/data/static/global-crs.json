@@ -1,5 +1,5 @@
 {
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"geographicCRS": {
 		"EPSG:4326": {
 			"code": "EPSG:4326",
@@ -16,7 +16,7 @@
 					"west": -180
 				}
 			},
-			"remarks": "GPS・GNSSの基準座標系。GeoJSONの標準。Webアプリケーションでのデータ交換に推奨。",
+			"remarks": "The standard CRS for GPS/GNSS systems. Default CRS for GeoJSON. Recommended for data exchange in web applications.",
 			"useCases": ["data_storage", "data_exchange", "navigation", "web_mapping"]
 		},
 		"EPSG:4269": {
@@ -34,7 +34,7 @@
 					"west": -172.54
 				}
 			},
-			"remarks": "北米測地系1983。アメリカ・カナダ・メキシコで使用。",
+			"remarks": "North American Datum 1983. Standard geodetic datum for the United States, Canada, and Mexico.",
 			"useCases": ["data_storage", "data_exchange"]
 		},
 		"EPSG:4258": {
@@ -52,7 +52,7 @@
 					"west": -16.1
 				}
 			},
-			"remarks": "欧州地域基準系1989。EU圏での標準座標系。",
+			"remarks": "European Terrestrial Reference System 1989. Standard geodetic datum for the European Union.",
 			"useCases": ["data_storage", "data_exchange"]
 		}
 	},
@@ -80,9 +80,9 @@
 				}
 			},
 			"accuracy": {
-				"notes": "距離・面積計算には不適切。高緯度地域で大きな歪みが発生。"
+				"notes": "Not suitable for distance or area calculations. Significant distortion at high latitudes."
 			},
-			"remarks": "Web Mercator。Google Maps、OpenStreetMap等の主要Web地図サービスで採用。表示専用であり、測量・計測には使用不可。",
+			"remarks": "Web Mercator. Used by Google Maps, OpenStreetMap, and other major web mapping services. For display purposes only; not for surveying or measurements.",
 			"useCases": ["web_mapping", "visualization"],
 			"relatedCrs": ["EPSG:4326"]
 		},
@@ -110,10 +110,10 @@
 				}
 			},
 			"accuracy": {
-				"horizontal": "zone内で0.04%以下の歪み",
-				"notes": "UTMゾーン内での距離・面積計算に適切"
+				"horizontal": "Within 0.04% distortion inside UTM zone",
+				"notes": "Suitable for distance and area calculations within the UTM zone"
 			},
-			"remarks": "UTM zone 54N。日本の一部（関東・東北）をカバー。国際的なデータ交換に使用。",
+			"remarks": "UTM zone 54N. Covers parts of Japan (Kanto, Tohoku). Used for international data exchange.",
 			"useCases": ["distance_calculation", "area_calculation", "data_exchange"]
 		},
 		"EPSG:32653": {
@@ -139,7 +139,7 @@
 					"west": 132
 				}
 			},
-			"remarks": "UTM zone 53N。日本の一部（近畿・中国・四国）をカバー。",
+			"remarks": "UTM zone 53N. Covers parts of Japan (Kinki, Chugoku, Shikoku).",
 			"useCases": ["distance_calculation", "area_calculation", "data_exchange"]
 		},
 		"EPSG:32652": {
@@ -165,8 +165,66 @@
 					"west": 126
 				}
 			},
-			"remarks": "UTM zone 52N。日本の一部（九州・沖縄）をカバー。",
+			"remarks": "UTM zone 52N. Covers parts of Japan (Kyushu, Okinawa).",
 			"useCases": ["distance_calculation", "area_calculation", "data_exchange"]
+		},
+		"EPSG:6350": {
+			"code": "EPSG:6350",
+			"name": "NAD83(2011) / Conus Albers",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:6318",
+			"projection": {
+				"method": "Albers Equal Area",
+				"centralMeridian": -96,
+				"latitudeOfOrigin": 23,
+				"falseEasting": 0,
+				"falseNorthing": 0
+			},
+			"areaOfUse": {
+				"description": "Conterminous United States (CONUS)",
+				"boundingBox": {
+					"north": 49.38,
+					"south": 24.41,
+					"east": -66.91,
+					"west": -124.79
+				}
+			},
+			"accuracy": {
+				"horizontal": "Equal-area projection suitable for thematic mapping",
+				"notes": "Preserves area but distorts shape and distance"
+			},
+			"remarks": "Albers Equal Area projection for the contiguous United States. Suitable for area calculations and thematic mapping of the entire CONUS.",
+			"useCases": ["area_calculation", "visualization"]
+		},
+		"EPSG:3035": {
+			"code": "EPSG:3035",
+			"name": "ETRS89-extended / LAEA Europe",
+			"type": "projected",
+			"deprecated": false,
+			"baseCRS": "EPSG:4258",
+			"projection": {
+				"method": "Lambert Azimuthal Equal Area",
+				"centralMeridian": 10,
+				"latitudeOfOrigin": 52,
+				"falseEasting": 4321000,
+				"falseNorthing": 3210000
+			},
+			"areaOfUse": {
+				"description": "Europe",
+				"boundingBox": {
+					"north": 84.73,
+					"south": 24.6,
+					"east": 40.18,
+					"west": -35.58
+				}
+			},
+			"accuracy": {
+				"horizontal": "Equal-area projection for Europe",
+				"notes": "Standard projection for European statistical mapping (Eurostat)"
+			},
+			"remarks": "Lambert Azimuthal Equal Area projection for Europe. Adopted by INSPIRE and Eurostat for statistical and analytical mapping.",
+			"useCases": ["area_calculation", "visualization", "data_exchange"]
 		}
 	}
 }

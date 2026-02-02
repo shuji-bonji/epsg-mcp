@@ -206,9 +206,9 @@ describe('Data Loader', () => {
 		it('should return zone mapping for prefectures', async () => {
 			const mapping = await getZoneMapping();
 			expect(mapping).toBeDefined();
-			expect(mapping['東京都']).toBeDefined();
-			expect(mapping['東京都'].zone).toBe('IX');
-			expect(mapping['東京都'].code).toBe('EPSG:6677');
+			expect(mapping.東京都).toBeDefined();
+			expect(mapping.東京都.zone).toBe('IX');
+			expect(mapping.東京都.code).toBe('EPSG:6677');
 		});
 
 		it('should include all major prefectures', async () => {

@@ -16,6 +16,7 @@ import type {
 	ValidationIssue,
 	ValidationIssueCode,
 } from '../types/index.js';
+import { normalizeLocation } from './location-normalizer.js';
 import { applyValidationRules } from './validation-rules.js';
 
 /**
@@ -198,6 +199,9 @@ export async function validateCrsUsage(
 	purpose: Purpose,
 	location: LocationSpec
 ): Promise<ValidateCrsUsageOutput> {
+	// 1. LocationSpec 正規化
+	const normalized = normalizeLocation(location);
+
 	const issues: ValidationIssue[] = [];
 	const crsDetail = await findCrsById(crs);
 
@@ -218,7 +222,7 @@ export async function validateCrsUsage(
 	}
 
 	// 2. 適用範囲チェック
-	if (!isLocationWithinArea(location, crsDetail.areaOfUse)) {
+	if (!isLocationWithinArea(normalized, crsDetail.areaOfUse)) {
 		issues.push({
 			severity: 'error',
 			code: 'AREA_MISMATCH',
@@ -228,7 +232,7 @@ export async function validateCrsUsage(
 	}
 
 	// 3. 用途別チェック
-	const purposeIssues = await validateForPurpose(crsDetail, purpose, location);
+	const purposeIssues = await validateForPurpose(crsDetail, purpose, normalized);
 	issues.push(...purposeIssues);
 
 	// 4. スコア計算
@@ -237,7 +241,7 @@ export async function validateCrsUsage(
 	// 5. 代替案提案
 	const betterAlternatives =
 		score < VALIDATION_SCORE.BETTER_ALTERNATIVES_THRESHOLD
-			? await findBetterAlternatives(purpose, location)
+			? await findBetterAlternatives(purpose, normalized)
 			: undefined;
 
 	return {

@@ -7,6 +7,8 @@
 export * from './best-practices.js';
 // CRS比較関連
 export * from './comparison.js';
+// Country Pack 関連（Phase 5）
+export * from './country-pack.js';
 // CRS 基本型
 export * from './crs.js';
 // 推奨・検証関連

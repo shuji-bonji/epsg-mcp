@@ -55,7 +55,8 @@ export const PurposeSchema = z.enum([
 export const LocationSchema = z.object({
 	country: z.string().optional(),
 	region: z.string().optional(),
-	prefecture: z.string().optional(),
+	subdivision: z.string().optional(), // 行政区画（都道府県/州/県など）
+	prefecture: z.string().optional(), // @deprecated: Use subdivision instead
 	city: z.string().optional(), // 複数系をまたぐ地域での判定用
 	boundingBox: BoundingBoxSchema.optional(),
 	centerPoint: z

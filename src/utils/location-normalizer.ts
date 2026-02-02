@@ -1,0 +1,221 @@
+/**
+ * LocationSpec 正規化ユーティリティ
+ *
+ * 後方互換性を維持しながら、LocationSpecを正規化する
+ * - country の正規化（"Japan" → "JP"）
+ * - prefecture → subdivision のマイグレーション
+ * - subdivision から country の推定
+ */
+
+import { COUNTRY_ALIASES } from '../constants/index.js';
+import type { LocationSpec } from '../types/index.js';
+
+/**
+ * 日本の都道府県一覧（subdivisionから国を推定するため）
+ */
+export const JAPANESE_PREFECTURES = new Set([
+	'北海道',
+	'青森県',
+	'岩手県',
+	'宮城県',
+	'秋田県',
+	'山形県',
+	'福島県',
+	'茨城県',
+	'栃木県',
+	'群馬県',
+	'埼玉県',
+	'千葉県',
+	'東京都',
+	'神奈川県',
+	'新潟県',
+	'富山県',
+	'石川県',
+	'福井県',
+	'山梨県',
+	'長野県',
+	'岐阜県',
+	'静岡県',
+	'愛知県',
+	'三重県',
+	'滋賀県',
+	'京都府',
+	'大阪府',
+	'兵庫県',
+	'奈良県',
+	'和歌山県',
+	'鳥取県',
+	'島根県',
+	'岡山県',
+	'広島県',
+	'山口県',
+	'徳島県',
+	'香川県',
+	'愛媛県',
+	'高知県',
+	'福岡県',
+	'佐賀県',
+	'長崎県',
+	'熊本県',
+	'大分県',
+	'宮崎県',
+	'鹿児島県',
+	'沖縄県',
+]);
+
+/**
+ * 米国の州一覧（subdivisionから国を推定するため）
+ */
+export const US_STATES = new Set([
+	'Alabama',
+	'Alaska',
+	'Arizona',
+	'Arkansas',
+	'California',
+	'Colorado',
+	'Connecticut',
+	'Delaware',
+	'Florida',
+	'Georgia',
+	'Hawaii',
+	'Idaho',
+	'Illinois',
+	'Indiana',
+	'Iowa',
+	'Kansas',
+	'Kentucky',
+	'Louisiana',
+	'Maine',
+	'Maryland',
+	'Massachusetts',
+	'Michigan',
+	'Minnesota',
+	'Mississippi',
+	'Missouri',
+	'Montana',
+	'Nebraska',
+	'Nevada',
+	'New Hampshire',
+	'New Jersey',
+	'New Mexico',
+	'New York',
+	'North Carolina',
+	'North Dakota',
+	'Ohio',
+	'Oklahoma',
+	'Oregon',
+	'Pennsylvania',
+	'Rhode Island',
+	'South Carolina',
+	'South Dakota',
+	'Tennessee',
+	'Texas',
+	'Utah',
+	'Vermont',
+	'Virginia',
+	'Washington',
+	'West Virginia',
+	'Wisconsin',
+	'Wyoming',
+	'District of Columbia',
+]);
+
+/**
+ * 英国の地域一覧（subdivisionから国を推定するため）
+ */
+export const UK_REGIONS = new Set(['England', 'Scotland', 'Wales', 'Northern Ireland']);
+
+/**
+ * 国コードを正規化
+ *
+ * @param country - 国名またはコード
+ * @returns ISO 3166-1 alpha-2 コード
+ */
+export function normalizeCountry(country: string): string {
+	const lowerCountry = country.toLowerCase().trim();
+	return COUNTRY_ALIASES[lowerCountry] || country.toUpperCase();
+}
+
+/**
+ * subdivisionから国を推定
+ *
+ * @param subdivision - 行政区画名
+ * @returns 推定された国コード、または undefined
+ */
+export function inferCountryFromSubdivision(subdivision: string): string | undefined {
+	if (JAPANESE_PREFECTURES.has(subdivision)) {
+		return 'JP';
+	}
+	if (US_STATES.has(subdivision)) {
+		return 'US';
+	}
+	if (UK_REGIONS.has(subdivision)) {
+		return 'GB';
+	}
+	return undefined;
+}
+
+/**
+ * 値が日本の都道府県かどうかを判定
+ */
+export function isJapanesePrefecture(value: string): boolean {
+	return JAPANESE_PREFECTURES.has(value);
+}
+
+/**
+ * LocationSpec を正規化
+ *
+ * 後方互換性を維持しながら、以下の変換を行う：
+ * - country の正規化（"Japan" → "JP"）
+ * - prefecture → subdivision のマイグレーション
+ * - subdivision から country の推定
+ *
+ * @param location - 正規化前の LocationSpec
+ * @returns 正規化後の LocationSpec
+ */
+export function normalizeLocation(location: LocationSpec): LocationSpec {
+	const normalized = { ...location };
+
+	// country の正規化
+	if (normalized.country) {
+		normalized.country = normalizeCountry(normalized.country);
+	}
+
+	// prefecture → subdivision のマイグレーション
+	// Phase 5-1 では変換のみ行い、サービス層での利用は Phase 5-2 で行う
+	if (normalized.prefecture && !normalized.subdivision) {
+		normalized.subdivision = normalized.prefecture;
+	}
+
+	// subdivision から country を推定
+	if (normalized.subdivision && !normalized.country) {
+		const inferredCountry = inferCountryFromSubdivision(normalized.subdivision);
+		if (inferredCountry) {
+			normalized.country = inferredCountry;
+		}
+	}
+
+	// prefecture が指定されていて country がない場合は JP と推定
+	// （日本語の都道府県名が指定されている可能性が高い）
+	if (normalized.prefecture && !normalized.country) {
+		normalized.country = 'JP';
+	}
+
+	return normalized;
+}
+
+/**
+ * 場所が日本かどうかを判定（正規化済みLocationSpec用）
+ */
+export function isJapanLocationNormalized(location: LocationSpec): boolean {
+	if (location.country === 'JP') {
+		return true;
+	}
+	if (location.subdivision && isJapanesePrefecture(location.subdivision)) {
+		return true;
+	}
+	if (location.prefecture && isJapanesePrefecture(location.prefecture)) {
+		return true;
+	}
+	return false;
+}
