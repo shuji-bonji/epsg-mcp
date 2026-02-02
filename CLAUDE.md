@@ -43,26 +43,37 @@ src/
 ├── types/                  # 型定義（ValidationIssueCode等）
 ├── schemas/                # Zodスキーマ
 ├── errors/                 # エラーハンドリング
+├── constants/
+│   ├── index.ts            # 定数エクスポート
+│   └── messages.ts         # メッセージ定数（i18n対応）
 ├── utils/
 │   ├── logger.ts           # ロガー
-│   └── validation.ts       # CRS検証ユーティリティ（Phase 2）
+│   ├── validation.ts       # CRS検証ユーティリティ（Phase 2）
+│   ├── location-normalizer.ts # 位置情報正規化
+│   └── utm.ts              # UTMゾーン計算
 ├── data/
-│   ├── loader.ts           # データローダー
+│   ├── loader.ts           # データローダー（EPSG_LANG対応）
+│   ├── sqlite-loader.ts    # SQLiteローダー（オプショナル）
 │   └── static/
 │       ├── japan-crs.json       # 日本CRSデータ
 │       ├── global-crs.json      # グローバルCRSデータ
-│       ├── recommendations.json # 推奨ルール・検証ルール
-│       ├── transformations.json # 変換経路データ（Phase 3）
-│       ├── comparisons.json     # CRS比較データ（Phase 3）
-│       ├── best-practices.json  # ベストプラクティスデータ（Phase 4）
-│       └── troubleshooting.json # トラブルシューティングデータ（Phase 4）
+│       ├── recommendations.json # 推奨ルール（日本語）
+│       ├── transformations.json # 変換経路データ
+│       ├── comparisons.json     # CRS比較データ
+│       ├── best-practices.json  # ベストプラクティス（日本語）
+│       ├── troubleshooting.json # トラブルシューティング（日本語）
+│       └── en/                  # 英語ローカライズファイル
+│           ├── recommendations.json
+│           ├── best-practices.json
+│           └── troubleshooting.json
 ├── services/
 │   ├── search-service.ts        # 検索サービス
 │   ├── recommendation-service.ts # 推奨サービス（Phase 2）
 │   ├── transformation-service.ts    # 変換経路サービス（Phase 3）
 │   ├── comparison-service.ts        # CRS比較サービス（Phase 3）
 │   ├── best-practices-service.ts    # ベストプラクティスサービス（Phase 4）
-│   └── troubleshooting-service.ts   # トラブルシューティングサービス（Phase 4）
+│   ├── troubleshooting-service.ts   # トラブルシューティングサービス（Phase 4）
+│   └── utm-service.ts               # UTMフォールバックサービス（Phase 5）
 ├── packs/                       # Country Packs（Phase 5）
 │   ├── pack-manager.ts          # パック管理システム
 │   ├── jp/                      # Japan Pack
@@ -139,6 +150,16 @@ src/
   - US Pack（NAD83、State Plane Coordinate System）
   - UK Pack（OSGB36、British National Grid、ETRS89）
   - 環境変数 `EPSG_PACKS` によるパック有効化制御
+  - 環境変数 `EPSG_LANG` による言語切り替え（デフォルト: en）
+  - メッセージ定数の集中管理（`src/constants/messages.ts`）
+
+## 環境変数
+
+| 変数名 | 説明 | デフォルト |
+|--------|------|----------|
+| `EPSG_PACKS` | 有効化するCountry Pack（カンマ区切り） | `jp` |
+| `EPSG_LANG` | 出力言語（`en` または `ja`） | `en` |
+| `EPSG_DB_PATH` | SQLiteデータベースパス（オプショナル） | なし |
 
 ## データソース
 

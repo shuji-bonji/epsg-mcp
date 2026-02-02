@@ -48,30 +48,50 @@ npx @shuji-bonji/epsg-mcp
 
 ```json
 {
-  "mcpServers": {
-    "epsg": {
-      "command": "npx",
-      "args": ["@shuji-bonji/epsg-mcp"]
-    }
-  }
+	"mcpServers": {
+		"epsg": {
+			"command": "npx",
+			"args": ["@shuji-bonji/epsg-mcp"]
+		}
+	}
 }
 ```
 
 #### 追加のCountry Packを有効にする
 
-デフォルトでは日本パックのみがロードされます。追加のパック（例: US）を有効にするには、`EPSG_PACKS` 環境変数を設定します:
+デフォルトでは日本パックのみがロードされます。追加のパック（例: US, UK）を有効にするには、`EPSG_PACKS` 環境変数を設定します:
 
 ```json
 {
-  "mcpServers": {
-    "epsg": {
-      "command": "npx",
-      "args": ["@shuji-bonji/epsg-mcp"],
-      "env": {
-        "EPSG_PACKS": "jp,us"
-      }
-    }
-  }
+	"mcpServers": {
+		"epsg": {
+			"command": "npx",
+			"args": ["@shuji-bonji/epsg-mcp"],
+			"env": {
+				"EPSG_PACKS": "jp,us,uk"
+			}
+		}
+	}
+}
+```
+
+利用可能なパック: `jp`（日本）、`us`（アメリカ）、`uk`/`gb`（イギリス）
+
+#### 言語設定
+
+デフォルトでは英語で出力されます。日本語で出力するには、`EPSG_LANG` 環境変数を設定します:
+
+```json
+{
+	"mcpServers": {
+		"epsg": {
+			"command": "npx",
+			"args": ["@shuji-bonji/epsg-mcp"],
+			"env": {
+				"EPSG_LANG": "ja"
+			}
+		}
+	}
 }
 ```
 
@@ -104,6 +124,7 @@ CRSをキーワードで検索します。
 ```
 
 **使用例**:
+
 - 「JGD2011に関連するCRSを検索」
 - 「東京で使える投影座標系を探す」
 - 「EPSGコード6677の情報」
@@ -134,6 +155,7 @@ EPSGコードでCRSの詳細情報を取得します。
 ```
 
 **使用例**:
+
 - 「EPSG:6677の詳細を教えて」
 - 「Web Mercator(3857)の特徴は？」
 
@@ -162,6 +184,7 @@ EPSGコードでCRSの詳細情報を取得します。
 ```
 
 **使用例**:
+
 - 「日本で使えるCRS一覧」
 - 「グローバルな地理座標系は？」
 
@@ -197,6 +220,7 @@ EPSGコードでCRSの詳細情報を取得します。
 ```
 
 **使用例**:
+
 - 「東京周辺で距離計算するのに最適なCRSは？」
 - 「北海道札幌で測量するときのCRSは？」
 - 「Webアプリで日本全国の地図を表示したい」
@@ -224,12 +248,14 @@ EPSGコードでCRSの詳細情報を取得します。
 ```
 
 **検出される問題例**:
+
 - `DEPRECATED_CRS`: 非推奨CRSの使用
 - `AREA_DISTORTION`: Web Mercatorでの面積計算
 - `ZONE_MISMATCH`: 東京で系I（長崎用）を使用
 - `GEOJSON_INCOMPATIBLE`: 投影座標系でGeoJSON出力
 
 **使用例**:
+
 - 「Web Mercatorを北海道の面積計算に使って大丈夫？」
 - 「EPSG:4326で日本の測量データを保存しても問題ない？」
 
@@ -259,17 +285,20 @@ EPSGコードでCRSの詳細情報を取得します。
 ```
 
 **TransformationPath**:
+
 - `steps`: 変換ステップの配列（from, to, method, accuracy, isReverse）
 - `totalAccuracy`: 総合精度
 - `complexity`: "simple" | "moderate" | "complex"
 
 **特徴**:
+
 - BFSグラフ探索で最大4ステップまでの経路を探索
 - 逆方向変換（reversible: true）も自動的に考慮
 - 非推奨CRS（Tokyo Datum, JGD2000）使用時に警告
 - 広域データ変換時の精度警告
 
 **使用例**:
+
 - 「Tokyo DatumからJGD2011への変換方法は？」
 - 「WGS84からWeb Mercatorへの変換経路を教えて」
 
@@ -298,6 +327,7 @@ EPSGコードでCRSの詳細情報を取得します。
 ```
 
 **比較観点**:
+
 - `datum`: 測地系の比較（WGS84 vs JGD2011は実用上同一など）
 - `projection`: 投影法の比較
 - `area_of_use`: 適用範囲の比較
@@ -307,6 +337,7 @@ EPSGコードでCRSの詳細情報を取得します。
 - `use_cases`: 用途適性の比較（スコアベース）
 
 **使用例**:
+
 - 「WGS84とJGD2011の違いは？」
 - 「Web Mercatorと地理座標系の比較をして」
 - 「JGD2000とJGD2011を測地系の観点で比較して」
@@ -336,6 +367,7 @@ CRS利用のベストプラクティスを取得します。
 ```
 
 **Practice**:
+
 - `title`: プラクティス名
 - `description`: 説明
 - `priority`: "must" | "should" | "may"
@@ -343,6 +375,7 @@ CRS利用のベストプラクティスを取得します。
 - `example?`: 具体例
 
 **使用例**:
+
 - 「日本での測量のベストプラクティスは？」
 - 「Web地図を作るときの座標系の選び方」
 - 「GeoJSONでデータ交換するときの注意点」
@@ -376,6 +409,7 @@ CRS関連の問題をトラブルシューティングします。
 ```
 
 **対応症状**:
+
 - 座標が数百m〜数kmずれる（Tokyo Datum問題など）
 - 座標が1〜数mずれる（変換精度限界など）
 - 座標が数cm〜数十cmずれる（WGS84/JGD2011差など）
@@ -384,6 +418,7 @@ CRS関連の問題をトラブルシューティングします。
 - 座標変換でエラー（パラメータ未登録など）
 
 **使用例**:
+
 - 「座標が400mずれる」
 - 「面積計算の結果がおかしい」
 - 「古いデータと新しいデータが合わない」
@@ -392,29 +427,38 @@ CRS関連の問題をトラブルシューティングします。
 
 ### Japan (JGD2011)
 
-| EPSG | Name | Usage |
-|------|------|-------|
-| 6668 | JGD2011 | 地理座標系（基準） |
-| 6669-6687 | 平面直角座標系 I-XIX | 測量・大縮尺地図 |
-| 4612 | JGD2000 | レガシー（非推奨） |
+| EPSG      | Name                 | Usage              |
+| --------- | -------------------- | ------------------ |
+| 6668      | JGD2011              | 地理座標系（基準） |
+| 6669-6687 | 平面直角座標系 I-XIX | 測量・大縮尺地図   |
+| 4612      | JGD2000              | レガシー（非推奨） |
 
 ### United States (NAD83)
 
-| EPSG | Name | Usage |
-|------|------|-------|
-| 4269 | NAD83 | 地理座標系（標準） |
-| 6318 | NAD83(2011) | 最新リアライゼーション |
-| 5070 | NAD83 / Conus Albers | 面積計算用 |
-| 2229 | NAD83 / California zone 5 | State Plane例 |
-| 2263 | NAD83 / New York Long Island | State Plane例 |
+| EPSG | Name                         | Usage                  |
+| ---- | ---------------------------- | ---------------------- |
+| 4269 | NAD83                        | 地理座標系（標準）     |
+| 6318 | NAD83(2011)                  | 最新リアライゼーション |
+| 5070 | NAD83 / Conus Albers         | 面積計算用             |
+| 2229 | NAD83 / California zone 5    | State Plane例          |
+| 2263 | NAD83 / New York Long Island | State Plane例          |
+
+### United Kingdom (OSGB36/ETRS89)
+
+| EPSG  | Name                      | Usage                  |
+| ----- | ------------------------- | ---------------------- |
+| 4277  | OSGB36                    | 地理座標系（レガシー） |
+| 4258  | ETRS89                    | 地理座標系（現行）     |
+| 27700 | British National Grid     | 測量・地図作成         |
+| 2157  | Irish Transverse Mercator | 北アイルランド         |
 
 ### Global
 
-| EPSG | Name | Usage |
-|------|------|-------|
-| 4326 | WGS 84 | GPS/GeoJSON標準 |
-| 3857 | Web Mercator | Web地図表示 |
-| 326xx | UTM zones | 距離・面積計算 |
+| EPSG  | Name         | Usage           |
+| ----- | ------------ | --------------- |
+| 4326  | WGS 84       | GPS/GeoJSON標準 |
+| 3857  | Web Mercator | Web地図表示     |
+| 326xx | UTM zones    | 距離・面積計算  |
 
 ## 拡張CRSサポート（オプション）
 
@@ -450,15 +494,15 @@ export EPSG_DB_PATH="/path/to/epsg.db"
 
 ```json
 {
-  "mcpServers": {
-    "epsg": {
-      "command": "npx",
-      "args": ["@shuji-bonji/epsg-mcp"],
-      "env": {
-        "EPSG_DB_PATH": "/path/to/epsg.db"
-      }
-    }
-  }
+	"mcpServers": {
+		"epsg": {
+			"command": "npx",
+			"args": ["@shuji-bonji/epsg-mcp"],
+			"env": {
+				"EPSG_DB_PATH": "/path/to/epsg.db"
+			}
+		}
+	}
 }
 ```
 
@@ -484,8 +528,7 @@ npm run test:watch
 
 ## Documentation
 
-- [設計書](docs/EPSG-MCP-Design-Specification.md) - 機能設計・ツール定義
-- [実装計画](docs/implementation-plan.md) - 実装タスク・進捗
+- [Country Pack作成ガイド](docs/creating-country-packs.ja.md) - 新しい国/地域サポートの追加方法
 
 ## Roadmap
 

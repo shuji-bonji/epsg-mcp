@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+#### Internationalization Enhancements
+- Default output language is now English (previously Japanese)
+- `EPSG_LANG` environment variable support for language selection
+  - `EPSG_LANG=ja`: Japanese output
+  - `EPSG_LANG=en` or unset: English output (default)
+- Message constants centralized in `src/constants/messages.ts`
+  - Purpose names, datum names, aspect names
+  - Comparison verdicts for all 7 aspects
+  - Recommendation warnings, usage notes, error messages
+  - Enables future i18n expansion
+
+### Performance
+
+#### Async Optimization
+- `comparison-service.ts`: Parallel CRS fetching with `Promise.all`
+- `recommendation-service.ts`: Parallel alternatives building with `Promise.all`
+
+### Refactored
+
+#### Code Deduplication
+- Consolidated `isJapanLocation()` function (was duplicated in 3 files)
+  - Single source of truth in `src/utils/location-normalizer.ts`
+  - Removed duplicates from `recommendation-service.ts` and `validation-rules.ts`
+- Added `indexCrsData()` helper in `src/data/loader.ts`
+  - Eliminated 4 identical indexing loops
+
+### Technical Details
+- All 638 tests passing
+- No breaking changes
+
 ---
 
 ## [0.9.0] - 2026-02-02

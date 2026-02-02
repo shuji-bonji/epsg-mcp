@@ -48,30 +48,50 @@ Add to `claude_desktop_config.json`:
 
 ```json
 {
-  "mcpServers": {
-    "epsg": {
-      "command": "npx",
-      "args": ["@shuji-bonji/epsg-mcp"]
-    }
-  }
+	"mcpServers": {
+		"epsg": {
+			"command": "npx",
+			"args": ["@shuji-bonji/epsg-mcp"]
+		}
+	}
 }
 ```
 
 #### Enabling Additional Country Packs
 
-By default, only the Japan pack is loaded. To enable additional packs (e.g., US), set the `EPSG_PACKS` environment variable:
+By default, only the Japan pack is loaded. To enable additional packs (e.g., US, UK), set the `EPSG_PACKS` environment variable:
 
 ```json
 {
-  "mcpServers": {
-    "epsg": {
-      "command": "npx",
-      "args": ["@shuji-bonji/epsg-mcp"],
-      "env": {
-        "EPSG_PACKS": "jp,us"
-      }
-    }
-  }
+	"mcpServers": {
+		"epsg": {
+			"command": "npx",
+			"args": ["@shuji-bonji/epsg-mcp"],
+			"env": {
+				"EPSG_PACKS": "jp,us,uk"
+			}
+		}
+	}
+}
+```
+
+Available packs: `jp` (Japan), `us` (United States), `uk`/`gb` (United Kingdom)
+
+#### Language Settings
+
+By default, output is in English. To get Japanese output, set the `EPSG_LANG` environment variable:
+
+```json
+{
+	"mcpServers": {
+		"epsg": {
+			"command": "npx",
+			"args": ["@shuji-bonji/epsg-mcp"],
+			"env": {
+				"EPSG_LANG": "ja"
+			}
+		}
+	}
 }
 ```
 
@@ -104,6 +124,7 @@ Search CRS by keyword.
 ```
 
 **Usage Examples**:
+
 - "Search for CRS related to JGD2011"
 - "Find projected coordinate systems available in Tokyo"
 - "Get information about EPSG code 6677"
@@ -134,6 +155,7 @@ Get detailed CRS information by EPSG code.
 ```
 
 **Usage Examples**:
+
 - "Tell me the details of EPSG:6677"
 - "What are the characteristics of Web Mercator (3857)?"
 
@@ -162,6 +184,7 @@ Get available CRS list and recommendations by region.
 ```
 
 **Usage Examples**:
+
 - "List CRS available in Japan"
 - "What global geographic coordinate systems are there?"
 
@@ -197,6 +220,7 @@ Recommend optimal CRS based on purpose and location.
 ```
 
 **Usage Examples**:
+
 - "What's the best CRS for distance calculation around Tokyo?"
 - "What CRS should I use for surveying in Sapporo, Hokkaido?"
 - "I want to display a map of all Japan in a web app"
@@ -224,12 +248,14 @@ Validate whether a specified CRS is appropriate for a specific purpose and locat
 ```
 
 **Detected Issues Examples**:
+
 - `DEPRECATED_CRS`: Using deprecated CRS
 - `AREA_DISTORTION`: Area calculation with Web Mercator
 - `ZONE_MISMATCH`: Using Zone I (for Nagasaki) in Tokyo
 - `GEOJSON_INCOMPATIBLE`: Outputting GeoJSON with projected CRS
 
 **Usage Examples**:
+
 - "Is it OK to use Web Mercator for area calculation in Hokkaido?"
 - "Any issues with storing survey data in Japan using EPSG:4326?"
 
@@ -259,17 +285,20 @@ Suggest optimal transformation path between two CRS.
 ```
 
 **TransformationPath**:
+
 - `steps`: Array of transformation steps (from, to, method, accuracy, isReverse)
 - `totalAccuracy`: Overall accuracy
 - `complexity`: "simple" | "moderate" | "complex"
 
 **Features**:
+
 - BFS graph search for paths up to 4 steps
 - Automatic consideration of reverse transformations (reversible: true)
 - Warnings when using deprecated CRS (Tokyo Datum, JGD2000)
 - Accuracy warnings for large area data transformation
 
 **Usage Examples**:
+
 - "How to transform from Tokyo Datum to JGD2011?"
 - "Show me the transformation path from WGS84 to Web Mercator"
 
@@ -298,6 +327,7 @@ Compare two CRS from various perspectives.
 ```
 
 **Comparison Aspects**:
+
 - `datum`: Datum comparison (e.g., WGS84 vs JGD2011 are practically identical)
 - `projection`: Projection comparison
 - `area_of_use`: Area of use comparison
@@ -307,6 +337,7 @@ Compare two CRS from various perspectives.
 - `use_cases`: Use case suitability comparison (score-based)
 
 **Usage Examples**:
+
 - "What's the difference between WGS84 and JGD2011?"
 - "Compare Web Mercator and geographic CRS"
 - "Compare JGD2000 and JGD2011 from the datum perspective"
@@ -336,6 +367,7 @@ Get best practices for CRS usage.
 ```
 
 **Practice**:
+
 - `title`: Practice name
 - `description`: Description
 - `priority`: "must" | "should" | "may"
@@ -343,6 +375,7 @@ Get best practices for CRS usage.
 - `example?`: Concrete example
 
 **Usage Examples**:
+
 - "What are the best practices for surveying in Japan?"
 - "How to choose coordinate systems when creating web maps"
 - "What to watch out for when exchanging data in GeoJSON"
@@ -376,6 +409,7 @@ Troubleshoot CRS-related problems.
 ```
 
 **Supported Symptoms**:
+
 - Coordinates shift by hundreds of meters to kilometers (Tokyo Datum issues, etc.)
 - Coordinates shift by 1-several meters (transformation accuracy limits, etc.)
 - Coordinates shift by centimeters to tens of centimeters (WGS84/JGD2011 difference, etc.)
@@ -384,6 +418,7 @@ Troubleshoot CRS-related problems.
 - Coordinate transformation errors (unregistered parameters, etc.)
 
 **Usage Examples**:
+
 - "Coordinates are off by 400m"
 - "Area calculation results are wrong"
 - "Old data and new data don't align"
@@ -392,29 +427,38 @@ Troubleshoot CRS-related problems.
 
 ### Japan (JGD2011)
 
-| EPSG | Name | Usage |
-|------|------|-------|
-| 6668 | JGD2011 | Geographic CRS (reference) |
+| EPSG      | Name                             | Usage                       |
+| --------- | -------------------------------- | --------------------------- |
+| 6668      | JGD2011                          | Geographic CRS (reference)  |
 | 6669-6687 | Japan Plane Rectangular CS I-XIX | Surveying, large-scale maps |
-| 4612 | JGD2000 | Legacy (deprecated) |
+| 4612      | JGD2000                          | Legacy (deprecated)         |
 
 ### United States (NAD83)
 
-| EPSG | Name | Usage |
-|------|------|-------|
-| 4269 | NAD83 | Geographic CRS (standard) |
-| 6318 | NAD83(2011) | Latest realization |
-| 5070 | NAD83 / Conus Albers | Area calculations |
-| 2229 | NAD83 / California zone 5 | State Plane example |
-| 2263 | NAD83 / New York Long Island | State Plane example |
+| EPSG | Name                         | Usage                     |
+| ---- | ---------------------------- | ------------------------- |
+| 4269 | NAD83                        | Geographic CRS (standard) |
+| 6318 | NAD83(2011)                  | Latest realization        |
+| 5070 | NAD83 / Conus Albers         | Area calculations         |
+| 2229 | NAD83 / California zone 5    | State Plane example       |
+| 2263 | NAD83 / New York Long Island | State Plane example       |
+
+### United Kingdom (OSGB36/ETRS89)
+
+| EPSG  | Name                      | Usage                   |
+| ----- | ------------------------- | ----------------------- |
+| 4277  | OSGB36                    | Geographic CRS (legacy) |
+| 4258  | ETRS89                    | Geographic CRS (modern) |
+| 27700 | British National Grid     | Surveying, mapping      |
+| 2157  | Irish Transverse Mercator | Northern Ireland        |
 
 ### Global
 
-| EPSG | Name | Usage |
-|------|------|-------|
-| 4326 | WGS 84 | GPS/GeoJSON standard |
-| 3857 | Web Mercator | Web map display |
-| 326xx | UTM zones | Distance/area calculation |
+| EPSG  | Name         | Usage                     |
+| ----- | ------------ | ------------------------- |
+| 4326  | WGS 84       | GPS/GeoJSON standard      |
+| 3857  | Web Mercator | Web map display           |
+| 326xx | UTM zones    | Distance/area calculation |
 
 ## Extended CRS Support (Optional)
 
@@ -450,15 +494,15 @@ Or configure in Claude Desktop's `claude_desktop_config.json`:
 
 ```json
 {
-  "mcpServers": {
-    "epsg": {
-      "command": "npx",
-      "args": ["@shuji-bonji/epsg-mcp"],
-      "env": {
-        "EPSG_DB_PATH": "/path/to/epsg.db"
-      }
-    }
-  }
+	"mcpServers": {
+		"epsg": {
+			"command": "npx",
+			"args": ["@shuji-bonji/epsg-mcp"],
+			"env": {
+				"EPSG_DB_PATH": "/path/to/epsg.db"
+			}
+		}
+	}
 }
 ```
 
@@ -484,8 +528,7 @@ npm run test:watch
 
 ## Documentation
 
-- [Design Document](docs/EPSG-MCP-Design-Specification.md) - Feature design and tool definitions
-- [Implementation Plan](docs/implementation-plan.md) - Implementation tasks and progress
+- [Creating Country Packs](docs/creating-country-packs.md) - Guide for adding new country/region support
 
 ## Roadmap
 
