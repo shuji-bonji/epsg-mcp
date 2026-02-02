@@ -11,6 +11,8 @@
 - [docs/phase2-implementation-plan.md](docs/phase2-implementation-plan.md) - Phase 2 実装計画書
 - [docs/phase3-implementation-plan.md](docs/phase3-implementation-plan.md) - Phase 3 実装計画書
 - [docs/phase4-implementation-plan.md](docs/phase4-implementation-plan.md) - Phase 4 実装計画書
+- [docs/phase5-implementation-plan.md](docs/phase5-implementation-plan.md) - Phase 5 実装計画書（国際化・多地域対応）
+- [docs/internationalization-design.md](docs/internationalization-design.md) - 国際化設計書
 
 ## 技術スタック
 
@@ -104,6 +106,14 @@ src/
   - キーワードマッチング（長いキーワード優先）
   - コンテキストベース可能性調整
   - 診断信頼度算出（high/medium/low）
+
+### Phase 5（計画中）
+- 国際化・多地域対応
+  - CountryPackアーキテクチャ（プラグイン形式の地域データ）
+  - UTMフォールバック（座標からUTMゾーン自動判定）
+  - 3層フォールバックモデル（CountryPack → UTM → Global）
+  - SQLite対応（大規模データの効率的管理）
+  - US/UK CountryPack対応
 
 ## データソース
 
