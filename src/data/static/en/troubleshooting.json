@@ -1,0 +1,360 @@
+{
+	"version": "1.0.0",
+	"symptoms": {
+		"coordinate_shift_large": {
+			"description": "Coordinates shifted by hundreds of meters to kilometers",
+			"keywords": [
+				"hundreds of meters",
+				"kilometers",
+				"completely wrong",
+				"large shift",
+				"400m",
+				"several hundred meters"
+			],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "Datum mix-up (Tokyo Datum vs JGD/WGS84)",
+					"description": "There is a systematic shift of approximately 400m between Tokyo Datum and JGD2011/WGS84",
+					"indicators": [
+						"Data created before 2002",
+						"Digitized from old maps or drawings",
+						"CRS information is unknown or not set"
+					]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Incorrect CRS assignment",
+					"description": "Data's CRS information is set to a different value than the actual CRS",
+					"indicators": [
+						"CRS was manually specified during import",
+						".prj file is missing or incorrect",
+						"Post-transformation CRS is set without actual transformation"
+					]
+				},
+				{
+					"likelihood": "low",
+					"cause": "Axis swap (X/Y, longitude/latitude)",
+					"description": "Longitude and latitude are swapped, or X/Y order is reversed",
+					"indicators": [
+						"Points appear in the ocean or foreign countries",
+						"Coordinate value ranges differ from expectations"
+					]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "Check the data's CRS information",
+					"expected": "A clear EPSG code is set",
+					"ifFailed": "If CRS is unknown, investigate data origin"
+				},
+				{
+					"step": 2,
+					"action": "Check coordinate value ranges",
+					"expected": "For Japan: latitude 20-46°, longitude 122-154°",
+					"ifFailed": "If values are abnormal, suspect axis swap"
+				},
+				{
+					"step": 3,
+					"action": "Compare coordinates of known points",
+					"expected": "Matches reference data",
+					"ifFailed": "Estimate cause from shift pattern (direction, distance)"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Datum mix-up (Tokyo Datum vs JGD/WGS84)",
+					"steps": [
+						"Confirm data is in Tokyo Datum",
+						"Perform transformation from EPSG:4301 to EPSG:6668",
+						"Verify transformed data"
+					],
+					"prevention": "Document datum when creating data, transform old data before use",
+					"tools": ["QGIS", "GDAL ogr2ogr", "PostGIS ST_Transform"]
+				},
+				{
+					"forCause": "Incorrect CRS assignment",
+					"steps": [
+						"Identify the correct CRS",
+						"Correct CRS information (change definition, not transform)",
+						"Verify corrected data"
+					],
+					"prevention": "Always verify CRS information when obtaining data and document it"
+				}
+			],
+			"relatedBestPractices": ["historical_data", "data_exchange"]
+		},
+		"coordinate_shift_medium": {
+			"description": "Coordinates shifted by 1 to several meters",
+			"keywords": ["several m", "1-2m", "meter scale", "1m", "2m", "a few meters"],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "Tokyo Datum to JGD2011 transformation accuracy",
+					"description": "Tokyo Datum → JGD2011 transformation accuracy is limited to 1-2m",
+					"indicators": ["Transformation from Tokyo Datum was performed", "Using old data"]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Different transformation parameters",
+					"description": "Same transformation can produce different results depending on parameters used",
+					"indicators": ["Results differ between software", "Transformation method not documented"]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "Check transformation history",
+					"expected": "Transformation method and parameters are recorded",
+					"ifFailed": "If transformation is unclear, verify original data"
+				},
+				{
+					"step": 2,
+					"action": "Verify transformation accuracy limits",
+					"expected": "1-2m shift is normal for Tokyo→JGD transformation",
+					"ifFailed": "If shift is larger, investigate other causes"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Tokyo Datum to JGD2011 transformation accuracy",
+					"steps": [
+						"Accept 1-2m shift as transformation accuracy limit",
+						"Consider re-surveying original data if higher accuracy needed",
+						"Record transformation accuracy in metadata"
+					],
+					"prevention": "Verify data precision requirements and transformation accuracy limits beforehand"
+				}
+			],
+			"relatedBestPractices": ["historical_data", "precision_requirements"]
+		},
+		"coordinate_shift_small": {
+			"description": "Coordinates shifted by centimeters to tens of centimeters",
+			"keywords": ["few cm", "centimeters", "minor", "cm", "tens of cm"],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "Difference between WGS84 and JGD2011",
+					"description": "WGS84 and JGD2011 are practically identical but strictly differ by a few cm",
+					"indicators": [
+						"Mixed use of GPS(WGS84) and JGD2011 data",
+						"Using high-precision survey data"
+					]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Crustal deformation correction from JGD2000 to JGD2011",
+					"description": "Coordinates changed due to crustal deformation from the 2011 Tohoku earthquake",
+					"indicators": ["Using JGD2000 data from before 2011", "Data from Tohoku region"]
+				},
+				{
+					"likelihood": "low",
+					"cause": "Numerical precision/rounding errors",
+					"description": "Insufficient decimal places in coordinates or rounding errors during calculations",
+					"indicators": ["Coordinates stored in FLOAT type", "Multiple transformations performed"]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "Check the CRS being used",
+					"expected": "Verify WGS84 and JGD2011 are not mixed",
+					"ifFailed": "Consider unifying if mixed"
+				},
+				{
+					"step": 2,
+					"action": "Check numeric type",
+					"expected": "DOUBLE type or DECIMAL type with sufficient precision",
+					"ifFailed": "Consider type change if FLOAT type"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Difference between WGS84 and JGD2011",
+					"steps": [
+						"Use as-is if no practical issues",
+						"Unify to one if strict consistency needed",
+						"JGD2011 recommended for data within Japan"
+					],
+					"prevention": "Unify CRS at project start"
+				}
+			],
+			"relatedBestPractices": ["coordinate_storage", "precision_requirements"]
+		},
+		"area_distance_error": {
+			"description": "Area or distance calculations are incorrect",
+			"keywords": ["area", "distance", "calculation result", "length", "size", "calculation wrong"],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "Calculations in Web Mercator (EPSG:3857)",
+					"description": "Web Mercator has significant area/distance distortion at high latitudes",
+					"indicators": ["Using web map library", "Calculating in EPSG:3857", "High-latitude data"]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Planar calculations in geographic CRS",
+					"description": "Calculating distance or area directly with latitude/longitude",
+					"indicators": [
+						"Using degree-unit coordinates directly in calculations",
+						"Distance calculation using Pythagorean theorem"
+					]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "Check the CRS used for calculations",
+					"expected": "Appropriate projected CRS (Japan Plane Rectangular CS for Japan)",
+					"ifFailed": "Transformation needed if Web Mercator or geographic CRS"
+				},
+				{
+					"step": 2,
+					"action": "Calculate expected error",
+					"expected": "Web Mercator at 35° latitude: approximately 23% area distortion",
+					"ifFailed": "Check if error matches expectations"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Calculations in Web Mercator (EPSG:3857)",
+					"steps": [
+						"Transform to JGD2011 Plane Rectangular CS before calculation",
+						"Or use spherical calculation formulas (Haversine, etc.)",
+						"Consider equal-area projection for area calculations"
+					],
+					"prevention": "Do not use Web Mercator for area/distance calculations",
+					"tools": ["PostGIS ST_Area(geography)", "Turf.js"]
+				}
+			],
+			"relatedBestPractices": ["web_mapping", "projection_selection"]
+		},
+		"display_blank": {
+			"description": "Data not displayed or appears blank",
+			"keywords": ["not displayed", "blank", "invisible", "disappeared", "nothing shows"],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "Out of coordinate range due to CRS mismatch",
+					"description": "Attempting to display data with different CRS in the same view",
+					"indicators": ["Only some layers are not displayed", "Blank areas when zooming"]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Coordinate value magnitude mismatch",
+					"description": "Mixing meter units and degree units, or unit system errors",
+					"indicators": [
+						"Coordinate values are extremely large or small",
+						"Mixing projected and geographic CRS"
+					]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "Check CRS of each layer",
+					"expected": "Same CRS for all layers, or transformable",
+					"ifFailed": "Unify CRS or verify transformation settings"
+				},
+				{
+					"step": 2,
+					"action": "Check coordinate value ranges",
+					"expected": "Within expected range (Japan lat/lon, etc.)",
+					"ifFailed": "Data verification needed if values are abnormal"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Out of coordinate range due to CRS mismatch",
+					"steps": [
+						"Check project CRS",
+						"Check and unify all layer CRS",
+						"Verify on-the-fly transformation is enabled"
+					],
+					"prevention": "Check CRS before adding data"
+				}
+			],
+			"relatedBestPractices": ["gis_integration", "data_exchange"]
+		},
+		"transformation_error": {
+			"description": "Error occurs during coordinate transformation",
+			"keywords": [
+				"cannot transform",
+				"error",
+				"failed",
+				"transformation failed",
+				"transform error"
+			],
+			"possibleCauses": [
+				{
+					"likelihood": "high",
+					"cause": "Transformation parameters not found",
+					"description": "Transformation parameters for specified CRS pair are not registered in software",
+					"indicators": [
+						"Transformation between minor CRS",
+						"\"Transformation method not found\" error"
+					]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Invalid CRS code",
+					"description": "Non-existent or deprecated EPSG code specified",
+					"indicators": ["\"CRS not found\" error", "CRS code was manually entered"]
+				}
+			],
+			"diagnosticSteps": [
+				{
+					"step": 1,
+					"action": "Verify CRS code validity",
+					"expected": "Code exists in EPSG Registry",
+					"ifFailed": "Research correct code"
+				},
+				{
+					"step": 2,
+					"action": "Try transformation via intermediate CRS",
+					"expected": "Transformation possible via WGS84 (EPSG:4326)",
+					"ifFailed": "Manually set parameters"
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Transformation parameters not found",
+					"steps": [
+						"Try two-step transformation via WGS84 (EPSG:4326)",
+						"Update PROJ or GDAL version",
+						"Manually set transformation parameters"
+					],
+					"prevention": "Use major CRS, avoid specialized CRS",
+					"tools": ["PROJ", "GDAL", "epsg.io"]
+				}
+			],
+			"relatedBestPractices": ["data_exchange", "cross_border"]
+		}
+	},
+	"keywordMapping": {
+		"shift": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
+		"offset": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
+		"misalignment": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
+		"400m": ["coordinate_shift_large"],
+		"hundreds": ["coordinate_shift_large"],
+		"kilometers": ["coordinate_shift_large"],
+		"1-2m": ["coordinate_shift_medium"],
+		"several meters": ["coordinate_shift_medium"],
+		"few meters": ["coordinate_shift_medium"],
+		"few cm": ["coordinate_shift_small"],
+		"centimeters": ["coordinate_shift_small"],
+		"minor": ["coordinate_shift_small"],
+		"area": ["area_distance_error"],
+		"distance": ["area_distance_error"],
+		"length": ["area_distance_error"],
+		"calculation": ["area_distance_error"],
+		"not displayed": ["display_blank"],
+		"blank": ["display_blank"],
+		"invisible": ["display_blank"],
+		"disappeared": ["display_blank"],
+		"cannot transform": ["transformation_error"],
+		"error": ["transformation_error"],
+		"failed": ["transformation_error"]
+	}
+}

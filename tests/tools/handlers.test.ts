@@ -472,7 +472,7 @@ describe('Tool Handlers', () => {
 				warnings?: string[];
 			};
 			expect(result.warnings).toBeDefined();
-			expect(result.warnings?.some((w) => w.includes('3系'))).toBe(true);
+			expect(result.warnings?.some((w) => w.includes('zones'))).toBe(true);
 		});
 
 		it('should throw ValidationError for invalid purpose', async () => {

@@ -4,11 +4,14 @@ import { listSymptomCategories, troubleshoot } from '../../src/services/troubles
 
 describe('Troubleshooting Service', () => {
 	beforeAll(async () => {
+		// Set Japanese language for these tests (they use Japanese symptoms)
+		process.env.EPSG_LANG = 'ja';
 		await preloadAll();
 	});
 
 	afterAll(() => {
 		clearCache();
+		delete process.env.EPSG_LANG;
 	});
 
 	describe('troubleshoot', () => {

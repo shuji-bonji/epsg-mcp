@@ -9,6 +9,7 @@ import {
 	isJapanesePrefecture,
 	normalizeCountry,
 	normalizeLocation,
+	normalizePrefecture,
 } from '../../src/utils/location-normalizer.js';
 
 describe('Location Normalizer', () => {
@@ -72,12 +73,60 @@ describe('Location Normalizer', () => {
 		});
 	});
 
+	describe('normalizePrefecture', () => {
+		it('should convert English prefecture names to Japanese', () => {
+			expect(normalizePrefecture('Hokkaido')).toBe('北海道');
+			expect(normalizePrefecture('Tokyo')).toBe('東京都');
+			expect(normalizePrefecture('Osaka')).toBe('大阪府');
+			expect(normalizePrefecture('Okinawa')).toBe('沖縄県');
+		});
+
+		it('should handle lowercase English names', () => {
+			expect(normalizePrefecture('hokkaido')).toBe('北海道');
+			expect(normalizePrefecture('tokyo')).toBe('東京都');
+		});
+
+		it('should handle uppercase English names', () => {
+			expect(normalizePrefecture('HOKKAIDO')).toBe('北海道');
+			expect(normalizePrefecture('TOKYO')).toBe('東京都');
+		});
+
+		it('should keep Japanese prefecture names unchanged', () => {
+			expect(normalizePrefecture('北海道')).toBe('北海道');
+			expect(normalizePrefecture('東京都')).toBe('東京都');
+			expect(normalizePrefecture('大阪府')).toBe('大阪府');
+		});
+
+		it('should return unknown names unchanged', () => {
+			expect(normalizePrefecture('UnknownRegion')).toBe('UnknownRegion');
+			expect(normalizePrefecture('California')).toBe('California');
+		});
+
+		it('should handle all 47 prefectures', () => {
+			// サンプルとして各地方から1県ずつテスト
+			expect(normalizePrefecture('Aomori')).toBe('青森県'); // 東北
+			expect(normalizePrefecture('Chiba')).toBe('千葉県'); // 関東
+			expect(normalizePrefecture('Nagano')).toBe('長野県'); // 中部
+			expect(normalizePrefecture('Kyoto')).toBe('京都府'); // 近畿
+			expect(normalizePrefecture('Hiroshima')).toBe('広島県'); // 中国
+			expect(normalizePrefecture('Kagawa')).toBe('香川県'); // 四国
+			expect(normalizePrefecture('Fukuoka')).toBe('福岡県'); // 九州
+		});
+	});
+
 	describe('inferCountryFromSubdivision', () => {
-		it('should infer JP from Japanese prefecture', () => {
+		it('should infer JP from Japanese prefecture (Japanese name)', () => {
 			expect(inferCountryFromSubdivision('東京都')).toBe('JP');
 			expect(inferCountryFromSubdivision('北海道')).toBe('JP');
 			expect(inferCountryFromSubdivision('沖縄県')).toBe('JP');
 			expect(inferCountryFromSubdivision('大阪府')).toBe('JP');
+		});
+
+		it('should infer JP from Japanese prefecture (English name)', () => {
+			expect(inferCountryFromSubdivision('Tokyo')).toBe('JP');
+			expect(inferCountryFromSubdivision('Hokkaido')).toBe('JP');
+			expect(inferCountryFromSubdivision('Okinawa')).toBe('JP');
+			expect(inferCountryFromSubdivision('Osaka')).toBe('JP');
 		});
 
 		it('should infer US from US state', () => {
@@ -98,7 +147,7 @@ describe('Location Normalizer', () => {
 	});
 
 	describe('isJapanesePrefecture', () => {
-		it('should return true for valid prefectures', () => {
+		it('should return true for valid prefectures (Japanese names)', () => {
 			expect(isJapanesePrefecture('東京都')).toBe(true);
 			expect(isJapanesePrefecture('北海道')).toBe(true);
 			expect(isJapanesePrefecture('大阪府')).toBe(true);
@@ -106,7 +155,21 @@ describe('Location Normalizer', () => {
 			expect(isJapanesePrefecture('福岡県')).toBe(true);
 		});
 
-		it('should return false for non-Japanese prefectures', () => {
+		it('should return true for valid prefectures (English names)', () => {
+			expect(isJapanesePrefecture('Tokyo')).toBe(true);
+			expect(isJapanesePrefecture('Hokkaido')).toBe(true);
+			expect(isJapanesePrefecture('Osaka')).toBe(true);
+			expect(isJapanesePrefecture('Kyoto')).toBe(true);
+			expect(isJapanesePrefecture('Fukuoka')).toBe(true);
+		});
+
+		it('should handle case-insensitive English names', () => {
+			expect(isJapanesePrefecture('tokyo')).toBe(true);
+			expect(isJapanesePrefecture('TOKYO')).toBe(true);
+			expect(isJapanesePrefecture('ToKyO')).toBe(true);
+		});
+
+		it('should return false for non-Japanese locations', () => {
 			expect(isJapanesePrefecture('California')).toBe(false);
 			expect(isJapanesePrefecture('London')).toBe(false);
 			expect(isJapanesePrefecture('Unknown')).toBe(false);
@@ -197,13 +260,46 @@ describe('Location Normalizer', () => {
 		});
 	});
 
+	describe('English Prefecture Names', () => {
+		it('should normalize English prefecture to Japanese', () => {
+			const result = normalizeLocation({ prefecture: 'Tokyo' });
+			expect(result.prefecture).toBe('東京都');
+			expect(result.subdivision).toBe('東京都');
+			expect(result.country).toBe('JP');
+		});
+
+		it('should normalize Hokkaido (English) correctly', () => {
+			const result = normalizeLocation({ prefecture: 'Hokkaido' });
+			expect(result.prefecture).toBe('北海道');
+			expect(result.country).toBe('JP');
+		});
+
+		it('should normalize Okinawa (English) correctly', () => {
+			const result = normalizeLocation({ prefecture: 'Okinawa' });
+			expect(result.prefecture).toBe('沖縄県');
+			expect(result.country).toBe('JP');
+		});
+
+		it('should handle lowercase English prefecture names', () => {
+			const result = normalizeLocation({ prefecture: 'osaka' });
+			expect(result.prefecture).toBe('大阪府');
+			expect(result.country).toBe('JP');
+		});
+
+		it('should work with country: Japan and English prefecture', () => {
+			const result = normalizeLocation({ country: 'Japan', prefecture: 'Kyoto' });
+			expect(result.country).toBe('JP');
+			expect(result.prefecture).toBe('京都府');
+		});
+	});
+
 	describe('Backward Compatibility', () => {
 		it('should keep existing API working with country: "Japan"', () => {
 			const result = normalizeLocation({ country: 'Japan' });
 			expect(result.country).toBe('JP');
 		});
 
-		it('should keep existing API working with prefecture', () => {
+		it('should keep existing API working with Japanese prefecture', () => {
 			const result = normalizeLocation({ prefecture: '東京都' });
 			expect(result.country).toBe('JP');
 			expect(result.subdivision).toBe('東京都');

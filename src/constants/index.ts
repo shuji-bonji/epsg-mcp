@@ -2,6 +2,9 @@
  * アプリケーション全体で使用する定数
  */
 
+// Re-export message constants
+export * from './messages.js';
+
 // 変換経路探索
 export const TRANSFORMATION = {
 	/** 変換経路の最大ステップ数 */
@@ -226,4 +229,75 @@ export const COUNTRY_ALIASES: Record<string, string> = {
 	'south korea': 'KR',
 	china: 'CN',
 	canada: 'CA',
+} as const;
+
+/**
+ * 英語都道府県名→日本語都道府県名マッピング
+ * 国際ユーザー向けに英語での都道府県指定をサポート
+ */
+export const PREFECTURE_EN_TO_JP: Record<string, string> = {
+	// 北海道
+	hokkaido: '北海道',
+
+	// 東北
+	aomori: '青森県',
+	iwate: '岩手県',
+	miyagi: '宮城県',
+	akita: '秋田県',
+	yamagata: '山形県',
+	fukushima: '福島県',
+
+	// 関東
+	ibaraki: '茨城県',
+	tochigi: '栃木県',
+	gunma: '群馬県',
+	saitama: '埼玉県',
+	chiba: '千葉県',
+	tokyo: '東京都',
+	kanagawa: '神奈川県',
+
+	// 中部
+	niigata: '新潟県',
+	toyama: '富山県',
+	ishikawa: '石川県',
+	fukui: '福井県',
+	yamanashi: '山梨県',
+	nagano: '長野県',
+	gifu: '岐阜県',
+	shizuoka: '静岡県',
+	aichi: '愛知県',
+
+	// 近畿
+	mie: '三重県',
+	shiga: '滋賀県',
+	kyoto: '京都府',
+	osaka: '大阪府',
+	hyogo: '兵庫県',
+	nara: '奈良県',
+	wakayama: '和歌山県',
+
+	// 中国
+	tottori: '鳥取県',
+	shimane: '島根県',
+	okayama: '岡山県',
+	hiroshima: '広島県',
+	yamaguchi: '山口県',
+
+	// 四国
+	tokushima: '徳島県',
+	kagawa: '香川県',
+	ehime: '愛媛県',
+	kochi: '高知県',
+
+	// 九州
+	fukuoka: '福岡県',
+	saga: '佐賀県',
+	nagasaki: '長崎県',
+	kumamoto: '熊本県',
+	oita: '大分県',
+	miyazaki: '宮崎県',
+	kagoshima: '鹿児島県',
+
+	// 沖縄
+	okinawa: '沖縄県',
 } as const;

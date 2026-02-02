@@ -9,11 +9,14 @@ import type { BestPracticeTopic } from '../../src/types/index.js';
 
 describe('Best Practices Service', () => {
 	beforeAll(async () => {
+		// Set Japanese language for these tests (they check for Japanese content)
+		process.env.EPSG_LANG = 'ja';
 		await preloadAll();
 	});
 
 	afterAll(() => {
 		clearCache();
+		delete process.env.EPSG_LANG;
 	});
 
 	describe('getBestPractices', () => {

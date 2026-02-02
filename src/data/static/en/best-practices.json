@@ -1,0 +1,410 @@
+{
+	"version": "1.0.0",
+	"topics": {
+		"japan_survey": {
+			"description": "Best practices for CRS selection in surveying and mapping within Japan",
+			"practices": [
+				{
+					"title": "Use JGD2011 (EPSG:6668) as the standard",
+					"description": "Use JGD2011 based on the Survey Act for surveying and mapping within Japan",
+					"priority": "must",
+					"rationale": "Official geodetic datum of Japan with consistency with GSI products",
+					"example": "Creating base maps, cadastral maps, urban planning maps"
+				},
+				{
+					"title": "Select the appropriate Japan Plane Rectangular CS",
+					"description": "Select the appropriate Japan Plane Rectangular CS (Zone I-XIX) for the target area",
+					"priority": "must",
+					"rationale": "Different zones mean different coordinate values, leading to inaccurate calculations",
+					"example": "Tokyo → Zone IX (EPSG:6677), Sapporo, Hokkaido → Zone XII (EPSG:6680)"
+				},
+				{
+					"title": "Manage wide-area data in geographic CRS",
+					"description": "Store data spanning multiple zones in geographic CRS (EPSG:6668) and project as needed",
+					"priority": "should",
+					"rationale": "Prevents loss of continuity at zone boundaries"
+				},
+				{
+					"title": "Use appropriate decimal places based on coordinate precision",
+					"description": "Plane rectangular coordinates: millimeter precision (3 decimal places), Geographic coordinates: approximately 8 decimal places",
+					"priority": "should",
+					"rationale": "Excessive precision is meaningless, insufficient precision degrades data quality"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Using Tokyo Datum (EPSG:4301)",
+					"consequence": "1-2m coordinate difference from JGD2011 causes misalignment with other data",
+					"solution": "Convert to JGD2011 and record conversion history in metadata"
+				},
+				{
+					"mistake": "Treating data from different zones as the same zone",
+					"consequence": "Coordinate values differ greatly, causing inaccurate calculations",
+					"solution": "Verify zone information of data and transform coordinates as needed"
+				}
+			],
+			"relatedTopics": ["precision_requirements", "projection_selection", "historical_data"],
+			"references": [
+				{
+					"title": "GSI - About JGD2011",
+					"url": "https://www.gsi.go.jp/sokuchikijun/jgd2011.html",
+					"type": "official"
+				},
+				{
+					"title": "Standards for Public Survey Work Procedures",
+					"url": "https://psgsv2.gsi.go.jp/koukyou/jyunsoku/",
+					"type": "official"
+				}
+			]
+		},
+		"web_mapping": {
+			"description": "Best practices for CRS selection in web application map display and interaction",
+			"practices": [
+				{
+					"title": "Use Web Mercator (EPSG:3857) for web map display",
+					"description": "Standard tile coordinate system for Leaflet, MapLibre, Google Maps, etc.",
+					"priority": "must",
+					"rationale": "Major web map libraries and tile services adopt this coordinate system",
+					"example": "Map tile URL: https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+				},
+				{
+					"title": "Output GeoJSON in WGS84 (EPSG:4326)",
+					"description": "WGS84 is the standard in the GeoJSON specification",
+					"priority": "must",
+					"rationale": "Ensures interoperability through specification compliance",
+					"codeExample": "{ \"type\": \"Point\", \"coordinates\": [139.6917, 35.6895] }"
+				},
+				{
+					"title": "Do not perform area/distance calculations in Web Mercator",
+					"description": "When accurate area/distance calculations are needed, convert to geographic CRS or appropriate projected CRS",
+					"priority": "must",
+					"rationale": "Web Mercator has significant area distortion at high latitudes (4x at 60° latitude)"
+				},
+				{
+					"title": "Use appropriate projected CRS for high-precision functions",
+					"description": "Convert to purpose-appropriate coordinate system for distance measurement, area calculation, buffer generation, etc.",
+					"priority": "should",
+					"rationale": "Minimize errors from projection distortion"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Calculating area in Web Mercator",
+					"consequence": "Approximately 23% area distortion even in Japan (around 35° latitude)",
+					"solution": "Convert to JGD2011 Plane Rectangular CS or equal-area projection before area calculation"
+				},
+				{
+					"mistake": "Outputting EPSG:3857 coordinates in GeoJSON",
+					"consequence": "Cannot be read correctly by other GIS software",
+					"solution": "Output GeoJSON in WGS84 (EPSG:4326), omit CRS property"
+				}
+			],
+			"relatedTopics": ["data_exchange", "coordinate_storage"],
+			"references": [
+				{
+					"title": "GeoJSON Specification (RFC 7946)",
+					"url": "https://datatracker.ietf.org/doc/html/rfc7946",
+					"type": "official"
+				},
+				{
+					"title": "Leaflet Documentation",
+					"url": "https://leafletjs.com/reference.html",
+					"type": "tool"
+				}
+			]
+		},
+		"data_exchange": {
+			"description": "Best practices for CRS selection in data exchange between organizations and systems",
+			"practices": [
+				{
+					"title": "Include CRS information in data",
+					"description": "Include EPSG code in metadata and record transformation history",
+					"priority": "must",
+					"rationale": "Data with unknown CRS causes confusion during use",
+					"example": "Shapefile .prj file, GeoPackage spatial_ref_sys table"
+				},
+				{
+					"title": "Use WGS84 for international data exchange",
+					"description": "Use WGS84 (EPSG:4326) as the reference for data exchange across countries and regions",
+					"priority": "should",
+					"rationale": "Reference for GPS satellites and universally recognized worldwide"
+				},
+				{
+					"title": "Specify transformation accuracy",
+					"description": "When coordinate transformation is performed, record transformation method and accuracy in metadata",
+					"priority": "should",
+					"rationale": "Allows recipients to evaluate accuracy"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Providing data without CRS information",
+					"consequence": "Recipients interpret incorrect coordinate system, causing position misalignment",
+					"solution": "Always include CRS information (EPSG code) in metadata"
+				}
+			],
+			"relatedTopics": ["coordinate_storage", "cross_border"],
+			"references": [
+				{
+					"title": "ISO 19115 - Geographic information — Metadata",
+					"type": "official"
+				}
+			]
+		},
+		"coordinate_storage": {
+			"description": "Best practices for storing coordinate data in databases and files",
+			"practices": [
+				{
+					"title": "Use geographic CRS for long-term storage",
+					"description": "Store in geographic CRS (EPSG:4326 or EPSG:6668) in databases",
+					"priority": "should",
+					"rationale": "Projected CRS may change in the future, but geographic CRS is stable"
+				},
+				{
+					"title": "Use numeric types appropriate for coordinate precision",
+					"description": "DOUBLE type for lat/lon, DECIMAL(12,3) or similar for projected coordinates",
+					"priority": "should",
+					"rationale": "FLOAT type may have insufficient precision"
+				},
+				{
+					"title": "Unify CRS for spatial indexes",
+					"description": "Use a unified CRS when creating spatial indexes in PostGIS, etc.",
+					"priority": "must",
+					"rationale": "Data in different CRS cannot be correctly compared in spatial queries"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Storing coordinates in FLOAT type",
+					"consequence": "Only about 7 digits of precision, potentially 10m or more error in lat/lon",
+					"solution": "Use DOUBLE type or DECIMAL type"
+				}
+			],
+			"relatedTopics": ["precision_requirements", "gis_integration"],
+			"references": [
+				{
+					"title": "PostGIS Documentation",
+					"url": "https://postgis.net/documentation/",
+					"type": "tool"
+				}
+			]
+		},
+		"mobile_gps": {
+			"description": "Best practices for using location information on smartphones and GPS devices",
+			"practices": [
+				{
+					"title": "Recognize that GPS output is WGS84",
+					"description": "GPS satellite systems use WGS84, and output coordinates are also WGS84",
+					"priority": "must",
+					"rationale": "Misidentifying the datum causes 1-2m or more displacement"
+				},
+				{
+					"title": "Understand GPS accuracy limitations",
+					"description": "Consumer GPS: several meters to 10m, DGPS: about 1m, RTK: several cm",
+					"priority": "should",
+					"rationale": "Discussions beyond accuracy are meaningless"
+				},
+				{
+					"title": "Convert to JGD2011 for storing data within Japan",
+					"description": "WGS84 and JGD2011 are practically identical, but conversion recommended for consistency in domestic data management",
+					"priority": "may",
+					"rationale": "Coordinate difference is within a few cm, but maintains metadata consistency"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Treating GPS data as Tokyo Datum",
+					"consequence": "Displacement of 400m or more from actual position",
+					"solution": "Recognize that GPS output is WGS84 and process appropriately"
+				}
+			],
+			"relatedTopics": ["precision_requirements", "japan_survey"],
+			"references": [
+				{
+					"title": "How GPS Works - GSI Japan",
+					"url": "https://www.gsi.go.jp/denshi/denshi_g-01.html",
+					"type": "official"
+				}
+			]
+		},
+		"historical_data": {
+			"description": "Best practices for handling data created in the past",
+			"practices": [
+				{
+					"title": "Convert Tokyo Datum data before use",
+					"description": "Convert Tokyo Datum (EPSG:4301) data to JGD2011 before use",
+					"priority": "must",
+					"rationale": "Ensures consistency with current geodetic datum",
+					"example": "Two-step conversion: EPSG:4301 → EPSG:4612 → EPSG:6668"
+				},
+				{
+					"title": "Recognize transformation accuracy limitations",
+					"description": "Tokyo Datum → JGD2011 transformation accuracy is limited to 1-2m",
+					"priority": "must",
+					"rationale": "Discussions beyond accuracy are meaningless; compare with precision requirements"
+				},
+				{
+					"title": "Preserve original datum information",
+					"description": "Retain original datum information and parameters as metadata even after conversion",
+					"priority": "should",
+					"rationale": "Needed for future verification or re-transformation"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Using old data without datum information as-is",
+					"consequence": "Large displacement when overlaying with new data",
+					"solution": "Investigate data origin, estimate appropriate datum, and transform"
+				}
+			],
+			"relatedTopics": ["japan_survey", "precision_requirements"],
+			"references": [
+				{
+					"title": "JGD2000/2011 - GSI Japan",
+					"url": "https://www.gsi.go.jp/sokuchikijun/sokuchikijun_top.html",
+					"type": "official"
+				}
+			]
+		},
+		"cross_border": {
+			"description": "Best practices for CRS selection in cross-border data and international projects",
+			"practices": [
+				{
+					"title": "Use WGS84 as the common reference",
+					"description": "Use WGS84 (EPSG:4326) as the reference coordinate system for international data exchange",
+					"priority": "must",
+					"rationale": "Universally recognized worldwide and reference for GPS satellites"
+				},
+				{
+					"title": "Utilize UTM coordinate system",
+					"description": "Use UTM zones when wide-area projected coordinates are needed",
+					"priority": "should",
+					"rationale": "Defined worldwide with high interoperability",
+					"example": "Japan: UTM 52N-54N (EPSG:32652-32654)"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Merging national geodetic datums directly",
+					"consequence": "Data discontinuity occurs near borders",
+					"solution": "Convert to common coordinate system (WGS84, etc.) before merging"
+				}
+			],
+			"relatedTopics": ["data_exchange", "projection_selection"],
+			"references": [
+				{
+					"title": "EPSG Registry",
+					"url": "https://epsg.org/",
+					"type": "official"
+				}
+			]
+		},
+		"gis_integration": {
+			"description": "Best practices for handling CRS in GIS software and system integration",
+			"practices": [
+				{
+					"title": "Clearly define project CRS",
+					"description": "Determine CRS at project start and document it",
+					"priority": "must",
+					"rationale": "Later changes cause significant rework"
+				},
+				{
+					"title": "Don't over-rely on on-the-fly transformation",
+					"description": "On-the-fly transformation for display is convenient, but explicitly transform before analysis/output",
+					"priority": "should",
+					"rationale": "On-the-fly transformation affects performance and can cause unexpected rounding errors"
+				},
+				{
+					"title": "Verify CRS when loading data",
+					"description": "Check CRS information before loading new data",
+					"priority": "should",
+					"rationale": "Prevents mixing of data with unknown or incorrect CRS"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Setting CRS for unknown data based on guesswork",
+					"consequence": "All spatial calculation results become inaccurate if actual CRS differs",
+					"solution": "Verify data source, contact provider if necessary"
+				}
+			],
+			"relatedTopics": ["coordinate_storage", "data_exchange"],
+			"references": [
+				{
+					"title": "QGIS Documentation",
+					"url": "https://qgis.org/documentation/",
+					"type": "tool"
+				}
+			]
+		},
+		"precision_requirements": {
+			"description": "Setting and achieving precision requirements according to use case",
+			"practices": [
+				{
+					"title": "Set precision according to use case",
+					"description": "Car navigation: several meters, Urban planning: tens of cm, Surveying: sub-cm",
+					"priority": "must",
+					"rationale": "Excessive precision increases cost, insufficient precision fails requirements"
+				},
+				{
+					"title": "Select coordinate system appropriate for precision",
+					"description": "Projected CRS for high precision needs, Geographic CRS for wide areas",
+					"priority": "should",
+					"rationale": "Match coordinate system characteristics with precision requirements"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Expecting millimeter precision from GPS data",
+					"consequence": "Discussion beyond measurement limits becomes meaningless precision debate",
+					"solution": "Understand the precision limits of data sources"
+				}
+			],
+			"relatedTopics": ["mobile_gps", "japan_survey"],
+			"references": [
+				{
+					"title": "Survey Accuracy Classes - MLIT Japan",
+					"type": "official"
+				}
+			]
+		},
+		"projection_selection": {
+			"description": "How to select projection methods according to purpose",
+			"practices": [
+				{
+					"title": "Select projection method according to purpose",
+					"description": "Conformal projection (shape preservation), Equal-area projection (area preservation), Equidistant projection (distance preservation)",
+					"priority": "must",
+					"rationale": "Impossible to preserve all characteristics simultaneously"
+				},
+				{
+					"title": "Use Japan Plane Rectangular CS for surveying in Japan",
+					"description": "Transverse Mercator (conformal) enables high-precision distance and angle calculations",
+					"priority": "should",
+					"rationale": "Standard for public surveys and legally recognized"
+				},
+				{
+					"title": "Use Web Mercator for web maps",
+					"description": "Can represent the entire world on a single map and compatible with tile division",
+					"priority": "should",
+					"rationale": "De facto standard for web maps"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Creating statistical maps with Web Mercator",
+					"consequence": "High-latitude areas are exaggerated in area, causing misunderstanding",
+					"solution": "Use equal-area projection for statistical maps"
+				}
+			],
+			"relatedTopics": ["web_mapping", "japan_survey"],
+			"references": [
+				{
+					"title": "Map Projections - GSI Japan",
+					"url": "https://www.gsi.go.jp/KIDS/map-sign-tizutohou-tizutohou.html",
+					"type": "official"
+				}
+			]
+		}
+	}
+}

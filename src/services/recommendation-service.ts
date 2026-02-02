@@ -3,7 +3,15 @@
  * 用途・場所に応じた最適なCRSを推奨
  */
 
-import { EPSG, JAPAN_BOUNDS, VALIDATION_SCORE, WIDE_AREA_THRESHOLD } from '../constants/index.js';
+import {
+	EPSG,
+	ERRORS,
+	JAPAN_BOUNDS,
+	RECOMMENDATION_WARNINGS,
+	USAGE_NOTES,
+	VALIDATION_SCORE,
+	WIDE_AREA_THRESHOLD,
+} from '../constants/index.js';
 import { findCrsById, getZoneMapping, loadRecommendations } from '../data/loader.js';
 import type {
 	CrsDetail,
@@ -243,7 +251,7 @@ export async function recommendCrs(
 	const rule = recommendations.rules[purpose];
 
 	if (!rule) {
-		throw new Error(`Unknown purpose: ${purpose}`);
+		throw new Error(ERRORS.UNKNOWN_PURPOSE(purpose));
 	}
 
 	const isJapan = isJapanLocation(normalized);
@@ -257,7 +265,7 @@ export async function recommendCrs(
 	const ruleRegion = isJapan && rule.japan ? rule.japan : rule.global;
 
 	if (!ruleRegion) {
-		throw new Error(`No recommendation rule for ${purpose} in ${isJapan ? 'Japan' : 'Global'}`);
+		throw new Error(ERRORS.NO_RECOMMENDATION_RULE(purpose, isJapan ? 'Japan' : 'Global'));
 	}
 
 	let primaryCode = ruleRegion.primary;
@@ -270,28 +278,25 @@ export async function recommendCrs(
 			primaryCode === '該当する平面直角座標系' ||
 			primaryCode.includes('平面直角座標系'))
 	) {
-		const zone = await selectZoneForLocation(location);
+		// 正規化されたlocationを使用（英語都道府県名を日本語に変換済み）
+		const zone = await selectZoneForLocation(normalized);
 		if (zone) {
 			primaryCode = zone;
 
 			// 複数系またぐ地域の場合は警告
-			if (location.prefecture && isMultiZonePrefecture(location.prefecture)) {
-				const prefConfig = recommendations.multiZonePrefectures[location.prefecture];
+			if (normalized.prefecture && isMultiZonePrefecture(normalized.prefecture)) {
+				const prefConfig = recommendations.multiZonePrefectures[normalized.prefecture];
 				if (prefConfig) {
 					warnings.push(prefConfig.note);
-					if (!location.city && !location.region && !location.centerPoint) {
-						warnings.push(
-							`${location.prefecture}は複数の系にまたがります。より正確な推奨のために市区町村または座標を指定してください。`
-						);
+					if (!normalized.city && !normalized.region && !normalized.centerPoint) {
+						warnings.push(RECOMMENDATION_WARNINGS.MULTI_ZONE_SPECIFY(normalized.prefecture));
 					}
 				}
 			}
 		} else {
-			// ゾーンが特定できない場合
+			// Zone could not be determined
 			primaryCode = EPSG.PLANE_RECT.ZONE_IX;
-			warnings.push(
-				'都道府県が特定できないため、系IX（東京周辺）をデフォルトとして推奨しています。'
-			);
+			warnings.push(RECOMMENDATION_WARNINGS.DEFAULT_ZONE_USED);
 		}
 	}
 
@@ -308,9 +313,7 @@ export async function recommendCrs(
 			latSpan > WIDE_AREA_THRESHOLD.LAT_SPAN_DEGREES ||
 			lngSpan > WIDE_AREA_THRESHOLD.LNG_SPAN_DEGREES
 		) {
-			warnings.push(
-				`広域にわたる計算です。複数の平面直角座標系をまたぐ場合は、JGD2011地理座標系(${EPSG.JGD2011})での測地線計算を検討してください。`
-			);
+			warnings.push(RECOMMENDATION_WARNINGS.WIDE_AREA_CALCULATION(EPSG.JGD2011));
 			// フォールバックを提案
 			if (ruleRegion.fallback) {
 				primaryCode = ruleRegion.fallback;
@@ -365,7 +368,7 @@ export async function recommendCrs(
 				fallbackScore,
 				[],
 				[],
-				'広域計算時のフォールバック'
+				USAGE_NOTES.FALLBACK_WIDE_AREA
 			)
 		);
 	}

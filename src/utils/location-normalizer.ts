@@ -7,8 +7,31 @@
  * - subdivision から country の推定
  */
 
-import { COUNTRY_ALIASES } from '../constants/index.js';
+import { COUNTRY_ALIASES, PREFECTURE_EN_TO_JP } from '../constants/index.js';
 import type { LocationSpec } from '../types/index.js';
+
+/**
+ * 英語都道府県名を日本語に正規化
+ *
+ * @param prefecture - 都道府県名（英語または日本語）
+ * @returns 日本語都道府県名、または元の値
+ */
+export function normalizePrefecture(prefecture: string): string {
+	// 既に日本語の場合はそのまま返す
+	if (JAPANESE_PREFECTURES.has(prefecture)) {
+		return prefecture;
+	}
+
+	// 英語名を小文字に変換してマッチング
+	const lowerPref = prefecture.toLowerCase().trim();
+	const japaneseMatch = PREFECTURE_EN_TO_JP[lowerPref];
+	if (japaneseMatch) {
+		return japaneseMatch;
+	}
+
+	// マッチしない場合は元の値を返す
+	return prefecture;
+}
 
 /**
  * 日本の都道府県一覧（subdivisionから国を推定するため）
@@ -143,7 +166,13 @@ export function normalizeCountry(country: string): string {
  * @returns 推定された国コード、または undefined
  */
 export function inferCountryFromSubdivision(subdivision: string): string | undefined {
+	// 日本語の都道府県名
 	if (JAPANESE_PREFECTURES.has(subdivision)) {
+		return 'JP';
+	}
+	// 英語の都道府県名
+	const lowerSubdivision = subdivision.toLowerCase().trim();
+	if (PREFECTURE_EN_TO_JP[lowerSubdivision]) {
 		return 'JP';
 	}
 	if (US_STATES.has(subdivision)) {
@@ -156,10 +185,15 @@ export function inferCountryFromSubdivision(subdivision: string): string | undef
 }
 
 /**
- * 値が日本の都道府県かどうかを判定
+ * 値が日本の都道府県かどうかを判定（英語名も対応）
  */
 export function isJapanesePrefecture(value: string): boolean {
-	return JAPANESE_PREFECTURES.has(value);
+	if (JAPANESE_PREFECTURES.has(value)) {
+		return true;
+	}
+	// 英語名もチェック
+	const lowerValue = value.toLowerCase().trim();
+	return !!PREFECTURE_EN_TO_JP[lowerValue];
 }
 
 /**
@@ -179,6 +213,11 @@ export function normalizeLocation(location: LocationSpec): LocationSpec {
 	// country の正規化
 	if (normalized.country) {
 		normalized.country = normalizeCountry(normalized.country);
+	}
+
+	// prefecture の正規化（英語→日本語変換）
+	if (normalized.prefecture) {
+		normalized.prefecture = normalizePrefecture(normalized.prefecture);
 	}
 
 	// prefecture → subdivision のマイグレーション

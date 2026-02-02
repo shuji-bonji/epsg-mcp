@@ -31,16 +31,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Northern Ireland handled separately with ITM (not BNG)
 
 #### Documentation
-- New guide: `docs/creating-country-packs.md` - Complete guide for creating Country Packs
+- New guide: `docs/creating-country-packs.md` - Complete guide for creating Country Packs (English)
+- New guide: `docs/creating-country-packs.ja.md` - Country Pack作成ガイド (Japanese)
 - Updated CLAUDE.md with Phase 5 completion status and pack architecture
 
 #### Pack Manager Updates
 - UK/GB pack loading via `EPSG_PACKS=uk` or `EPSG_PACKS=gb`
 - Support for all three packs: `EPSG_PACKS=jp,us,uk`
 
+### Fixed
+
+#### English Prefecture Name Support
+- `recommend_crs` now correctly recognizes English prefecture names (e.g., "Tokyo", "Hokkaido", "Okinawa")
+- Added `PREFECTURE_EN_TO_JP` mapping for all 47 Japanese prefectures
+- `normalizePrefecture()` function converts English names to Japanese for internal processing
+- `inferCountryFromSubdivision()` now recognizes English prefecture names as Japanese locations
+- `isJapanesePrefecture()` supports case-insensitive English name matching
+
 ### Technical Details
 - Build script updated to copy UK pack JSON files
-- Test count: 566 → 616 (+50 UK Pack tests)
+- Test count: 566 → 638 (+50 UK Pack tests, +22 English prefecture tests)
 - All three packs (JP/US/UK) can coexist without interference
 
 ---

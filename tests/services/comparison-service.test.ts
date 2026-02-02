@@ -17,14 +17,14 @@ describe('Comparison Service', () => {
 			it('should compare WGS84 and JGD2011', async () => {
 				const result = await compareCrs('4326', '6668');
 				expect(result.comparison.length).toBeGreaterThan(0);
-				expect(result.summary).toContain('実用上同一');
+				expect(result.summary).toContain('practically identical');
 			});
 
 			it('should have datum comparison', async () => {
 				const result = await compareCrs('4326', '6668');
-				const datumResult = result.comparison.find((c) => c.aspect.includes('測地系'));
+				const datumResult = result.comparison.find((c) => c.aspect.includes('Datum'));
 				expect(datumResult).toBeDefined();
-				expect(datumResult?.verdict).toContain('実用上同一');
+				expect(datumResult?.verdict).toContain('Practically identical');
 			});
 
 			it('should have transformation note', async () => {
@@ -41,14 +41,14 @@ describe('Comparison Service', () => {
 
 			it('should have projection comparison', async () => {
 				const result = await compareCrs('4326', '3857');
-				const projResult = result.comparison.find((c) => c.aspect.includes('投影法'));
+				const projResult = result.comparison.find((c) => c.aspect.includes('Projection'));
 				expect(projResult).toBeDefined();
-				expect(projResult?.verdict).toContain('使い分け');
+				expect(projResult?.verdict).toContain('use case');
 			});
 
 			it('should have distortion comparison', async () => {
 				const result = await compareCrs('4326', '3857');
-				const distResult = result.comparison.find((c) => c.aspect.includes('歪み'));
+				const distResult = result.comparison.find((c) => c.aspect.includes('Distortion'));
 				expect(distResult).toBeDefined();
 			});
 		});
@@ -61,13 +61,13 @@ describe('Comparison Service', () => {
 
 			it('should mention crustal movement in datum comparison', async () => {
 				const result = await compareCrs('4612', '6668');
-				const datumResult = result.comparison.find((c) => c.aspect.includes('測地系'));
-				expect(datumResult?.verdict).toContain('地殻変動');
+				const datumResult = result.comparison.find((c) => c.aspect.includes('Datum'));
+				expect(datumResult?.verdict).toContain('crustal deformation');
 			});
 
 			it('should recommend migration in recommendation', async () => {
 				const result = await compareCrs('4612', '6668');
-				expect(result.recommendation).toContain('非推奨');
+				expect(result.recommendation).toContain('deprecated');
 			});
 		});
 
@@ -79,8 +79,8 @@ describe('Comparison Service', () => {
 
 			it('should warn about legacy datum', async () => {
 				const result = await compareCrs('4301', '6668');
-				const datumResult = result.comparison.find((c) => c.aspect.includes('測地系'));
-				expect(datumResult?.verdict).toContain('旧測地系');
+				const datumResult = result.comparison.find((c) => c.aspect.includes('Datum'));
+				expect(datumResult?.verdict).toContain('legacy datum');
 			});
 		});
 
@@ -92,7 +92,7 @@ describe('Comparison Service', () => {
 
 			it('should have different projection types', async () => {
 				const result = await compareCrs('6677', '4326');
-				const projResult = result.comparison.find((c) => c.aspect.includes('投影法'));
+				const projResult = result.comparison.find((c) => c.aspect.includes('Projection'));
 				expect(projResult).toBeDefined();
 			});
 		});
@@ -101,27 +101,27 @@ describe('Comparison Service', () => {
 			it('should compare only specified aspects', async () => {
 				const result = await compareCrs('4326', '6668', ['datum', 'accuracy']);
 				expect(result.comparison.length).toBe(2);
-				expect(result.comparison.some((c) => c.aspect.includes('測地系'))).toBe(true);
-				expect(result.comparison.some((c) => c.aspect.includes('精度'))).toBe(true);
+				expect(result.comparison.some((c) => c.aspect.includes('Datum'))).toBe(true);
+				expect(result.comparison.some((c) => c.aspect.includes('Accuracy'))).toBe(true);
 			});
 
 			it('should compare only datum', async () => {
 				const result = await compareCrs('4326', '6668', ['datum']);
 				expect(result.comparison.length).toBe(1);
-				expect(result.comparison[0].aspect).toContain('測地系');
+				expect(result.comparison[0].aspect).toContain('Datum');
 			});
 		});
 
 		describe('use_cases comparison', () => {
 			it('should compare use cases', async () => {
 				const result = await compareCrs('4326', '3857', ['use_cases']);
-				const useCaseResult = result.comparison.find((c) => c.aspect.includes('用途'));
+				const useCaseResult = result.comparison.find((c) => c.aspect.includes('Use Cases'));
 				expect(useCaseResult).toBeDefined();
 			});
 
 			it('should show Web Mercator advantage for web mapping', async () => {
 				const result = await compareCrs('4326', '3857', ['use_cases']);
-				const useCaseResult = result.comparison.find((c) => c.aspect.includes('用途'));
+				const useCaseResult = result.comparison.find((c) => c.aspect.includes('Use Cases'));
 				expect(useCaseResult?.verdict).toContain('3857');
 			});
 		});
@@ -129,7 +129,7 @@ describe('Comparison Service', () => {
 		describe('compatibility comparison', () => {
 			it('should compare compatibility', async () => {
 				const result = await compareCrs('4326', '3857', ['compatibility']);
-				const compatResult = result.comparison.find((c) => c.aspect.includes('互換性'));
+				const compatResult = result.comparison.find((c) => c.aspect.includes('Compatibility'));
 				expect(compatResult).toBeDefined();
 			});
 		});
@@ -137,7 +137,7 @@ describe('Comparison Service', () => {
 		describe('area_of_use comparison', () => {
 			it('should compare area of use', async () => {
 				const result = await compareCrs('4326', '6677', ['area_of_use']);
-				const areaResult = result.comparison.find((c) => c.aspect.includes('適用範囲'));
+				const areaResult = result.comparison.find((c) => c.aspect.includes('Area of Use'));
 				expect(areaResult).toBeDefined();
 			});
 		});

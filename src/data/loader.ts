@@ -25,6 +25,32 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const STATIC_DIR = join(__dirname, 'static');
 
+/**
+ * Get the current language setting
+ * Default: 'en' (English) for international users
+ * Set EPSG_LANG=ja for Japanese
+ */
+function getLanguage(): 'en' | 'ja' {
+	const lang = process.env.EPSG_LANG?.toLowerCase();
+	if (lang === 'ja' || lang === 'japanese') {
+		return 'ja';
+	}
+	return 'en'; // Default to English
+}
+
+/**
+ * Get the path for a localized file
+ * English files are in 'en/' subdirectory
+ * Japanese files are in the root (original location for backward compatibility)
+ */
+function getLocalizedPath(filename: string): string {
+	const lang = getLanguage();
+	if (lang === 'en') {
+		return join('en', filename);
+	}
+	return filename; // Japanese files in root
+}
+
 let japanCrsData: JapanCrsData | null = null;
 let globalCrsData: GlobalCrsData | null = null;
 let recommendationsData: RecommendationsData | null = null;
@@ -65,8 +91,9 @@ export async function loadGlobalCrs(): Promise<GlobalCrsData> {
 
 export async function loadRecommendations(): Promise<RecommendationsData> {
 	if (!recommendationsData) {
-		recommendationsData = await loadJsonFile<RecommendationsData>('recommendations.json');
-		debug('Loaded recommendations.json');
+		const localizedPath = getLocalizedPath('recommendations.json');
+		recommendationsData = await loadJsonFile<RecommendationsData>(localizedPath);
+		debug(`Loaded ${localizedPath}`);
 	}
 	return recommendationsData;
 }
@@ -89,16 +116,18 @@ export async function loadComparisons(): Promise<ComparisonsData> {
 
 export async function loadBestPractices(): Promise<BestPracticesData> {
 	if (!bestPracticesData) {
-		bestPracticesData = await loadJsonFile<BestPracticesData>('best-practices.json');
-		debug('Loaded best-practices.json');
+		const localizedPath = getLocalizedPath('best-practices.json');
+		bestPracticesData = await loadJsonFile<BestPracticesData>(localizedPath);
+		debug(`Loaded ${localizedPath}`);
 	}
 	return bestPracticesData;
 }
 
 export async function loadTroubleshooting(): Promise<TroubleshootingData> {
 	if (!troubleshootingData) {
-		troubleshootingData = await loadJsonFile<TroubleshootingData>('troubleshooting.json');
-		debug('Loaded troubleshooting.json');
+		const localizedPath = getLocalizedPath('troubleshooting.json');
+		troubleshootingData = await loadJsonFile<TroubleshootingData>(localizedPath);
+		debug(`Loaded ${localizedPath}`);
 	}
 	return troubleshootingData;
 }

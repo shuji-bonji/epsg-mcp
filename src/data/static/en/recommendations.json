@@ -1,0 +1,271 @@
+{
+	"version": "2.0.0",
+	"rules": {
+		"web_mapping": {
+			"description": "Optimal CRS for web map display",
+			"global": {
+				"primary": "EPSG:3857",
+				"alternatives": ["EPSG:4326"],
+				"reasoning": "Web Mercator is the standard for major map tile services (Google Maps, OpenStreetMap, etc.). Directly supported by libraries like Leaflet, Mapbox, and OpenLayers.",
+				"pros": ["Wide support", "Fast rendering", "Tile compatible"],
+				"cons": ["Large area distortion", "Cannot use in polar regions"],
+				"warnings": [
+					"Not suitable for area/distance calculations",
+					"Significant distortion at high latitudes",
+					"Cannot display latitudes beyond 85.06°"
+				]
+			},
+			"japan": {
+				"primary": "EPSG:3857",
+				"alternatives": ["EPSG:6668"],
+				"reasoning": "Web Mercator is the de facto standard for web maps in Japan as well. EPSG:6668 (JGD2011) is recommended for data storage.",
+				"pros": ["Major library support", "Tile service compatible"],
+				"cons": ["Noticeable distortion in Hokkaido", "Cannot calculate area"]
+			}
+		},
+		"distance_calculation": {
+			"description": "Accurate distance calculation",
+			"global": {
+				"primary": "Appropriate UTM zone",
+				"alternatives": ["Geodetic calculation (on ellipsoid)"],
+				"reasoning": "UTM uses Transverse Mercator projection with distance distortion under 0.04% within a zone. Geodetic calculation recommended for wide areas.",
+				"pros": ["High accuracy", "Worldwide system"],
+				"cons": ["Cannot calculate across zones"],
+				"warnings": ["Distance calculations using Web Mercator (EPSG:3857) are inaccurate"]
+			},
+			"japan": {
+				"primary": "Appropriate Japan Plane Rectangular CS",
+				"codePattern": "EPSG:6669-6687",
+				"alternatives": ["EPSG:32652-32654 (UTM)", "EPSG:6668"],
+				"fallback": "EPSG:6668",
+				"reasoning": "Japan's survey standard. Used in public surveys. Distortion under 1mm within coverage area.",
+				"pros": ["High accuracy", "Legal basis", "Public survey compliant"],
+				"cons": ["Zone selection required", "Multiple zones for wide areas"],
+				"requirements": [
+					"Select zone based on work area",
+					"Use JGD2011 geographic CRS for cross-zone calculations"
+				],
+				"note": "Ellipsoidal calculations (Haversine/Vincenty) required when using geographic CRS"
+			}
+		},
+		"area_calculation": {
+			"description": "Accurate area calculation",
+			"global": {
+				"primary": "Equal-area projection (Lambert equal-area, etc.)",
+				"examples": ["EPSG:6933"],
+				"reasoning": "Equal-area projections are optimal for area calculations. Mercator projections cause significant distortion.",
+				"pros": ["Area preserved", "Suitable for statistical analysis"],
+				"cons": ["Shape distortion exists"],
+				"warnings": [
+					"Web Mercator (EPSG:3857) severely distorts area (several times larger at high latitudes compared to equator)"
+				]
+			},
+			"japan": {
+				"primary": "Appropriate Japan Plane Rectangular CS",
+				"codePattern": "EPSG:6669-6687",
+				"reasoning": "Japan Plane Rectangular CS is optimal for area calculations within Japan. Error limited to a few cm² per km².",
+				"pros": ["High accuracy", "Standard within Japan"],
+				"cons": ["Cannot span zones"],
+				"warning": "Web Mercator (3857) is unsuitable for area calculation"
+			}
+		},
+		"survey": {
+			"description": "Survey work",
+			"global": {
+				"primary": "UTM",
+				"reasoning": "UTM zones cover the entire world and provide accuracy suitable for surveying.",
+				"pros": ["Global standard", "High accuracy"],
+				"cons": ["Adjustment needed at zone boundaries"]
+			},
+			"japan": {
+				"primary": "Appropriate Japan Plane Rectangular CS",
+				"codePattern": "EPSG:6669-6687",
+				"zoneSelection": "prefecture_based",
+				"reasoning": "Compliant with Public Survey Procedures. Coordinate system established by Survey Act. Japan Plane Rectangular CS is the official survey coordinate system of GSI.",
+				"pros": ["High accuracy", "Legal basis", "Public survey compliant"],
+				"cons": ["Zone selection required", "Multiple zones for wide areas"],
+				"requirements": [
+					"Select zone based on work area",
+					"Use JGD2011 (JGD2000 is deprecated)",
+					"Legacy Japanese datum data requires transformation"
+				]
+			}
+		},
+		"navigation": {
+			"description": "Navigation & GPS",
+			"global": {
+				"primary": "EPSG:4326",
+				"reasoning": "GPS uses the WGS84 coordinate system. Car navigation and smartphone location data are acquired in this system.",
+				"pros": ["GPS standard", "Worldwide coverage"],
+				"cons": ["No projection (conversion needed for map display)"]
+			},
+			"japan": {
+				"primary": "EPSG:6668",
+				"alternatives": ["EPSG:4326"],
+				"reasoning": "JGD2011 is practically identical to WGS84. Using JGD2011 within Japan ensures consistency with GSI data.",
+				"pros": ["GSI data compatible", "Essentially equivalent to WGS84"],
+				"cons": ["Caution needed when mixing with overseas data"],
+				"note": "JGD2011 is practically identical to WGS84"
+			}
+		},
+		"data_storage": {
+			"description": "Long-term data storage",
+			"global": {
+				"primary": "EPSG:4326",
+				"reasoning": "Store in geographic CRS, transform to projection as needed. Most widely recognized CRS. WGS84 has the widest compatibility and is suitable for long-term storage.",
+				"pros": ["Highest compatibility", "Future-proof"],
+				"cons": ["Projection transformation needed before calculations"]
+			},
+			"japan": {
+				"primary": "EPSG:6668",
+				"alternatives": ["EPSG:4326"],
+				"reasoning": "JGD2011 is recommended for storing data within Japan. Always record CRS information in metadata. JGD2011 is Japan's geodetic standard. Conversion with 4326 is essentially equivalent.",
+				"pros": ["Domestic standard", "GSI compatible"],
+				"cons": ["May need conversion for international data exchange"]
+			}
+		},
+		"data_exchange": {
+			"description": "Data exchange & interoperability",
+			"global": {
+				"primary": "EPSG:4326",
+				"reasoning": "Standard coordinate system for GeoJSON. Most widely used for international data exchange. International data exchange standard.",
+				"pros": ["GeoJSON standard", "Widest compatibility"],
+				"cons": ["Projected coordinate data needs conversion"]
+			},
+			"japan": {
+				"primary": "EPSG:6668",
+				"alternatives": ["EPSG:4326"],
+				"reasoning": "Use JGD2011 between domestic agencies, WGS84 for international exchange. The difference between them is negligible in practice. JGD2011 for domestic, 4326 for international.",
+				"pros": ["Domestic standard", "Nearly equivalent to 4326"],
+				"cons": ["Strictly different from 4326"]
+			}
+		},
+		"visualization": {
+			"description": "Data visualization & cartography",
+			"global": {
+				"primary": "EPSG:3857",
+				"alternatives": ["EPSG:4326"],
+				"reasoning": "Optimal projection varies by display purpose. Various projections for global display, UTM or regional projections for local display. 3857 for web, consider 4326-based projection for printed maps.",
+				"pros": ["Web standard", "Zoom support"],
+				"cons": ["Distortion at high latitudes"]
+			},
+			"japan": {
+				"primary": "EPSG:3857",
+				"alternatives": ["EPSG:6669-6687"],
+				"reasoning": "Use EPSG:3857 for interactive web maps, Japan Plane Rectangular CS for precise printed maps.",
+				"pros": ["Web compatible", "Good usability"],
+				"cons": ["Noticeable distortion in Hokkaido"]
+			}
+		}
+	},
+	"multiZonePrefectures": {
+		"北海道": {
+			"note": "Spans 3 zones (West=XI, Central=XII, East=XIII)",
+			"subRegions": {
+				"石狩": "EPSG:6679",
+				"空知": "EPSG:6679",
+				"後志": "EPSG:6679",
+				"胆振": "EPSG:6679",
+				"日高": "EPSG:6679",
+				"渡島": "EPSG:6679",
+				"檜山": "EPSG:6679",
+				"上川": "EPSG:6680",
+				"留萌": "EPSG:6680",
+				"宗谷": "EPSG:6680",
+				"オホーツク": "EPSG:6680",
+				"十勝": "EPSG:6681",
+				"釧路": "EPSG:6681",
+				"根室": "EPSG:6681"
+			},
+			"cities": {
+				"札幌市": "EPSG:6679",
+				"旭川市": "EPSG:6680",
+				"釧路市": "EPSG:6681",
+				"函館市": "EPSG:6679",
+				"帯広市": "EPSG:6681",
+				"小樽市": "EPSG:6679",
+				"北見市": "EPSG:6680",
+				"江別市": "EPSG:6679",
+				"苫小牧市": "EPSG:6679",
+				"網走市": "EPSG:6680",
+				"稚内市": "EPSG:6680",
+				"根室市": "EPSG:6681"
+			},
+			"default": "EPSG:6679"
+		},
+		"沖縄県": {
+			"note": "Spans 3 zones (Main Island=XV, Sakishima=XVI, Daito=XVII)",
+			"subRegions": {
+				"本島": "EPSG:6683",
+				"先島": "EPSG:6684",
+				"大東": "EPSG:6685",
+				"宮古": "EPSG:6684",
+				"八重山": "EPSG:6684"
+			},
+			"cities": {
+				"那覇市": "EPSG:6683",
+				"宜野湾市": "EPSG:6683",
+				"浦添市": "EPSG:6683",
+				"沖縄市": "EPSG:6683",
+				"うるま市": "EPSG:6683",
+				"名護市": "EPSG:6683",
+				"糸満市": "EPSG:6683",
+				"豊見城市": "EPSG:6683",
+				"宮古島市": "EPSG:6684",
+				"石垣市": "EPSG:6684",
+				"南城市": "EPSG:6683"
+			},
+			"default": "EPSG:6683"
+		}
+	},
+	"validationRules": {
+		"deprecatedCrs": [
+			"EPSG:4612",
+			"EPSG:4301",
+			"EPSG:2443",
+			"EPSG:2444",
+			"EPSG:2445",
+			"EPSG:2446",
+			"EPSG:2447",
+			"EPSG:2448",
+			"EPSG:2449",
+			"EPSG:2450",
+			"EPSG:2451",
+			"EPSG:2452",
+			"EPSG:2453",
+			"EPSG:2454",
+			"EPSG:2455",
+			"EPSG:2456",
+			"EPSG:2457",
+			"EPSG:2458",
+			"EPSG:2459",
+			"EPSG:2460",
+			"EPSG:2461"
+		],
+		"legacyDatumPatterns": ["EPSG:26", "EPSG:4301"],
+		"webMappingCrs": ["EPSG:3857", "EPSG:4326"],
+		"navigationCrs": ["EPSG:4326", "EPSG:6668"],
+		"dataExchangeCrs": ["EPSG:4326", "EPSG:6668"],
+		"planeRectangularRange": {
+			"start": 6669,
+			"end": 6687
+		},
+		"scoreWeights": {
+			"deprecated": -50,
+			"areaMismatch": -40,
+			"legacyDatum": -50,
+			"areaDistortion": -20,
+			"distanceDistortion": -20,
+			"zoneMismatch": -15,
+			"crossZone": -10,
+			"geojsonIncompatible": -15,
+			"notOfficialSurvey": -10,
+			"geographicCalc": -5,
+			"betterAlternative": -5,
+			"gpsConversionNeeded": -5,
+			"projectedStorage": -5,
+			"nonStandardExchange": -5,
+			"nonStandardWeb": -5
+		}
+	}
+}

@@ -142,7 +142,7 @@ describe('Recommendation Service', () => {
 					prefecture: '東京都',
 				});
 				expect(result.primary.code).toBe('EPSG:6677');
-				expect(result.reasoning).toContain('平面直角座標系');
+				expect(result.reasoning).toContain('Survey');
 			});
 
 			it('should recommend zone XI for Sapporo survey', async () => {
@@ -182,7 +182,7 @@ describe('Recommendation Service', () => {
 					prefecture: '北海道',
 				});
 				expect(result.warnings).toBeDefined();
-				expect(result.warnings?.some((w) => w.includes('3系'))).toBe(true);
+				expect(result.warnings?.some((w) => w.includes('zones'))).toBe(true);
 			});
 		});
 
@@ -205,7 +205,7 @@ describe('Recommendation Service', () => {
 					},
 				});
 				expect(result.warnings).toBeDefined();
-				expect(result.warnings?.some((w) => w.includes('広域'))).toBe(true);
+				expect(result.warnings?.some((w) => w.includes('Wide-area'))).toBe(true);
 			});
 		});
 
@@ -271,6 +271,68 @@ describe('Recommendation Service', () => {
 			it('should recommend Web Mercator for visualization', async () => {
 				const result = await recommendCrs('visualization', {
 					country: 'Japan',
+				});
+				expect(result.primary.code).toBe('EPSG:3857');
+			});
+		});
+
+		describe('English Prefecture Names', () => {
+			it('should recommend zone IX for Tokyo (English) survey', async () => {
+				const result = await recommendCrs('survey', {
+					prefecture: 'Tokyo',
+				});
+				expect(result.primary.code).toBe('EPSG:6677');
+			});
+
+			it('should recommend zone XI for Hokkaido (English) survey', async () => {
+				const result = await recommendCrs('survey', {
+					prefecture: 'Hokkaido',
+				});
+				expect(result.primary.code).toBe('EPSG:6679');
+				// Should have multi-zone warning
+				expect(result.warnings).toBeDefined();
+				expect(result.warnings?.some((w) => w.includes('zones'))).toBe(true);
+			});
+
+			it('should recommend zone XV for Okinawa (English) survey', async () => {
+				const result = await recommendCrs('survey', {
+					prefecture: 'Okinawa',
+				});
+				expect(result.primary.code).toBe('EPSG:6683');
+			});
+
+			it('should recommend zone II for Fukuoka (English) survey', async () => {
+				const result = await recommendCrs('survey', {
+					prefecture: 'Fukuoka',
+				});
+				expect(result.primary.code).toBe('EPSG:6670');
+			});
+
+			it('should recommend zone VI for Osaka (English) survey', async () => {
+				const result = await recommendCrs('survey', {
+					prefecture: 'Osaka',
+				});
+				expect(result.primary.code).toBe('EPSG:6674');
+			});
+
+			it('should handle lowercase English prefecture names', async () => {
+				const result = await recommendCrs('survey', {
+					prefecture: 'tokyo',
+				});
+				expect(result.primary.code).toBe('EPSG:6677');
+			});
+
+			it('should work with country: Japan and English prefecture', async () => {
+				const result = await recommendCrs('survey', {
+					country: 'Japan',
+					prefecture: 'Kyoto',
+				});
+				expect(result.primary.code).toBe('EPSG:6674');
+			});
+
+			it('should handle web mapping with English prefecture', async () => {
+				const result = await recommendCrs('web_mapping', {
+					prefecture: 'Hokkaido',
 				});
 				expect(result.primary.code).toBe('EPSG:3857');
 			});
