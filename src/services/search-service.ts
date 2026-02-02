@@ -4,6 +4,7 @@
 
 import { DEFAULTS, SEARCH_SCORE } from '../constants/index.js';
 import { findCrsById, getCrsByRegion, loadGlobalCrs, loadJapanCrs } from '../data/loader.js';
+import { isSqliteAvailable, searchCrsBySqlite } from '../data/sqlite-loader.js';
 import type { CrsDetail, CrsInfo, CrsType, RegionCrsList, SearchResult } from '../types/index.js';
 
 const WORD_SPLIT_REGEX = /\s+/;
@@ -107,9 +108,30 @@ export async function searchCrs(
 		description: crs.remarks,
 	}));
 
+	// If we have fewer results than the limit and SQLite is available, try SQLite search
+	if (results.length < limit && isSqliteAvailable()) {
+		const sqliteResults = searchCrsBySqlite(query, limit - results.length);
+		const existingCodes = new Set(results.map((r) => r.code));
+
+		// Add SQLite results that aren't already in the list
+		for (const crs of sqliteResults) {
+			if (!existingCodes.has(crs.code) && (!type || crs.type === type)) {
+				results.push({
+					code: crs.code,
+					name: crs.name,
+					type: crs.type,
+					region: crs.areaOfUse?.description,
+					deprecated: crs.deprecated,
+					description: crs.remarks,
+				});
+			}
+		}
+	}
+
 	return {
 		results,
-		totalCount: scored.length,
+		totalCount:
+			scored.length + (isSqliteAvailable() ? results.length - scored.slice(0, limit).length : 0),
 	};
 }
 

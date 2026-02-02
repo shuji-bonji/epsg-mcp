@@ -10,6 +10,7 @@ import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import { CallToolRequestSchema, ListToolsRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { preloadAll } from './data/loader.js';
+import { initSqliteDb, isSqliteAvailable } from './data/sqlite-loader.js';
 import { formatErrorResponse } from './errors/index.js';
 import { getRegisteredPacks, loadPacksFromEnv } from './packs/pack-manager.js';
 import { tools } from './tools/definitions.js';
@@ -62,13 +63,21 @@ async function main() {
 	info('EPSG MCP Server: Preloading data...');
 	const timer = new PerformanceTimer('preload');
 
-	// Load country packs and static data in parallel
-	await Promise.all([loadPacksFromEnv(), preloadAll()]);
+	// Load country packs, static data, and optionally SQLite DB in parallel
+	const epsgDbPath = process.env.EPSG_DB_PATH;
+	const loadTasks: Promise<unknown>[] = [loadPacksFromEnv(), preloadAll()];
+
+	if (epsgDbPath) {
+		loadTasks.push(initSqliteDb(epsgDbPath));
+	}
+
+	await Promise.all(loadTasks);
 
 	const loadTime = timer.end();
 	const packs = getRegisteredPacks();
+	const sqliteStatus = isSqliteAvailable() ? 'SQLite: enabled' : '';
 	info(
-		`EPSG MCP Server: Data loaded in ${loadTime}ms (${packs.length} pack(s): ${packs.map((p) => p.countryCode).join(', ') || 'none'})`
+		`EPSG MCP Server: Data loaded in ${loadTime}ms (${packs.length} pack(s): ${packs.map((p) => p.countryCode).join(', ') || 'none'}${sqliteStatus ? `, ${sqliteStatus}` : ''})`
 	);
 
 	const transport = new StdioServerTransport();

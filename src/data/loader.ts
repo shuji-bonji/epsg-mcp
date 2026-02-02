@@ -19,6 +19,7 @@ import type {
 	TroubleshootingData,
 } from '../types/index.js';
 import { debug } from '../utils/logger.js';
+import { findCrsBySqlite, isSqliteAvailable } from './sqlite-loader.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -208,7 +209,19 @@ async function buildCrsIndex(): Promise<void> {
 
 export async function findCrsById(code: string): Promise<CrsDetail | undefined> {
 	await buildCrsIndex();
-	return crsIndex?.get(normalizeCode(code));
+
+	// First try in-memory index (Pack + static data)
+	const cached = crsIndex?.get(normalizeCode(code));
+	if (cached) {
+		return cached;
+	}
+
+	// Fallback to SQLite if available
+	if (isSqliteAvailable()) {
+		return findCrsBySqlite(code);
+	}
+
+	return undefined;
 }
 
 export async function getCrsByRegion(region: string): Promise<CrsInfo[]> {

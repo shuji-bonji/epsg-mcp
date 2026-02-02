@@ -388,6 +388,56 @@ Troubleshoot CRS-related problems.
 | 3857 | Web Mercator | Web map display |
 | 326xx | UTM zones | Distance/area calculation |
 
+## Extended CRS Support (Optional)
+
+By default, this server provides CRS data for Japan and major global systems. For access to the complete EPSG registry (10,000+ CRS), you can optionally enable SQLite support.
+
+### Setup
+
+1. **Download EPSG Database**
+
+```bash
+# Using the built-in script
+npm run epsg:download-db
+
+# Or specify a custom path
+npx tsx scripts/download-epsg-db.ts ./path/to/epsg.db
+```
+
+2. **Install sql.js** (if not already installed)
+
+```bash
+npm install sql.js
+```
+
+3. **Configure Environment**
+
+Set the `EPSG_DB_PATH` environment variable:
+
+```bash
+export EPSG_DB_PATH="/path/to/epsg.db"
+```
+
+Or configure in Claude Desktop's `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "epsg": {
+      "command": "npx",
+      "args": ["@shuji-bonji/epsg-mcp"],
+      "env": {
+        "EPSG_DB_PATH": "/path/to/epsg.db"
+      }
+    }
+  }
+}
+```
+
+### Data Source
+
+The EPSG database is provided by [PROJ](https://proj.org/), which redistributes the [IOGP EPSG Geodetic Parameter Dataset](https://epsg.org/). Please refer to the [EPSG Terms of Use](https://epsg.org/terms-of-use.html) for licensing information.
+
 ## Development
 
 ```bash

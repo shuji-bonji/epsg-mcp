@@ -388,6 +388,56 @@ CRS関連の問題をトラブルシューティングします。
 | 3857 | Web Mercator | Web地図表示 |
 | 326xx | UTM zones | 距離・面積計算 |
 
+## 拡張CRSサポート（オプション）
+
+デフォルトでは日本および主要なグローバルCRSのデータを提供します。完全なEPSGレジストリ（10,000以上のCRS）にアクセスするには、オプションでSQLiteサポートを有効にできます。
+
+### セットアップ
+
+1. **EPSGデータベースのダウンロード**
+
+```bash
+# 組み込みスクリプトを使用
+npm run epsg:download-db
+
+# カスタムパスを指定する場合
+npx tsx scripts/download-epsg-db.ts ./path/to/epsg.db
+```
+
+2. **sql.js のインストール**（未インストールの場合）
+
+```bash
+npm install sql.js
+```
+
+3. **環境変数の設定**
+
+`EPSG_DB_PATH` 環境変数を設定します:
+
+```bash
+export EPSG_DB_PATH="/path/to/epsg.db"
+```
+
+または Claude Desktop の `claude_desktop_config.json` で設定:
+
+```json
+{
+  "mcpServers": {
+    "epsg": {
+      "command": "npx",
+      "args": ["@shuji-bonji/epsg-mcp"],
+      "env": {
+        "EPSG_DB_PATH": "/path/to/epsg.db"
+      }
+    }
+  }
+}
+```
+
+### データソース
+
+EPSGデータベースは [PROJ](https://proj.org/) が提供しており、[IOGP EPSG Geodetic Parameter Dataset](https://epsg.org/) を再配布しています。ライセンス情報については [EPSG利用規約](https://epsg.org/terms-of-use.html) を参照してください。
+
 ## Development
 
 ```bash

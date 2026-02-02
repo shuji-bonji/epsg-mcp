@@ -9,6 +9,94 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.7.0] - 2026-02-02
+
+### Added
+
+#### Extended CRS Support (SQLite)
+- Optional SQLite support for accessing complete EPSG registry (10,000+ CRS)
+- `sql.js` added as optionalDependency
+- New module: `src/data/sqlite-loader.ts`
+  - `initSqliteDb()` - Initialize SQLite DB with WASM
+  - `isSqliteAvailable()` - Check SQLite availability
+  - `findCrsBySqlite()` - Find CRS by EPSG code
+  - `searchCrsBySqlite()` - Keyword search in SQLite
+  - `listCrsByRegionSqlite()` - Region-based CRS listing
+- SQLite fallback in `findCrsById()` and `searchCrs()`
+- Download script: `scripts/download-epsg-db.ts`
+- npm script: `npm run epsg:download-db`
+
+#### Documentation
+- Added SQLite setup instructions to README.md and README.ja.md
+- EPSG DB licensing information (IOGP Terms of Use)
+
+### Technical Details
+- Environment variable: `EPSG_DB_PATH` for SQLite DB location
+- Dynamic import pattern for optional sql.js dependency
+- WASM path resolution for sql.js
+- Test count: 519 (unchanged)
+
+---
+
+## [0.6.0] - 2026-02-02
+
+### Added
+
+#### CountryPack Architecture (Phase 5-2)
+- Modular country-specific CRS knowledge system
+- New types in `src/types/country-pack.ts`:
+  - `CountryPack` interface with async data methods
+  - `PackMetadata`, `ZoneMapping`, `PackRecommendationRules`
+  - `PackTransformationKnowledge`, `PackBestPractice`, `PackTroubleshootingGuide`
+- Pack manager: `src/packs/pack-manager.ts`
+  - `registerPack()`, `clearPacks()`, `getRegisteredPacks()`
+  - `getPackForCountry()`, `findPackForLocation()`
+  - `findCrsInPacks()`, `loadPacksFromEnv()`
+- Japan Pack: `src/packs/jp/`
+  - `createJpPack()` factory function
+  - Japan-specific constants (JP_BOUNDS, JP_PLANE_RECT)
+  - Full implementation using existing data loaders
+
+#### Environment Configuration
+- `EPSG_PACKS` environment variable for enabling country packs
+- Default: `jp` (Japan pack)
+
+### Technical Details
+- Strangler Fig Pattern: New pack structure built in parallel
+- 3-Layer Fallback Model: CountryPack → UTM → Global
+- Test count: 463 → 519 (+56 tests for packs)
+
+---
+
+## [0.5.0] - 2026-02-02
+
+### Added
+
+#### UTM Fallback System (Phase 5-1)
+- Automatic UTM zone detection from coordinates
+- New module: `src/utils/utm.ts`
+  - `getUtmZone()` - Calculate UTM zone from lat/lng
+  - `getUtmEpsgCode()` - Get EPSG code for UTM zone
+  - `getUtmZoneInfo()` - Full UTM zone information
+  - `isValidLatitude()`, `isValidLongitude()` - Coordinate validation
+- New service: `src/services/utm-service.ts`
+  - `getUtmCrsForLocation()` - Get UTM CRS for any location
+  - `createUtmCrsDetail()` - Generate CRS detail for UTM zones
+
+#### Location Normalization
+- New utility: `src/utils/location-normalizer.ts`
+  - `normalizeLocation()` - Standardize location input
+  - `getLocationCenter()` - Calculate center from bounds
+  - Support for country, region, subdivision, prefecture, city
+  - BoundingBox center calculation
+
+### Technical Details
+- UTM zones 1-60 for both hemispheres
+- EPSG codes: 326xx (North), 327xx (South)
+- Test count: 379 → 463 (+84 tests)
+
+---
+
 ## [0.4.0] - 2026-02-01
 
 ### Added
