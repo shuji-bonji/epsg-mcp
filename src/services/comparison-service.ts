@@ -451,9 +451,8 @@ export async function compareCrs(
 	const code1 = normalizeCrsCode(crs1Input);
 	const code2 = normalizeCrsCode(crs2Input);
 
-	// CRS詳細取得
-	const detail1 = await findCrsById(code1);
-	const detail2 = await findCrsById(code2);
+	// CRS詳細とComparisonsを並列で取得（パフォーマンス最適化）
+	const [detail1, detail2] = await Promise.all([findCrsById(code1), findCrsById(code2)]);
 
 	if (!detail1) {
 		throw new NotFoundError('CRS', code1);

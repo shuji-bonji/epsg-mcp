@@ -202,6 +202,17 @@ function addToRegionIndex(region: string, crs: CrsDetail): void {
 	regionIndex.set(normalizedRegion, list);
 }
 
+/**
+ * CRSデータをインデックスに追加するヘルパー関数
+ */
+function indexCrsData(crsDict: Record<string, CrsDetail>, region: string): void {
+	for (const crs of Object.values(crsDict)) {
+		crsIndex?.set(normalizeCode(crs.code), crs);
+		addToRegionIndex(region, crs);
+		addToNameIndex(crs);
+	}
+}
+
 async function buildCrsIndex(): Promise<void> {
 	if (crsIndex) return;
 
@@ -211,27 +222,13 @@ async function buildCrsIndex(): Promise<void> {
 
 	const [japan, global] = await Promise.all([loadJapanCrs(), loadGlobalCrs()]);
 
-	for (const crs of Object.values(japan.geographicCRS)) {
-		crsIndex.set(normalizeCode(crs.code), crs);
-		addToRegionIndex('Japan', crs);
-		addToNameIndex(crs);
-	}
-	for (const crs of Object.values(japan.projectedCRS)) {
-		crsIndex.set(normalizeCode(crs.code), crs);
-		addToRegionIndex('Japan', crs);
-		addToNameIndex(crs);
-	}
+	// 日本のCRSをインデックスに追加
+	indexCrsData(japan.geographicCRS, 'Japan');
+	indexCrsData(japan.projectedCRS, 'Japan');
 
-	for (const crs of Object.values(global.geographicCRS)) {
-		crsIndex.set(normalizeCode(crs.code), crs);
-		addToRegionIndex('Global', crs);
-		addToNameIndex(crs);
-	}
-	for (const crs of Object.values(global.projectedCRS)) {
-		crsIndex.set(normalizeCode(crs.code), crs);
-		addToRegionIndex('Global', crs);
-		addToNameIndex(crs);
-	}
+	// グローバルのCRSをインデックスに追加
+	indexCrsData(global.geographicCRS, 'Global');
+	indexCrsData(global.projectedCRS, 'Global');
 
 	debug(`CRS index built: ${crsIndex.size} entries, ${nameTokenIndex.size} tokens`);
 }

@@ -13,6 +13,7 @@ import type {
 	ValidationIssue,
 	ValidationIssueCode,
 } from '../types/index.js';
+import { isJapanLocation } from './location-normalizer.js';
 import { checkZoneSpan, isLegacyDatum, isPlaneRectangularCS } from './validation.js';
 
 /**
@@ -34,17 +35,6 @@ export interface ValidationRule {
 	condition: (ctx: ValidationContext) => boolean | Promise<boolean>;
 	/** 検出される問題 */
 	issue: ValidationIssue | ((ctx: ValidationContext) => ValidationIssue | Promise<ValidationIssue>);
-}
-
-/**
- * 日本かどうかを判定
- */
-function isJapanLocation(location: LocationSpec): boolean {
-	return (
-		location.country?.toLowerCase() === 'japan' ||
-		location.country === '日本' ||
-		!!location.prefecture
-	);
 }
 
 /**

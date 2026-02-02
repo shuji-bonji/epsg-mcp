@@ -22,7 +22,7 @@ import type {
 	RecommendedCrs,
 	Requirements,
 } from '../types/index.js';
-import { normalizeLocation } from '../utils/location-normalizer.js';
+import { isJapanLocation, normalizeLocation } from '../utils/location-normalizer.js';
 import { canUseUtmFallback, recommendWithUtmFallback } from './utm-service.js';
 
 /**
@@ -212,31 +212,6 @@ function adjustScoreForRequirements(
 }
 
 /**
- * 場所が日本かどうかを判定（正規化済み LocationSpec に対応）
- */
-function isJapanLocation(location: LocationSpec): boolean {
-	// 正規化後は 'JP' になっている
-	if (location.country === 'JP') {
-		return true;
-	}
-	// 後方互換: 正規化されていない場合もサポート
-	const countryLower = location.country?.toLowerCase();
-	if (countryLower === 'japan' || countryLower === '日本') {
-		return true;
-	}
-	// 都道府県/行政区画が指定されていれば日本（日本語の都道府県名を想定）
-	if (location.prefecture || location.subdivision) {
-		return true;
-	}
-	if (location.centerPoint) {
-		const { lat, lng } = location.centerPoint;
-		const bounds = JAPAN_BOUNDS.OVERALL;
-		return lat >= bounds.SOUTH && lat <= bounds.NORTH && lng >= bounds.WEST && lng <= bounds.EAST;
-	}
-	return false;
-}
-
-/**
  * 用途・場所に応じた最適なCRSを推奨
  */
 export async function recommendCrs(
@@ -336,22 +311,29 @@ export async function recommendCrs(
 		ruleRegion.note
 	);
 
-	// alternativesを構築
+	// alternativesを構築（Promise.allで並列処理）
 	const alternatives: RecommendedCrs[] = [];
 	if (ruleRegion.alternatives) {
-		for (const altCode of ruleRegion.alternatives) {
-			// パターンマッチングの場合はスキップ
-			if (altCode.includes('-') && altCode.includes('EPSG:')) {
-				continue;
-			}
-			const altDetail = await findCrsById(altCode);
+		// パターンマッチング以外のコードをフィルタリング
+		const validAltCodes = ruleRegion.alternatives.filter(
+			(altCode) => !(altCode.includes('-') && altCode.includes('EPSG:'))
+		);
+
+		// 並列でCRS詳細を取得
+		const altDetails = await Promise.all(validAltCodes.map((code) => findCrsById(code)));
+
+		// 並列でRecommendedCrsを構築
+		const altPromises = validAltCodes.map(async (altCode, i) => {
+			const altDetail = altDetails[i];
 			const altScore = adjustScoreForRequirements(
 				VALIDATION_SCORE.ALTERNATIVE_BASE,
 				altDetail,
 				requirements
 			);
-			alternatives.push(await buildRecommendedCrs(altCode, altScore, [], [], undefined));
-		}
+			return buildRecommendedCrs(altCode, altScore, [], [], undefined);
+		});
+
+		alternatives.push(...(await Promise.all(altPromises)));
 	}
 
 	// fallbackがあれば追加

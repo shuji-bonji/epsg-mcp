@@ -7,7 +7,7 @@
  * - subdivision から country の推定
  */
 
-import { COUNTRY_ALIASES, PREFECTURE_EN_TO_JP } from '../constants/index.js';
+import { COUNTRY_ALIASES, JAPAN_BOUNDS, PREFECTURE_EN_TO_JP } from '../constants/index.js';
 import type { LocationSpec } from '../types/index.js';
 
 /**
@@ -244,17 +244,48 @@ export function normalizeLocation(location: LocationSpec): LocationSpec {
 }
 
 /**
- * 場所が日本かどうかを判定（正規化済みLocationSpec用）
+ * 場所が日本かどうかを判定
+ * 正規化済み・未正規化どちらのLocationSpecでも動作
+ *
+ * 判定基準（優先順）:
+ * 1. country === 'JP' (正規化済み)
+ * 2. country が 'japan' または '日本' (未正規化)
+ * 3. prefecture または subdivision が日本の都道府県名
+ * 4. centerPoint が日本の地理的境界内
  */
-export function isJapanLocationNormalized(location: LocationSpec): boolean {
+export function isJapanLocation(location: LocationSpec): boolean {
+	// 正規化済みの国コード
 	if (location.country === 'JP') {
 		return true;
 	}
+
+	// 未正規化の国名（後方互換性）
+	const countryLower = location.country?.toLowerCase();
+	if (countryLower === 'japan' || location.country === '日本') {
+		return true;
+	}
+
+	// 都道府県名から判定
 	if (location.subdivision && isJapanesePrefecture(location.subdivision)) {
 		return true;
 	}
 	if (location.prefecture && isJapanesePrefecture(location.prefecture)) {
 		return true;
 	}
+
+	// 座標から判定（日本の地理的境界）
+	if (location.centerPoint) {
+		const { lat, lng } = location.centerPoint;
+		const bounds = JAPAN_BOUNDS.OVERALL;
+		if (lat >= bounds.SOUTH && lat <= bounds.NORTH && lng >= bounds.WEST && lng <= bounds.EAST) {
+			return true;
+		}
+	}
+
 	return false;
 }
+
+/**
+ * @deprecated isJapanLocation を使用してください
+ */
+export const isJapanLocationNormalized = isJapanLocation;
