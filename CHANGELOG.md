@@ -9,6 +9,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.8.0] - 2026-02-02
+
+### Added
+
+#### US Pack Implementation (Phase 5-4)
+- Complete US Country Knowledge Pack
+- New directory: `src/packs/us/`
+  - `index.ts` - `createUsPack()` factory function
+  - `constants.ts` - US geographic bounds and SPCS constants
+  - `crs-data.json` - NAD83, NAD83(2011), SPCS zones, Conus Albers
+  - `recommendations.json` - US-specific CRS recommendations
+  - `transformations.json` - NAD27→NAD83, NAD83→NAD83(2011)
+  - `best-practices.json` - US surveying best practices
+  - `troubleshooting.json` - US-specific troubleshooting guides
+
+#### US CRS Data
+- Geographic CRS: NAD83 (EPSG:4269), NAD83(2011) (EPSG:6318), NAD27 (EPSG:4267)
+- Projected CRS: Conus Albers (EPSG:5070, 6350), State Plane zones
+- Zone mapping for all 50 states + DC
+- Multi-zone support for California, Texas, New York, Florida, Washington
+
+#### Pack Manager Updates
+- US pack loading via `EPSG_PACKS=us` environment variable
+- Support for loading multiple packs: `EPSG_PACKS=jp,us`
+
+### Technical Details
+- Build script updated to copy US pack JSON files
+- Test count: 519 → 566 (+47 tests)
+- JP/US packs can coexist without interference
+
+---
+
 ## [0.7.0] - 2026-02-02
 
 ### Added

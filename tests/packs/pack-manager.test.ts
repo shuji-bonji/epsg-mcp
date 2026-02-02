@@ -202,12 +202,30 @@ describe('Pack Manager', () => {
 		});
 
 		it('should load multiple packs from env', async () => {
-			// Currently only JP is implemented, but test the parsing
 			vi.stubEnv('EPSG_PACKS', 'jp, unknownpack');
 			await loadPacksFromEnv();
 
 			// Only JP should be loaded (unknownpack is ignored)
 			expect(getRegisteredPacks()).toHaveLength(1);
+		});
+
+		it('should load US pack from env', async () => {
+			vi.stubEnv('EPSG_PACKS', 'us');
+			await loadPacksFromEnv();
+
+			expect(arePacksLoaded()).toBe(true);
+			expect(getRegisteredPacks()).toHaveLength(1);
+			expect(getRegisteredPacks()[0].countryCode).toBe('US');
+		});
+
+		it('should load both JP and US packs', async () => {
+			vi.stubEnv('EPSG_PACKS', 'jp,us');
+			await loadPacksFromEnv();
+
+			expect(getRegisteredPacks()).toHaveLength(2);
+			const codes = getRegisteredPacks().map((p) => p.countryCode);
+			expect(codes).toContain('JP');
+			expect(codes).toContain('US');
 		});
 
 		it('should handle empty EPSG_PACKS', async () => {

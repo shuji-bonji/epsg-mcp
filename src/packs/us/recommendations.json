@@ -1,0 +1,190 @@
+{
+	"rules": {
+		"web_mapping": {
+			"primary": "EPSG:3857",
+			"alternatives": ["EPSG:4326"],
+			"fallback": "EPSG:4269",
+			"reasoning": "Web Mercator (EPSG:3857) is the de facto standard for web mapping tiles. Use WGS84 (EPSG:4326) for GeoJSON data exchange.",
+			"pros": [
+				"Universal web map tile compatibility",
+				"Consistent with Google Maps, OpenStreetMap, etc."
+			],
+			"cons": [
+				"Significant area and distance distortion, especially at high latitudes",
+				"Not suitable for measurements"
+			],
+			"warnings": ["Do not use Web Mercator for area or distance calculations"]
+		},
+		"distance_calculation": {
+			"primary": "State Plane Coordinate System",
+			"alternatives": ["UTM zones"],
+			"fallback": "EPSG:5070",
+			"reasoning": "State Plane zones provide highest accuracy for local distance calculations. UTM zones are a good alternative for cross-state work.",
+			"pros": ["Minimal distance distortion within zone", "Survey-grade accuracy"],
+			"cons": [
+				"Limited geographic extent per zone",
+				"Cross-zone calculations require transformations"
+			],
+			"codePattern": "State Plane or UTM",
+			"usesZoneMapping": true
+		},
+		"area_calculation": {
+			"primary": "EPSG:5070",
+			"alternatives": ["EPSG:6350"],
+			"fallback": "State Plane zones",
+			"reasoning": "Conus Albers is an equal-area projection ideal for area calculations across the continental US. For local work, State Plane zones are suitable.",
+			"pros": ["Preserves area accurately across CONUS", "Single projection for all 48 states"],
+			"cons": ["Introduces shape and distance distortion", "Not suitable for Alaska or Hawaii"],
+			"warnings": ["For Alaska or Hawaii, use appropriate UTM zones or state-specific projections"]
+		},
+		"survey": {
+			"primary": "State Plane Coordinate System",
+			"alternatives": ["NAD83(2011) State Plane zones"],
+			"fallback": "EPSG:6318",
+			"reasoning": "State Plane Coordinate System is the official system for US land surveying. Use NAD83(2011) based zones for new surveys.",
+			"pros": [
+				"Official survey standard in the United States",
+				"High accuracy within zone boundaries",
+				"Widely used by government agencies"
+			],
+			"cons": ["Multiple zones per state in some areas", "Zone boundaries add complexity"],
+			"codePattern": "SPCS",
+			"usesZoneMapping": true
+		},
+		"navigation": {
+			"primary": "EPSG:4326",
+			"alternatives": ["EPSG:4269"],
+			"fallback": "EPSG:4326",
+			"reasoning": "WGS84 is the standard for GPS/GNSS navigation worldwide. NAD83 is practically equivalent for most navigation purposes.",
+			"pros": ["Universal GPS compatibility", "Direct use of GNSS coordinates"],
+			"cons": ["Geographic coordinates require conversion for display at large scales"]
+		},
+		"data_exchange": {
+			"primary": "EPSG:4326",
+			"alternatives": ["EPSG:4269"],
+			"fallback": "EPSG:4326",
+			"reasoning": "WGS84 is the international standard for data exchange. GeoJSON specification requires WGS84.",
+			"pros": ["Universal interoperability", "GeoJSON compliant", "Easy to understand (lat/lon)"],
+			"cons": [
+				"Not suitable for direct measurements",
+				"Requires projection for display at large scales"
+			]
+		},
+		"data_storage": {
+			"primary": "EPSG:4269",
+			"alternatives": ["EPSG:6318", "EPSG:4326"],
+			"fallback": "EPSG:4326",
+			"reasoning": "NAD83 is the primary datum for US data. Use NAD83(2011) for new high-accuracy data. WGS84 for international compatibility.",
+			"pros": ["Native datum for US spatial data", "Preserves original measurement accuracy"],
+			"cons": ["Requires transformation for non-US systems"]
+		},
+		"visualization": {
+			"primary": "EPSG:5070",
+			"alternatives": ["EPSG:3857"],
+			"fallback": "EPSG:4326",
+			"reasoning": "Conus Albers provides balanced distortion for continental US visualization. Web Mercator for interactive web maps.",
+			"pros": ["Familiar appearance for US maps", "Balanced distortion across CONUS"],
+			"cons": ["Not suitable for Alaska/Hawaii without insets"]
+		}
+	},
+	"multiZoneStates": {
+		"California": {
+			"note": "California has 6 State Plane zones. Select based on location.",
+			"subRegions": {
+				"Northern California": "EPSG:2225",
+				"Bay Area": "EPSG:2227",
+				"Central California": "EPSG:2228",
+				"Southern California": "EPSG:2229",
+				"Los Angeles": "EPSG:2229",
+				"San Diego": "EPSG:2230"
+			},
+			"cities": {
+				"San Francisco": "EPSG:2227",
+				"Oakland": "EPSG:2227",
+				"San Jose": "EPSG:2227",
+				"Los Angeles": "EPSG:2229",
+				"San Diego": "EPSG:2230",
+				"Sacramento": "EPSG:2226",
+				"Fresno": "EPSG:2228"
+			},
+			"default": "EPSG:2229"
+		},
+		"Texas": {
+			"note": "Texas has 5 State Plane zones (North, North Central, Central, South Central, South).",
+			"subRegions": {
+				"North Texas": "EPSG:2275",
+				"Dallas-Fort Worth": "EPSG:2276",
+				"Central Texas": "EPSG:2277",
+				"Austin": "EPSG:2277",
+				"San Antonio": "EPSG:2278",
+				"South Texas": "EPSG:2279",
+				"Houston": "EPSG:2278"
+			},
+			"cities": {
+				"Dallas": "EPSG:2276",
+				"Fort Worth": "EPSG:2276",
+				"Austin": "EPSG:2277",
+				"San Antonio": "EPSG:2278",
+				"Houston": "EPSG:2278",
+				"El Paso": "EPSG:2277"
+			},
+			"default": "EPSG:2277"
+		},
+		"New York": {
+			"note": "New York has 4 State Plane zones (East, Central, West, Long Island).",
+			"subRegions": {
+				"Long Island": "EPSG:2263",
+				"New York City": "EPSG:2263",
+				"Upstate East": "EPSG:2260",
+				"Central New York": "EPSG:2261",
+				"Western New York": "EPSG:2262"
+			},
+			"cities": {
+				"New York City": "EPSG:2263",
+				"Brooklyn": "EPSG:2263",
+				"Queens": "EPSG:2263",
+				"Buffalo": "EPSG:2262",
+				"Rochester": "EPSG:2262",
+				"Syracuse": "EPSG:2261",
+				"Albany": "EPSG:2260"
+			},
+			"default": "EPSG:2263"
+		},
+		"Florida": {
+			"note": "Florida has 3 State Plane zones (East, West, North).",
+			"subRegions": {
+				"South Florida": "EPSG:2236",
+				"East Coast": "EPSG:2236",
+				"West Coast": "EPSG:2237",
+				"Panhandle": "EPSG:2238"
+			},
+			"cities": {
+				"Miami": "EPSG:2236",
+				"Fort Lauderdale": "EPSG:2236",
+				"Jacksonville": "EPSG:2236",
+				"Orlando": "EPSG:2236",
+				"Tampa": "EPSG:2237",
+				"St. Petersburg": "EPSG:2237",
+				"Tallahassee": "EPSG:2238",
+				"Pensacola": "EPSG:2238"
+			},
+			"default": "EPSG:2236"
+		},
+		"Washington": {
+			"note": "Washington has 2 State Plane zones (North, South).",
+			"subRegions": {
+				"North Washington": "EPSG:2285",
+				"South Washington": "EPSG:2286",
+				"Seattle Area": "EPSG:2285"
+			},
+			"cities": {
+				"Seattle": "EPSG:2285",
+				"Tacoma": "EPSG:2285",
+				"Spokane": "EPSG:2285",
+				"Vancouver": "EPSG:2286",
+				"Olympia": "EPSG:2286"
+			},
+			"default": "EPSG:2285"
+		}
+	}
+}

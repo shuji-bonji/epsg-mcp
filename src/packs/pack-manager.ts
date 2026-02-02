@@ -66,11 +66,10 @@ async function importPack(code: string): Promise<CountryPack | null> {
 				const { createJpPack } = await import('./jp/index.js');
 				return createJpPack();
 			}
-			// Phase 5-4 で追加予定
-			// case 'us': {
-			//   const { createUsPack } = await import('./us/index.js');
-			//   return createUsPack();
-			// }
+			case 'us': {
+				const { createUsPack } = await import('./us/index.js');
+				return createUsPack();
+			}
 			// Phase 5-5 で追加予定
 			// case 'uk': {
 			//   const { createUkPack } = await import('./uk/index.js');

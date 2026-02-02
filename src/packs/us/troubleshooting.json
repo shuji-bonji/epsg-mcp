@@ -1,0 +1,168 @@
+{
+	"symptoms": [
+		{
+			"symptomId": "nad27_shift",
+			"description": "Coordinates shifted by 10-100 meters",
+			"keywords": ["NAD27", "shifted", "old data", "100 meters", "legacy"],
+			"causes": [
+				{
+					"likelihood": "high",
+					"cause": "NAD27 data not transformed to NAD83",
+					"description": "Legacy NAD27 data requires NADCON transformation to NAD83",
+					"indicators": [
+						"Data is from before 1983",
+						"Data source mentions NAD27 or NGVD29",
+						"Systematic offset across dataset"
+					]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Wrong transformation parameters used",
+					"description": "Simple Helmert transformation used instead of NADCON grids",
+					"indicators": [
+						"Transformation was applied but offset remains",
+						"Offset varies by location"
+					]
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "NAD27 data not transformed to NAD83",
+					"steps": [
+						"Identify the original datum (NAD27 or NAD83)",
+						"Use NGS NADCON tool or equivalent software",
+						"Apply grid-based transformation",
+						"Validate against known control points"
+					],
+					"prevention": "Always document datum information with spatial data"
+				},
+				{
+					"forCause": "Wrong transformation parameters used",
+					"steps": [
+						"Revert to original coordinates if possible",
+						"Apply correct NADCON grid transformation",
+						"Document transformation method used"
+					],
+					"prevention": "Use authoritative transformation tools like NGS NADCON"
+				}
+			]
+		},
+		{
+			"symptomId": "spcs_unit_mismatch",
+			"description": "Coordinates appear scaled incorrectly",
+			"keywords": ["feet", "meters", "scale", "SPCS", "state plane"],
+			"causes": [
+				{
+					"likelihood": "high",
+					"cause": "Mixing US Survey Feet and International Feet",
+					"description": "Some SPCS zones use US Survey Feet (exact 1200/3937 m), others use International Feet (0.3048 m)",
+					"indicators": [
+						"Data from different sources don't align",
+						"Small but consistent offset",
+						"Offset increases with distance from origin"
+					]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Mixing feet and meters",
+					"description": "One dataset in feet, another in meters",
+					"indicators": ["~3x scale difference", "Values seem very large or small"]
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Mixing US Survey Feet and International Feet",
+					"steps": [
+						"Identify the foot definition for each dataset",
+						"Convert to a common unit (preferably meters)",
+						"Use the conversion factor: 1 US Survey Foot = 1200/3937 meters"
+					],
+					"prevention": "Always document linear units with coordinate data"
+				},
+				{
+					"forCause": "Mixing feet and meters",
+					"steps": [
+						"Identify unit for each dataset",
+						"Convert all data to meters",
+						"1 foot = 0.3048 meters (international) or 1200/3937 meters (US survey)"
+					],
+					"prevention": "Standardize on meters for data storage and exchange"
+				}
+			]
+		},
+		{
+			"symptomId": "cross_zone_distortion",
+			"description": "Distortion increases toward edge of study area",
+			"keywords": ["zone boundary", "edge", "distortion", "cross-zone"],
+			"causes": [
+				{
+					"likelihood": "high",
+					"cause": "Data spans multiple SPCS zones",
+					"description": "State Plane zones have limited extent for accuracy",
+					"indicators": [
+						"Study area crosses state line",
+						"Data extends beyond single zone",
+						"Distortion increases toward edges"
+					]
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "Data spans multiple SPCS zones",
+					"steps": [
+						"Identify all zones involved",
+						"Consider using UTM zones instead",
+						"For area calculations, use equal-area projection (e.g., Albers)",
+						"Split data processing by zone if necessary"
+					],
+					"prevention": "Plan projection strategy before data collection for multi-zone projects"
+				}
+			]
+		},
+		{
+			"symptomId": "wgs84_nad83_difference",
+			"description": "Small offset (0-2 meters) between GPS and existing data",
+			"keywords": ["GPS", "WGS84", "NAD83", "small offset", "1 meter", "2 meters"],
+			"causes": [
+				{
+					"likelihood": "high",
+					"cause": "WGS84 and NAD83 frame differences",
+					"description": "While often treated as identical, WGS84 and NAD83 can differ by up to 2 meters",
+					"indicators": [
+						"GPS data doesn't quite align with NAD83 control",
+						"Consistent small offset across area"
+					]
+				},
+				{
+					"likelihood": "medium",
+					"cause": "Different NAD83 realizations",
+					"description": "NAD83 has multiple realizations (original, HARN, 2011) that differ",
+					"indicators": [
+						"Data from different survey campaigns",
+						"Metadata indicates different NAD83 versions"
+					]
+				}
+			],
+			"solutions": [
+				{
+					"forCause": "WGS84 and NAD83 frame differences",
+					"steps": [
+						"For most applications (< 1m accuracy), treat as equivalent",
+						"For high-accuracy work, use explicit transformation",
+						"Document datum handling in metadata"
+					],
+					"prevention": "Specify complete datum information including realization"
+				},
+				{
+					"forCause": "Different NAD83 realizations",
+					"steps": [
+						"Identify the NAD83 realization for each dataset",
+						"Transform to common realization (preferably NAD83(2011))",
+						"Use NGS tools for realization transformations"
+					],
+					"prevention": "Standardize on NAD83(2011) for new work"
+				}
+			]
+		}
+	]
+}

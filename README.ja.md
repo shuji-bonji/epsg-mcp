@@ -57,6 +57,24 @@ npx @shuji-bonji/epsg-mcp
 }
 ```
 
+#### 追加のCountry Packを有効にする
+
+デフォルトでは日本パックのみがロードされます。追加のパック（例: US）を有効にするには、`EPSG_PACKS` 環境変数を設定します:
+
+```json
+{
+  "mcpServers": {
+    "epsg": {
+      "command": "npx",
+      "args": ["@shuji-bonji/epsg-mcp"],
+      "env": {
+        "EPSG_PACKS": "jp,us"
+      }
+    }
+  }
+}
+```
+
 ### MCP Inspector
 
 ```bash
@@ -379,6 +397,16 @@ CRS関連の問題をトラブルシューティングします。
 | 6668 | JGD2011 | 地理座標系（基準） |
 | 6669-6687 | 平面直角座標系 I-XIX | 測量・大縮尺地図 |
 | 4612 | JGD2000 | レガシー（非推奨） |
+
+### United States (NAD83)
+
+| EPSG | Name | Usage |
+|------|------|-------|
+| 4269 | NAD83 | 地理座標系（標準） |
+| 6318 | NAD83(2011) | 最新リアライゼーション |
+| 5070 | NAD83 / Conus Albers | 面積計算用 |
+| 2229 | NAD83 / California zone 5 | State Plane例 |
+| 2263 | NAD83 / New York Long Island | State Plane例 |
 
 ### Global
 

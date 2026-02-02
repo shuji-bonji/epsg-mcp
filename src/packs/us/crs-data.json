@@ -1,0 +1,351 @@
+{
+	"geographicCRS": {
+		"EPSG:4269": {
+			"code": "EPSG:4269",
+			"name": "NAD83",
+			"type": "geographic",
+			"datum": {
+				"name": "North American Datum 1983",
+				"ellipsoid": "GRS 1980",
+				"type": "geodetic"
+			},
+			"areaOfUse": {
+				"description": "North America - onshore and offshore: Canada, Mexico, United States",
+				"bbox": {
+					"north": 90,
+					"south": 14.92,
+					"east": -47.74,
+					"west": 167.65
+				}
+			},
+			"accuracy": {
+				"horizontal": "1-2m relative to ITRF",
+				"note": "Original realization, superseded by NAD83(2011) for high-accuracy work"
+			},
+			"remarks": "Standard geographic CRS for North America. For high-accuracy applications, use NAD83(2011).",
+			"useCases": [
+				"General mapping in the United States",
+				"Legacy data compatibility",
+				"GIS data exchange"
+			],
+			"deprecated": false
+		},
+		"EPSG:6318": {
+			"code": "EPSG:6318",
+			"name": "NAD83(2011)",
+			"type": "geographic",
+			"datum": {
+				"name": "NAD83 (National Spatial Reference System 2011)",
+				"ellipsoid": "GRS 1980",
+				"type": "geodetic"
+			},
+			"areaOfUse": {
+				"description": "United States (USA) - CONUS and Alaska - onshore and offshore",
+				"bbox": {
+					"north": 74.71,
+					"south": 14.92,
+					"east": -63.88,
+					"west": 167.65
+				}
+			},
+			"accuracy": {
+				"horizontal": "1-2cm relative to ITRF",
+				"note": "Current reference frame for high-accuracy positioning in the US"
+			},
+			"remarks": "Latest realization of NAD83. Recommended for all new high-accuracy surveying and geodetic work.",
+			"useCases": ["High-accuracy surveying", "Geodetic control", "GNSS applications"],
+			"deprecated": false
+		},
+		"EPSG:4267": {
+			"code": "EPSG:4267",
+			"name": "NAD27",
+			"type": "geographic",
+			"datum": {
+				"name": "North American Datum 1927",
+				"ellipsoid": "Clarke 1866",
+				"type": "geodetic"
+			},
+			"areaOfUse": {
+				"description": "North America - onshore - Canada and United States",
+				"bbox": {
+					"north": 77.75,
+					"south": 14.92,
+					"east": -55,
+					"west": -141
+				}
+			},
+			"accuracy": {
+				"horizontal": "Variable, typically 10-100m",
+				"note": "Legacy datum with significant distortions"
+			},
+			"remarks": "Deprecated. Convert to NAD83 for modern applications. Transformation requires NADCON grids.",
+			"useCases": ["Historical data interpretation", "Legacy system compatibility"],
+			"deprecated": true
+		}
+	},
+	"projectedCRS": {
+		"EPSG:5070": {
+			"code": "EPSG:5070",
+			"name": "NAD83 / Conus Albers",
+			"type": "projected",
+			"baseCRS": "EPSG:4269",
+			"projection": {
+				"name": "Albers Equal Area Conic",
+				"method": "Albers",
+				"parameters": {
+					"latitudeOfFalseOrigin": 23,
+					"longitudeOfFalseOrigin": -96,
+					"standardParallel1": 29.5,
+					"standardParallel2": 45.5
+				}
+			},
+			"areaOfUse": {
+				"description": "United States (USA) - CONUS onshore",
+				"bbox": {
+					"north": 49.38,
+					"south": 24.41,
+					"east": -66.91,
+					"west": -124.79
+				}
+			},
+			"accuracy": {
+				"horizontal": "Preserves area",
+				"note": "Equal-area projection for continental US"
+			},
+			"remarks": "Equal-area projection for the continental United States. Ideal for thematic mapping and area calculations.",
+			"useCases": ["Area calculations across CONUS", "Thematic mapping", "Statistical analysis"],
+			"deprecated": false
+		},
+		"EPSG:6350": {
+			"code": "EPSG:6350",
+			"name": "NAD83(2011) / Conus Albers",
+			"type": "projected",
+			"baseCRS": "EPSG:6318",
+			"projection": {
+				"name": "Albers Equal Area Conic",
+				"method": "Albers",
+				"parameters": {
+					"latitudeOfFalseOrigin": 23,
+					"longitudeOfFalseOrigin": -96,
+					"standardParallel1": 29.5,
+					"standardParallel2": 45.5
+				}
+			},
+			"areaOfUse": {
+				"description": "United States (USA) - CONUS onshore",
+				"bbox": {
+					"north": 49.38,
+					"south": 24.41,
+					"east": -66.91,
+					"west": -124.79
+				}
+			},
+			"accuracy": {
+				"horizontal": "Preserves area",
+				"note": "Equal-area projection based on latest NAD83 realization"
+			},
+			"remarks": "Recommended for area calculations across the continental US. Based on NAD83(2011) for improved accuracy.",
+			"useCases": [
+				"Area calculations across CONUS",
+				"Modern thematic mapping",
+				"Environmental analysis"
+			],
+			"deprecated": false
+		},
+		"EPSG:2229": {
+			"code": "EPSG:2229",
+			"name": "NAD83 / California zone 5",
+			"type": "projected",
+			"baseCRS": "EPSG:4269",
+			"projection": {
+				"name": "Lambert Conformal Conic",
+				"method": "Lambert Conic Conformal (2SP)",
+				"parameters": {
+					"latitudeOfOrigin": 33.5,
+					"centralMeridian": -118,
+					"standardParallel1": 34.03333333,
+					"standardParallel2": 35.46666667
+				}
+			},
+			"areaOfUse": {
+				"description": "California - Los Angeles, Ventura, San Luis Obispo, Santa Barbara, Kern counties",
+				"states": ["California"]
+			},
+			"accuracy": {
+				"horizontal": "Survey-grade within zone",
+				"note": "High accuracy within State Plane zone"
+			},
+			"remarks": "State Plane Coordinate System for southern California including Los Angeles area.",
+			"useCases": ["Land surveying", "Engineering projects", "Local government mapping"],
+			"deprecated": false
+		},
+		"EPSG:2263": {
+			"code": "EPSG:2263",
+			"name": "NAD83 / New York Long Island",
+			"type": "projected",
+			"baseCRS": "EPSG:4269",
+			"projection": {
+				"name": "Lambert Conformal Conic",
+				"method": "Lambert Conic Conformal (2SP)",
+				"parameters": {
+					"latitudeOfOrigin": 40.16666667,
+					"centralMeridian": -74,
+					"standardParallel1": 40.66666667,
+					"standardParallel2": 41.03333333
+				}
+			},
+			"areaOfUse": {
+				"description": "New York - Long Island, New York City",
+				"states": ["New York"]
+			},
+			"accuracy": {
+				"horizontal": "Survey-grade within zone",
+				"note": "High accuracy within State Plane zone"
+			},
+			"remarks": "State Plane Coordinate System for Long Island and New York City area.",
+			"useCases": ["Land surveying", "Urban planning", "Infrastructure projects"],
+			"deprecated": false
+		},
+		"EPSG:2277": {
+			"code": "EPSG:2277",
+			"name": "NAD83 / Texas Central",
+			"type": "projected",
+			"baseCRS": "EPSG:4269",
+			"projection": {
+				"name": "Lambert Conformal Conic",
+				"method": "Lambert Conic Conformal (2SP)",
+				"parameters": {
+					"latitudeOfOrigin": 29.66666667,
+					"centralMeridian": -100.3333333,
+					"standardParallel1": 30.11666667,
+					"standardParallel2": 31.88333333
+				}
+			},
+			"areaOfUse": {
+				"description": "Texas - central zone including Austin, San Antonio",
+				"states": ["Texas"]
+			},
+			"accuracy": {
+				"horizontal": "Survey-grade within zone",
+				"note": "High accuracy within State Plane zone"
+			},
+			"remarks": "State Plane Coordinate System for central Texas including Austin and San Antonio areas.",
+			"useCases": ["Land surveying", "Transportation planning", "Utility mapping"],
+			"deprecated": false
+		},
+		"EPSG:2236": {
+			"code": "EPSG:2236",
+			"name": "NAD83 / Florida East",
+			"type": "projected",
+			"baseCRS": "EPSG:4269",
+			"projection": {
+				"name": "Transverse Mercator",
+				"method": "Transverse Mercator",
+				"parameters": {
+					"latitudeOfOrigin": 24.33333333,
+					"centralMeridian": -81,
+					"scaleFactor": 0.999941177
+				}
+			},
+			"areaOfUse": {
+				"description": "Florida - east of approximately 82°W including Miami, Jacksonville",
+				"states": ["Florida"]
+			},
+			"accuracy": {
+				"horizontal": "Survey-grade within zone",
+				"note": "High accuracy within State Plane zone"
+			},
+			"remarks": "State Plane Coordinate System for eastern Florida including Miami and Jacksonville.",
+			"useCases": ["Land surveying", "Coastal mapping", "Urban development"],
+			"deprecated": false
+		},
+		"EPSG:2285": {
+			"code": "EPSG:2285",
+			"name": "NAD83 / Washington North",
+			"type": "projected",
+			"baseCRS": "EPSG:4269",
+			"projection": {
+				"name": "Lambert Conformal Conic",
+				"method": "Lambert Conic Conformal (2SP)",
+				"parameters": {
+					"latitudeOfOrigin": 47,
+					"centralMeridian": -120.8333333,
+					"standardParallel1": 47.5,
+					"standardParallel2": 48.73333333
+				}
+			},
+			"areaOfUse": {
+				"description": "Washington - north of approximately 47.5°N including Seattle",
+				"states": ["Washington"]
+			},
+			"accuracy": {
+				"horizontal": "Survey-grade within zone",
+				"note": "High accuracy within State Plane zone"
+			},
+			"remarks": "State Plane Coordinate System for northern Washington including Seattle area.",
+			"useCases": ["Land surveying", "Urban planning", "Environmental mapping"],
+			"deprecated": false
+		}
+	},
+	"zoneMapping": {
+		"Alabama": { "zone": "East", "code": "EPSG:26929" },
+		"Alaska": { "zone": "Zone 4", "code": "EPSG:26934", "notes": "Multiple zones (1-10)" },
+		"Arizona": { "zone": "Central", "code": "EPSG:26949" },
+		"Arkansas": { "zone": "North", "code": "EPSG:26951" },
+		"California": { "zone": "Zone 5", "code": "EPSG:2229", "notes": "Multiple zones (1-6)" },
+		"Colorado": { "zone": "Central", "code": "EPSG:26954" },
+		"Connecticut": { "zone": "Statewide", "code": "EPSG:26956" },
+		"Delaware": { "zone": "Statewide", "code": "EPSG:26957" },
+		"District of Columbia": { "zone": "Maryland", "code": "EPSG:26985" },
+		"Florida": {
+			"zone": "East",
+			"code": "EPSG:2236",
+			"notes": "Multiple zones (East, West, North)"
+		},
+		"Georgia": { "zone": "East", "code": "EPSG:26966" },
+		"Hawaii": { "zone": "Zone 3", "code": "EPSG:26963" },
+		"Idaho": { "zone": "Central", "code": "EPSG:26969" },
+		"Illinois": { "zone": "East", "code": "EPSG:26971" },
+		"Indiana": { "zone": "East", "code": "EPSG:26973" },
+		"Iowa": { "zone": "North", "code": "EPSG:26975" },
+		"Kansas": { "zone": "North", "code": "EPSG:26977" },
+		"Kentucky": { "zone": "North", "code": "EPSG:2205" },
+		"Louisiana": { "zone": "South", "code": "EPSG:26982" },
+		"Maine": { "zone": "East", "code": "EPSG:26983" },
+		"Maryland": { "zone": "Statewide", "code": "EPSG:26985" },
+		"Massachusetts": { "zone": "Mainland", "code": "EPSG:26986" },
+		"Michigan": { "zone": "South", "code": "EPSG:26989" },
+		"Minnesota": { "zone": "Central", "code": "EPSG:26992" },
+		"Mississippi": { "zone": "East", "code": "EPSG:26994" },
+		"Missouri": { "zone": "Central", "code": "EPSG:26997" },
+		"Montana": { "zone": "Statewide", "code": "EPSG:32100" },
+		"Nebraska": { "zone": "Statewide", "code": "EPSG:32104" },
+		"Nevada": { "zone": "Central", "code": "EPSG:32108" },
+		"New Hampshire": { "zone": "Statewide", "code": "EPSG:32110" },
+		"New Jersey": { "zone": "Statewide", "code": "EPSG:32111" },
+		"New Mexico": { "zone": "Central", "code": "EPSG:32113" },
+		"New York": { "zone": "Long Island", "code": "EPSG:2263", "notes": "Multiple zones" },
+		"North Carolina": { "zone": "Statewide", "code": "EPSG:32119" },
+		"North Dakota": { "zone": "South", "code": "EPSG:32121" },
+		"Ohio": { "zone": "South", "code": "EPSG:32123" },
+		"Oklahoma": { "zone": "North", "code": "EPSG:32124" },
+		"Oregon": { "zone": "North", "code": "EPSG:32126" },
+		"Pennsylvania": { "zone": "South", "code": "EPSG:32129" },
+		"Rhode Island": { "zone": "Statewide", "code": "EPSG:32130" },
+		"South Carolina": { "zone": "Statewide", "code": "EPSG:32133" },
+		"South Dakota": { "zone": "South", "code": "EPSG:32135" },
+		"Tennessee": { "zone": "Statewide", "code": "EPSG:32136" },
+		"Texas": { "zone": "Central", "code": "EPSG:2277", "notes": "Multiple zones (N/NC/C/SC/S)" },
+		"Utah": { "zone": "Central", "code": "EPSG:32143" },
+		"Vermont": { "zone": "Statewide", "code": "EPSG:32145" },
+		"Virginia": { "zone": "South", "code": "EPSG:32147" },
+		"Washington": {
+			"zone": "North",
+			"code": "EPSG:2285",
+			"notes": "Multiple zones (North, South)"
+		},
+		"West Virginia": { "zone": "South", "code": "EPSG:32150" },
+		"Wisconsin": { "zone": "Central", "code": "EPSG:32153" },
+		"Wyoming": { "zone": "West Central", "code": "EPSG:32158" }
+	}
+}

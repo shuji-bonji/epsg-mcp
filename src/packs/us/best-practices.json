@@ -1,0 +1,155 @@
+{
+	"practices": [
+		{
+			"topic": "us_survey",
+			"title": "US Land Surveying Best Practices",
+			"description": "Guidelines for selecting and using CRS for land surveying in the United States",
+			"recommendations": [
+				{
+					"priority": "must",
+					"text": "Use State Plane Coordinate System (SPCS) for official land surveys"
+				},
+				{
+					"priority": "must",
+					"text": "Specify datum version (NAD83 or NAD83(2011)) in all survey documentation"
+				},
+				{
+					"priority": "should",
+					"text": "Use NAD83(2011) based SPCS zones for new surveys where available"
+				},
+				{
+					"priority": "should",
+					"text": "Document the EPSG code explicitly, not just zone name"
+				},
+				{
+					"priority": "may",
+					"text": "Use UTM zones for cross-state projects if SPCS zones are impractical"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Using NAD27 data without transformation",
+					"problem": "NAD27 to NAD83 shifts can be 10-100 meters",
+					"solution": "Transform NAD27 data using NADCON grids before use"
+				},
+				{
+					"mistake": "Mixing SPCS feet and meters",
+					"problem": "Some states use US Survey Feet, others use International Feet or Meters",
+					"solution": "Always verify and document the linear unit for each SPCS zone"
+				},
+				{
+					"mistake": "Ignoring zone boundaries",
+					"problem": "Data crossing SPCS zone boundaries has increased distortion",
+					"solution": "Use separate zones or UTM for cross-zone projects"
+				}
+			],
+			"references": [
+				{
+					"type": "official",
+					"title": "NGS State Plane Coordinate System",
+					"url": "https://www.ngs.noaa.gov/SPCS/",
+					"description": "NOAA NGS official SPCS information"
+				},
+				{
+					"type": "official",
+					"title": "NSRS Modernization",
+					"url": "https://www.ngs.noaa.gov/datums/newdatums/",
+					"description": "Information on the new National Spatial Reference System"
+				}
+			]
+		},
+		{
+			"topic": "nad_migration",
+			"title": "NAD27 to NAD83 Migration",
+			"description": "Best practices for migrating legacy NAD27 data to NAD83",
+			"recommendations": [
+				{
+					"priority": "must",
+					"text": "Use NADCON grids for NAD27 to NAD83 transformation"
+				},
+				{
+					"priority": "must",
+					"text": "Document the transformation method and date for all converted data"
+				},
+				{
+					"priority": "should",
+					"text": "Validate transformation results against known control points"
+				},
+				{
+					"priority": "should",
+					"text": "Preserve original NAD27 coordinates in metadata when possible"
+				},
+				{
+					"priority": "may",
+					"text": "Consider re-surveying critical points if transformation accuracy is insufficient"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Using simple 3-parameter transformation",
+					"problem": "3-parameter Helmert transformation ignores local distortions in NAD27",
+					"solution": "Always use NADCON grids which model local distortions"
+				},
+				{
+					"mistake": "Assuming uniform shift across large areas",
+					"problem": "NAD27 to NAD83 shifts vary significantly by location",
+					"solution": "Apply transformations point-by-point, not as a bulk shift"
+				}
+			],
+			"references": [
+				{
+					"type": "official",
+					"title": "NADCON - North American Datum Conversion",
+					"url": "https://www.ngs.noaa.gov/TOOLS/Nadcon/Nadcon.shtml",
+					"description": "NGS NADCON transformation tool and documentation"
+				}
+			]
+		},
+		{
+			"topic": "us_web_mapping",
+			"title": "Web Mapping in the United States",
+			"description": "Guidelines for CRS selection in US web mapping applications",
+			"recommendations": [
+				{
+					"priority": "must",
+					"text": "Use EPSG:3857 (Web Mercator) for tile-based web maps"
+				},
+				{
+					"priority": "must",
+					"text": "Use EPSG:4326 (WGS84) for GeoJSON data exchange"
+				},
+				{
+					"priority": "should",
+					"text": "Document that measurements in Web Mercator are not accurate"
+				},
+				{
+					"priority": "should",
+					"text": "Transform to appropriate projection for any measurement calculations"
+				},
+				{
+					"priority": "may",
+					"text": "Use Conus Albers (EPSG:5070) for US-focused static maps"
+				}
+			],
+			"commonMistakes": [
+				{
+					"mistake": "Calculating distances or areas in Web Mercator",
+					"problem": "Web Mercator distorts distances and areas significantly",
+					"solution": "Transform to UTM or State Plane for measurements"
+				},
+				{
+					"mistake": "Using projected coordinates in GeoJSON",
+					"problem": "GeoJSON specification requires WGS84 coordinates",
+					"solution": "Always transform to EPSG:4326 before creating GeoJSON"
+				}
+			],
+			"references": [
+				{
+					"type": "article",
+					"title": "The Problem with Web Mercator",
+					"description": "Understanding Web Mercator distortion characteristics"
+				}
+			]
+		}
+	]
+}

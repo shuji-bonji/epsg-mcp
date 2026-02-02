@@ -1,0 +1,110 @@
+{
+	"transformations": [
+		{
+			"from": "EPSG:4267",
+			"to": "EPSG:4269",
+			"method": "NADCON grid interpolation",
+			"accuracy": "15cm - 1m",
+			"notes": "Requires NADCON grids. Accuracy varies by location.",
+			"epsgCode": "EPSG:1241",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:4269",
+			"to": "EPSG:6318",
+			"method": "Time-dependent Helmert transformation",
+			"accuracy": "1-2cm",
+			"notes": "NAD83 to NAD83(2011) involves plate motion corrections.",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:4269",
+			"to": "EPSG:4326",
+			"method": "Null transformation",
+			"accuracy": "1-2m",
+			"notes": "NAD83 and WGS84 are practically identical for most applications. Differences at cm level exist.",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:6318",
+			"to": "EPSG:4326",
+			"method": "Helmert transformation",
+			"accuracy": "1-2cm",
+			"notes": "NAD83(2011) is closely aligned with ITRF. Transform via ITRF for highest accuracy.",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:4269",
+			"to": "EPSG:5070",
+			"method": "Albers Equal Area Conic projection",
+			"accuracy": "Projection accuracy (area preserved)",
+			"notes": "Direct projection from NAD83 to Conus Albers.",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:6318",
+			"to": "EPSG:6350",
+			"method": "Albers Equal Area Conic projection",
+			"accuracy": "Projection accuracy (area preserved)",
+			"notes": "Direct projection from NAD83(2011) to Conus Albers.",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:4269",
+			"to": "EPSG:3857",
+			"method": "Web Mercator projection",
+			"accuracy": "Projection accuracy (conformal, high distortion at poles)",
+			"notes": "Via WGS84 (null transform) then Web Mercator projection.",
+			"reversible": true
+		},
+		{
+			"from": "EPSG:4326",
+			"to": "EPSG:3857",
+			"method": "Web Mercator projection",
+			"accuracy": "Projection accuracy (conformal, high distortion at poles)",
+			"notes": "Direct projection to Web Mercator.",
+			"reversible": true
+		}
+	],
+	"hubCrs": ["EPSG:4269", "EPSG:6318", "EPSG:4326"],
+	"deprecatedCrs": ["EPSG:4267"],
+	"migrationPaths": {
+		"EPSG:4267": {
+			"recommendedTarget": "EPSG:4269",
+			"reason": "NAD27 is superseded by NAD83. Use NADCON for transformation.",
+			"notes": "NADCON grids required for accurate transformation."
+		}
+	},
+	"datumRelationships": {
+		"NAD27_NAD83": {
+			"description": "NAD27 to NAD83 transformation",
+			"typical_shift": "10-100 meters depending on location",
+			"method": "NADCON grid interpolation",
+			"considerations": [
+				"Shift varies significantly across the US",
+				"Maximum differences in Alaska and Hawaii",
+				"CONUS shifts typically 10-100m"
+			]
+		},
+		"NAD83_WGS84": {
+			"description": "NAD83 and WGS84 are practically identical",
+			"typical_shift": "0-2 meters",
+			"method": "Null transformation or Helmert",
+			"considerations": [
+				"For most applications, can be treated as equivalent",
+				"For high-precision work, use explicit transformation",
+				"Differences due to different reference frames"
+			]
+		},
+		"NAD83_NAD83_2011": {
+			"description": "NAD83 to NAD83(2011) modernization",
+			"typical_shift": "0-1 meter",
+			"method": "Time-dependent transformation",
+			"considerations": [
+				"Accounts for tectonic plate motion",
+				"Required for GNSS-derived positions",
+				"Most significant in western US"
+			]
+		}
+	}
+}

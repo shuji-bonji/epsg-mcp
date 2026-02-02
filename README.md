@@ -57,6 +57,24 @@ Add to `claude_desktop_config.json`:
 }
 ```
 
+#### Enabling Additional Country Packs
+
+By default, only the Japan pack is loaded. To enable additional packs (e.g., US), set the `EPSG_PACKS` environment variable:
+
+```json
+{
+  "mcpServers": {
+    "epsg": {
+      "command": "npx",
+      "args": ["@shuji-bonji/epsg-mcp"],
+      "env": {
+        "EPSG_PACKS": "jp,us"
+      }
+    }
+  }
+}
+```
+
 ### MCP Inspector
 
 ```bash
@@ -379,6 +397,16 @@ Troubleshoot CRS-related problems.
 | 6668 | JGD2011 | Geographic CRS (reference) |
 | 6669-6687 | Japan Plane Rectangular CS I-XIX | Surveying, large-scale maps |
 | 4612 | JGD2000 | Legacy (deprecated) |
+
+### United States (NAD83)
+
+| EPSG | Name | Usage |
+|------|------|-------|
+| 4269 | NAD83 | Geographic CRS (standard) |
+| 6318 | NAD83(2011) | Latest realization |
+| 5070 | NAD83 / Conus Albers | Area calculations |
+| 2229 | NAD83 / California zone 5 | State Plane example |
+| 2263 | NAD83 / New York Long Island | State Plane example |
 
 ### Global
 
