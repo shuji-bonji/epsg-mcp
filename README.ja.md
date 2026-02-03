@@ -9,9 +9,14 @@
 
 [English README](README.md)
 
-座標参照系（CRS: Coordinate Reference System）に関する知識提供を行うMCPサーバーです。
+座標参照系（CRS: Coordinate Reference System）に関する専門知識と意思決定支援を世界規模で提供するMCPサーバーです。
 
-日本のJGD2011測地系、平面直角座標系（I〜XIX系）、およびグローバルなWGS84、Web Mercatorなどの座標系情報を提供します。変換実行は [mcp-server-proj](https://github.com/mcp-server-proj) に委譲し、**知識提供・判断支援に特化**しています。
+**3層フォールバックによるグローバル対応**:
+1. **Country Pack**（日本、米国State Plane、英国National Grid等）による専門レベルの推奨
+2. Packがない地域では**UTMゾーン自動計算**で合理的な投影座標系を提案
+3. 最終フォールバックとして**安全なデフォルト**（WGS84 / Web Mercator）
+
+変換実行は [mcp-server-proj](https://github.com/mcp-server-proj) に委譲し、**知識提供・判断支援に特化**しています。
 
 ## Features
 
@@ -24,9 +29,10 @@
 - **CRS比較**: 7つの観点（測地系、投影法、精度、歪み、互換性など）でCRSを比較
 - **ベストプラクティス**: 10トピックのCRS利用ガイダンス（測量、Web地図、データ交換等）
 - **トラブルシューティング**: 症状からCRS問題を診断（座標ずれ、計算エラー等）
-- **日本重視**: JGD2011、平面直角座標系I〜XIX系の完全サポート
+- **Country Packシステム**: 拡張可能な地域専門知識（日本、米国、英国対応済み、追加も容易）
 - **オフライン動作**: ローカルデータベースで外部API不要
 - **国際化対応**: ツール定義・パラメータ説明は英語化済み（AIエージェントが言語に依存せず利用可能）
+- **グレースフル・デグラデーション**: 地域別Packがなくても、UTMフォールバックで世界中どこでも動作
 
 ## Installation
 

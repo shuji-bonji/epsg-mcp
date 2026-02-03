@@ -9,9 +9,14 @@
 
 [日本語版 README](README.ja.md)
 
-An MCP server that provides knowledge about Coordinate Reference Systems (CRS).
+An MCP server that provides specialized knowledge and decision support for Coordinate Reference Systems (CRS) worldwide.
 
-Provides information on Japan's JGD2011 geodetic datum, Japan Plane Rectangular Coordinate Systems (Zones I-XIX), and global coordinate systems such as WGS84 and Web Mercator. Coordinate transformation execution is delegated to [mcp-server-proj](https://github.com/mcp-server-proj), **focusing on knowledge provision and decision support**.
+**Global coverage** through a 3-layer fallback:
+1. **Country Packs** (Japan, US State Plane, UK National Grid, etc.) for expert-level recommendations
+2. **Automatic UTM zone calculation** when no pack is available
+3. **Safe defaults** (WGS84 / Web Mercator) as the final fallback
+
+Coordinate transformation execution is delegated to [mcp-server-proj](https://github.com/mcp-server-proj), **focusing on knowledge provision and decision support**.
 
 ## Features
 
@@ -24,9 +29,10 @@ Provides information on Japan's JGD2011 geodetic datum, Japan Plane Rectangular 
 - **CRS Comparison**: Compare CRS from 7 perspectives (datum, projection, accuracy, distortion, compatibility, etc.)
 - **Best Practices**: CRS usage guidance on 10 topics (surveying, web mapping, data exchange, etc.)
 - **Troubleshooting**: Diagnose CRS problems by symptoms (coordinate shifts, calculation errors, etc.)
-- **Japan-focused**: Full support for JGD2011 and Japan Plane Rectangular Coordinate Systems I-XIX
+- **Country Pack System**: Extensible regional expertise (Japan, US, UK available; easily add more)
 - **Offline Operation**: Local database requires no external API
 - **Internationalized**: Tool definitions and parameter descriptions in English (usable by AI agents in any language)
+- **Graceful Degradation**: Works anywhere via UTM fallback even without region-specific packs
 
 ## Installation
 

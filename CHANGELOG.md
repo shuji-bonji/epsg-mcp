@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.9.1] - 2026-02-03
+
+### Changed
+
+#### Documentation Improvements
+- README.md/README.ja.md: Revised description to emphasize global coverage
+  - Removed "Japan-focused" impression from opening paragraph
+  - Added 3-layer fallback architecture explanation (Country Pack → UTM → Global)
+  - New features: "Country Pack System", "Graceful Degradation"
+  - Removed "Japan-focused" / "日本重視" from Features section
+- package.json: Updated description to reflect worldwide CRS support
+
+### Technical Details
+- Documentation-only release, no code changes
+- All 638 tests passing
+
+---
+
+## [0.9.0] - 2026-02-02
+
 ### Changed
 
 #### Internationalization Enhancements
@@ -38,10 +60,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Technical Details
 - All 638 tests passing
 - No breaking changes
-
----
-
-## [0.9.0] - 2026-02-02
 
 ### Added
 
