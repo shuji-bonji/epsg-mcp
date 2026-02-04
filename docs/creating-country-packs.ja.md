@@ -301,6 +301,9 @@ export function create{Country}Pack(): CountryPack {
       primaryDatum: '測地系名',
       description: '{国名}のCRS知識',
       language: 'en',
+      // オプション: 国コードのエイリアス（ISO 3166-1 alpha-3、通称など）
+      // ユーザーが複数の方法で国を指定できるようになります
+      aliases: ['{CCC}', '{国名}'],  // 例: ドイツの場合 ['DEU', 'GERMANY']
     },
 
     async getCrsData(): Promise<PackCrsDataSet> {

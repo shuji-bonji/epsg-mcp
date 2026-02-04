@@ -248,4 +248,110 @@ describe('Pack Manager', () => {
 			expect(arePacksLoaded()).toBe(false);
 		});
 	});
+
+	describe('aliases', () => {
+		it('should register pack with aliases', () => {
+			const pack = createJpPack();
+			registerPack(pack);
+
+			// JP Pack has aliases: ['JPN', 'JAPAN']
+			expect(getPackForCountry('JP')).not.toBeNull();
+			expect(getPackForCountry('JPN')).not.toBeNull();
+			expect(getPackForCountry('JAPAN')).not.toBeNull();
+		});
+
+		it('should find pack by alias (case insensitive)', () => {
+			const pack = createJpPack();
+			registerPack(pack);
+
+			expect(getPackForCountry('jpn')).not.toBeNull();
+			expect(getPackForCountry('japan')).not.toBeNull();
+			expect(getPackForCountry('Japan')).not.toBeNull();
+		});
+
+		it('should return unique packs from getRegisteredPacks', () => {
+			const pack = createJpPack();
+			registerPack(pack);
+
+			// Even though JP is registered under JP, JPN, JAPAN,
+			// getRegisteredPacks should return only 1 unique pack
+			const packs = getRegisteredPacks();
+			expect(packs).toHaveLength(1);
+			expect(packs[0].countryCode).toBe('JP');
+		});
+
+		it('should find pack by alias in findPackForLocation', () => {
+			const pack = createJpPack();
+			registerPack(pack);
+
+			// Using JPN alias
+			const found1 = findPackForLocation({ country: 'JPN' });
+			expect(found1).not.toBeNull();
+			expect(found1?.metadata.countryCode).toBe('JP');
+
+			// Using JAPAN alias
+			const found2 = findPackForLocation({ country: 'JAPAN' });
+			expect(found2).not.toBeNull();
+			expect(found2?.metadata.countryCode).toBe('JP');
+		});
+
+		it('should work with pack without aliases', () => {
+			// Create a mock pack without aliases
+			const mockPack: CountryPack = {
+				metadata: {
+					countryCode: 'FR',
+					name: 'Mock France Pack',
+					version: '1.0.0',
+					primaryDatum: 'RGF93',
+					description: 'Mock France Pack for testing',
+					language: 'fr',
+					// No aliases defined
+				},
+				getCrsData: async () => ({ geographicCRS: {}, projectedCRS: {} }),
+				getZoneMapping: async () => ({ entries: {} }),
+				getRecommendationRules: async () => ({ purposeRules: {} }),
+				getValidationRules: async () => [],
+				getTransformationKnowledge: async () => ({
+					transformations: [],
+					hubCrs: [],
+					deprecatedCrs: [],
+				}),
+				getBestPractices: async () => [],
+				getTroubleshootingGuides: async () => [],
+				selectZoneForLocation: async () => null,
+				isLocationInCountry: () => false,
+				getCountryBounds: () => ({ north: 51, south: 41, east: 10, west: -5 }),
+			};
+			registerPack(mockPack);
+
+			expect(getPackForCountry('FR')).not.toBeNull();
+			expect(getPackForCountry('FRA')).toBeNull(); // No alias defined
+			expect(getRegisteredPacks()).toHaveLength(1);
+		});
+
+		it('should handle multiple packs with aliases', async () => {
+			vi.stubEnv('EPSG_PACKS', 'jp,us,uk');
+			await loadPacksFromEnv();
+
+			// Each pack should be findable by its aliases
+			// JP: JP, JPN, JAPAN
+			expect(getPackForCountry('JP')).not.toBeNull();
+			expect(getPackForCountry('JPN')).not.toBeNull();
+			expect(getPackForCountry('JAPAN')).not.toBeNull();
+
+			// US: US, USA, AMERICA
+			expect(getPackForCountry('US')).not.toBeNull();
+			expect(getPackForCountry('USA')).not.toBeNull();
+			expect(getPackForCountry('AMERICA')).not.toBeNull();
+
+			// UK: UK, GB, GBR, BRITAIN
+			expect(getPackForCountry('UK')).not.toBeNull();
+			expect(getPackForCountry('GB')).not.toBeNull();
+			expect(getPackForCountry('GBR')).not.toBeNull();
+			expect(getPackForCountry('BRITAIN')).not.toBeNull();
+
+			// getRegisteredPacks should still return only 3 unique packs
+			expect(getRegisteredPacks()).toHaveLength(3);
+		});
+	});
 });

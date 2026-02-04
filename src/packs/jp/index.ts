@@ -71,6 +71,7 @@ export function createJpPack(): CountryPack {
 			primaryDatum: 'JGD2011',
 			description: 'Japan Plane Rectangular CS I-XIX, JGD2011/JGD2000/Tokyo Datum knowledge',
 			language: 'ja',
+			aliases: ['JPN', 'JAPAN'],
 		},
 
 		async getCrsData(): Promise<PackCrsDataSet> {

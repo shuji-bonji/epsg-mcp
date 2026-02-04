@@ -87,6 +87,12 @@ export const UK_EPSG = {
 } as const;
 
 /**
+ * Valid UK country codes (for location matching)
+ * Includes ISO 3166-1 alpha-2, alpha-3, and common aliases
+ */
+export const UK_COUNTRY_CODES = ['UK', 'GB', 'GBR', 'BRITAIN'] as const;
+
+/**
  * UK administrative regions
  */
 export const UK_REGIONS = ['England', 'Scotland', 'Wales', 'Northern Ireland'] as const;

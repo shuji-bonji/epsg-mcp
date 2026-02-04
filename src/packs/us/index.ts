@@ -100,6 +100,7 @@ export function createUsPack(): CountryPack {
 			primaryDatum: 'NAD83',
 			description: 'NAD83, State Plane Coordinate System, and US-specific CRS knowledge',
 			language: 'en',
+			aliases: ['USA', 'AMERICA'],
 		},
 
 		async getCrsData(): Promise<PackCrsDataSet> {

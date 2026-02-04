@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.4] - 2026-02-04
+
+### Added
+
+#### Country Pack Aliases Support
+- `PackMetadata` now supports `aliases` field for country code variants
+- Packs can define their own aliases (ISO 3166-1 alpha-3, common names, etc.)
+  - JP Pack: `['JPN', 'JAPAN']`
+  - US Pack: `['USA', 'AMERICA']`
+  - UK Pack: `['GB', 'GBR', 'BRITAIN']`
+- New packs can define aliases without modifying core code
+
+### Changed
+
+#### Pack Manager Country Code Resolution
+- Removed hardcoded country code aliases from pack-manager
+- Pack registration now automatically registers all aliases defined in metadata
+- `getRegisteredPacks()` returns unique packs (no duplicates from aliases)
+
+#### UK Pack
+- UK Pack now returns BNG (EPSG:27700) for all UK country code variants (UK, GB, GBR, BRITAIN)
+- Added `UK_COUNTRY_CODES` constant for consistent country code matching
+
+### Technical Details
+- Added 6 tests for aliases feature (644 tests total)
+- Updated documentation with aliases example
+
+---
+
 ## [0.9.3] - 2026-02-04
 
 ### Fixed
@@ -19,18 +48,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - UK locations (London, Northern Ireland, etc.) now return BNG/ITM (EPSG:27700, EPSG:2157)
   - Previously all non-Japan locations fell back to UTM
 
-#### Pack Manager Country Code Resolution
-- Added country code aliases for consistent pack lookup
-  - GB → UK, GBR → UK, USA → US, JPN → JP
-  - Fixes issue where `normalizeLocation` converts 'UK' to 'GB' (ISO 3166-1)
-
 #### UK Pack Default Zone
 - UK Pack now returns BNG (EPSG:27700) for country-only queries without specific region
 
 ### Technical Details
 - Added `arePacksLoaded()` and `loadPacksFromEnv()` to recommendation-service
 - Pack loading now happens lazily on first recommendation request if not already loaded
-- All 638 tests passing
 
 ---
 

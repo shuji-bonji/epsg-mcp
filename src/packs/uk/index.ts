@@ -20,7 +20,15 @@ import type {
 	PackValidationRule,
 	ZoneMapping,
 } from '../../types/index.js';
-import { UK_BOUNDS, UK_COUNTIES, UK_EPSG, UK_REGIONS } from './constants.js';
+import { UK_BOUNDS, UK_COUNTIES, UK_COUNTRY_CODES, UK_EPSG, UK_REGIONS } from './constants.js';
+
+/**
+ * Check if country code matches UK
+ */
+function isUkCountryCode(country: string | undefined): boolean {
+	if (!country) return false;
+	return UK_COUNTRY_CODES.includes(country.toUpperCase() as (typeof UK_COUNTRY_CODES)[number]);
+}
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -86,6 +94,7 @@ export function createUkPack(): CountryPack {
 			primaryDatum: 'OSGB36',
 			description: 'OSGB36, British National Grid, ETRS89, and UK-specific CRS knowledge',
 			language: 'en',
+			aliases: ['GB', 'GBR', 'BRITAIN'],
 		},
 
 		async getCrsData(): Promise<PackCrsDataSet> {
@@ -309,7 +318,7 @@ export function createUkPack(): CountryPack {
 			}
 
 			// Default: if country is UK but no specific region/coordinates, use BNG
-			if (location.country?.toUpperCase() === 'UK' || location.country?.toUpperCase() === 'GB') {
+			if (isUkCountryCode(location.country)) {
 				return UK_EPSG.BNG;
 			}
 
@@ -318,11 +327,7 @@ export function createUkPack(): CountryPack {
 
 		isLocationInCountry(location: LocationSpec): boolean {
 			// Check country code
-			if (
-				location.country?.toUpperCase() === 'UK' ||
-				location.country?.toUpperCase() === 'GB' ||
-				location.country?.toUpperCase() === 'GBR'
-			) {
+			if (isUkCountryCode(location.country)) {
 				return true;
 			}
 

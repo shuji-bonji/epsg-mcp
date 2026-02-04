@@ -23,6 +23,12 @@ export interface PackMetadata {
 	description: string;
 	/** 対応言語（remarksの言語） */
 	language: string;
+	/**
+	 * 国コードのエイリアス（代替コード）
+	 * ISO 3166-1 alpha-3, 通称など
+	 * 例: UK Pack → ['GB', 'GBR', 'Britain']
+	 */
+	aliases?: string[];
 }
 
 /**

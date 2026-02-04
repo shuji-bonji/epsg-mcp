@@ -301,6 +301,9 @@ export function create{Country}Pack(): CountryPack {
       primaryDatum: 'Datum Name',
       description: 'CRS knowledge for {Country}',
       language: 'en',
+      // Optional: Country code aliases (ISO 3166-1 alpha-3, common names, etc.)
+      // These allow users to specify the country in multiple ways
+      aliases: ['{CCC}', '{COUNTRY_NAME}'],  // e.g., ['DEU', 'GERMANY'] for DE
     },
 
     async getCrsData(): Promise<PackCrsDataSet> {

@@ -16,44 +16,44 @@ let packsLoaded = false;
 
 /**
  * パックを登録
+ *
+ * countryCode と aliases の両方で登録し、どちらでも検索可能にする
  */
 export function registerPack(pack: CountryPack): void {
-	const { countryCode } = pack.metadata;
+	const { countryCode, aliases } = pack.metadata;
+
+	// メインの国コードで登録
 	registeredPacks.set(countryCode.toUpperCase(), pack);
-	info(`Registered country pack: ${pack.metadata.name} (${countryCode})`);
-}
 
-/**
- * 国コードエイリアス（ISO 3166-1 alpha-2/alpha-3 と通称の対応）
- */
-const COUNTRY_CODE_ALIASES: Record<string, string> = {
-	GB: 'UK', // Great Britain → United Kingdom
-	GBR: 'UK',
-	USA: 'US',
-	JPN: 'JP',
-};
+	// エイリアスでも登録
+	if (aliases) {
+		for (const alias of aliases) {
+			registeredPacks.set(alias.toUpperCase(), pack);
+		}
+	}
 
-/**
- * 国コードを正規化（エイリアス解決）
- */
-function normalizeCountryCode(code: string): string {
-	const upper = code.toUpperCase();
-	return COUNTRY_CODE_ALIASES[upper] || upper;
+	const aliasInfo = aliases?.length ? ` (aliases: ${aliases.join(', ')})` : '';
+	info(`Registered country pack: ${pack.metadata.name} (${countryCode})${aliasInfo}`);
 }
 
 /**
  * 国コードからパックを取得
  */
 export function getPackForCountry(countryCode: string): CountryPack | null {
-	const normalized = normalizeCountryCode(countryCode);
-	return registeredPacks.get(normalized) || null;
+	return registeredPacks.get(countryCode.toUpperCase()) || null;
 }
 
 /**
- * 登録済みパック一覧
+ * 登録済みパック一覧（重複なし）
+ *
+ * 同じパックがエイリアスで複数登録されている場合も、一意のパックのみを返す
  */
 export function getRegisteredPacks(): PackMetadata[] {
-	return Array.from(registeredPacks.values()).map((p) => p.metadata);
+	const uniquePacks = new Map<string, CountryPack>();
+	for (const pack of registeredPacks.values()) {
+		uniquePacks.set(pack.metadata.countryCode, pack);
+	}
+	return Array.from(uniquePacks.values()).map((p) => p.metadata);
 }
 
 /**
