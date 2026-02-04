@@ -9,6 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.3] - 2026-02-04
+
+### Fixed
+
+#### Country Pack Integration in Recommendation Service
+- `recommend_crs` now properly uses US/UK Country Packs for non-Japan locations
+  - US locations (California, New York, etc.) now return State Plane CRS (e.g., EPSG:2229, EPSG:2263)
+  - UK locations (London, Northern Ireland, etc.) now return BNG/ITM (EPSG:27700, EPSG:2157)
+  - Previously all non-Japan locations fell back to UTM
+
+#### Pack Manager Country Code Resolution
+- Added country code aliases for consistent pack lookup
+  - GB → UK, GBR → UK, USA → US, JPN → JP
+  - Fixes issue where `normalizeLocation` converts 'UK' to 'GB' (ISO 3166-1)
+
+#### UK Pack Default Zone
+- UK Pack now returns BNG (EPSG:27700) for country-only queries without specific region
+
+### Technical Details
+- Added `arePacksLoaded()` and `loadPacksFromEnv()` to recommendation-service
+- Pack loading now happens lazily on first recommendation request if not already loaded
+- All 638 tests passing
+
+---
+
 ## [0.9.2] - 2026-02-04
 
 ### Added

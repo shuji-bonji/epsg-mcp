@@ -24,10 +24,29 @@ export function registerPack(pack: CountryPack): void {
 }
 
 /**
+ * 国コードエイリアス（ISO 3166-1 alpha-2/alpha-3 と通称の対応）
+ */
+const COUNTRY_CODE_ALIASES: Record<string, string> = {
+	GB: 'UK', // Great Britain → United Kingdom
+	GBR: 'UK',
+	USA: 'US',
+	JPN: 'JP',
+};
+
+/**
+ * 国コードを正規化（エイリアス解決）
+ */
+function normalizeCountryCode(code: string): string {
+	const upper = code.toUpperCase();
+	return COUNTRY_CODE_ALIASES[upper] || upper;
+}
+
+/**
  * 国コードからパックを取得
  */
 export function getPackForCountry(countryCode: string): CountryPack | null {
-	return registeredPacks.get(countryCode.toUpperCase()) || null;
+	const normalized = normalizeCountryCode(countryCode);
+	return registeredPacks.get(normalized) || null;
 }
 
 /**

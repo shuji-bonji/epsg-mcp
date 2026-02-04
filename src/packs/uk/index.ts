@@ -308,6 +308,11 @@ export function createUkPack(): CountryPack {
 				}
 			}
 
+			// Default: if country is UK but no specific region/coordinates, use BNG
+			if (location.country?.toUpperCase() === 'UK' || location.country?.toUpperCase() === 'GB') {
+				return UK_EPSG.BNG;
+			}
+
 			return null;
 		},
 

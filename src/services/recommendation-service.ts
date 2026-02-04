@@ -13,6 +13,7 @@ import {
 	WIDE_AREA_THRESHOLD,
 } from '../constants/index.js';
 import { findCrsById, getZoneMapping, loadRecommendations } from '../data/loader.js';
+import { arePacksLoaded, findPackForLocation, loadPacksFromEnv } from '../packs/pack-manager.js';
 import type {
 	CrsDetail,
 	LocationSpec,
@@ -219,6 +220,11 @@ export async function recommendCrs(
 	location: LocationSpec,
 	requirements?: Requirements
 ): Promise<RecommendCrsOutput> {
+	// 0. パックがロードされていなければロード
+	if (!arePacksLoaded()) {
+		await loadPacksFromEnv();
+	}
+
 	// 1. LocationSpec 正規化
 	const normalized = normalizeLocation(location);
 
@@ -231,10 +237,38 @@ export async function recommendCrs(
 
 	const isJapan = isJapanLocation(normalized);
 
-	// 2. 日本以外でPackがない場合はUTMフォールバック
-	// Phase 5-2 でPack対応を追加予定。現段階では日本以外はUTMフォールバック
-	if (!isJapan && canUseUtmFallback(normalized)) {
-		return recommendWithUtmFallback(purpose, normalized, requirements);
+	// 2. 日本以外の場合、Country Packを探す
+	if (!isJapan) {
+		const pack = findPackForLocation(normalized);
+		if (pack) {
+			// Country Packが見つかった場合、Packの推奨ロジックを使用
+			const zone = await pack.selectZoneForLocation(normalized);
+			if (zone) {
+				const crsDetail = await findCrsById(zone);
+				const score = adjustScoreForRequirements(
+					VALIDATION_SCORE.PRIMARY_BASE,
+					crsDetail,
+					requirements
+				);
+				const primary = await buildRecommendedCrs(
+					zone,
+					score,
+					['High accuracy', 'Legal basis', 'Public survey compliant'],
+					['Zone selection required', 'Multiple zones for wide areas'],
+					undefined
+				);
+				return {
+					primary,
+					alternatives: [],
+					reasoning: `Recommended by ${pack.metadata.name} for ${purpose}.`,
+					warnings: [],
+				};
+			}
+		}
+		// Packがない場合はUTMフォールバック
+		if (canUseUtmFallback(normalized)) {
+			return recommendWithUtmFallback(purpose, normalized, requirements);
+		}
 	}
 
 	const ruleRegion = isJapan && rule.japan ? rule.japan : rule.global;
