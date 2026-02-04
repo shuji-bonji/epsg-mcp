@@ -46,7 +46,7 @@ export const VALIDATION_RULES: ValidationRule[] = [
 		purposes: ['area_calculation'],
 		condition: (ctx) => ctx.crs.code === EPSG.WEB_MERCATOR,
 		issue: {
-			severity: 'warning',
+			severity: 'error',
 			code: 'AREA_DISTORTION',
 			message: 'Web Mercator causes significant area distortion',
 			recommendation: 'Use an equal-area or local projected CRS',

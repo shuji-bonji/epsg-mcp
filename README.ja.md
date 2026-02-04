@@ -534,6 +534,7 @@ npm run test:watch
 
 ## Documentation
 
+- [使用例](EXAMPLES.ja.md) - EPSG MCPがCRS選択をどのように支援するかの実践シナリオ
 - [Country Pack作成ガイド](docs/creating-country-packs.ja.md) - 新しい国/地域サポートの追加方法
 
 ## Roadmap

@@ -109,12 +109,14 @@ describe('Validation Utilities', () => {
 
 	describe('validateCrsUsage', () => {
 		describe('area_calculation', () => {
-			it('should warn about Web Mercator area distortion', async () => {
+			it('should error about Web Mercator area distortion', async () => {
 				const result = await validateCrsUsage('EPSG:3857', 'area_calculation', {
 					country: 'Japan',
 				});
 				expect(result.issues.some((i) => i.code === 'AREA_DISTORTION')).toBe(true);
-				expect(result.issues.find((i) => i.code === 'AREA_DISTORTION')?.severity).toBe('warning');
+				expect(result.issues.find((i) => i.code === 'AREA_DISTORTION')?.severity).toBe('error');
+				expect(result.isValid).toBe(false);
+				expect(result.score).toBeLessThanOrEqual(30);
 			});
 
 			it('should info about geographic CRS area calculation', async () => {

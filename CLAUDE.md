@@ -6,6 +6,8 @@
 
 実装にあたって以下のドキュメントを参照すること：
 
+- [EXAMPLES.md](EXAMPLES.md) - 使用例（英語）
+- [EXAMPLES.ja.md](EXAMPLES.ja.md) - 使用例（日本語）
 - [docs/EPSG-MCP-Design-Specification.md](docs/EPSG-MCP-Design-Specification.md) - 機能設計書（ツール定義、データ構造）
 - [docs/implementation-plan.md](docs/implementation-plan.md) - Phase 1 実装計画書
 - [docs/phase2-implementation-plan.md](docs/phase2-implementation-plan.md) - Phase 2 実装計画書

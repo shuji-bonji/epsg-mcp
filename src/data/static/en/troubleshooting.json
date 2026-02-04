@@ -87,7 +87,18 @@
 		},
 		"coordinate_shift_medium": {
 			"description": "Coordinates shifted by 1 to several meters",
-			"keywords": ["several m", "1-2m", "meter scale", "1m", "2m", "a few meters"],
+			"keywords": [
+				"several m",
+				"1-2m",
+				"meter scale",
+				"1m",
+				"2m",
+				"a few meters",
+				"off by",
+				"meters",
+				"1-2 meters",
+				"couple meters"
+			],
 			"possibleCauses": [
 				{
 					"likelihood": "high",
@@ -336,12 +347,17 @@
 		"shift": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
 		"offset": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
 		"misalignment": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
+		"off by": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
+		"off": ["coordinate_shift_large", "coordinate_shift_medium", "coordinate_shift_small"],
 		"400m": ["coordinate_shift_large"],
 		"hundreds": ["coordinate_shift_large"],
 		"kilometers": ["coordinate_shift_large"],
 		"1-2m": ["coordinate_shift_medium"],
+		"1-2 meters": ["coordinate_shift_medium"],
 		"several meters": ["coordinate_shift_medium"],
 		"few meters": ["coordinate_shift_medium"],
+		"meters": ["coordinate_shift_medium"],
+		"couple meters": ["coordinate_shift_medium"],
 		"few cm": ["coordinate_shift_small"],
 		"centimeters": ["coordinate_shift_small"],
 		"minor": ["coordinate_shift_small"],

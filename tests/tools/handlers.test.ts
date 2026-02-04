@@ -424,14 +424,14 @@ describe('Tool Handlers', () => {
 			expect(result.primary.code).toBe('EPSG:6677');
 		});
 
-		it('should recommend zone XI for survey in Sapporo', async () => {
+		it('should recommend zone XII for survey in Sapporo', async () => {
 			const result = (await handleRecommendCrs({
 				purpose: 'survey',
 				location: { prefecture: '北海道', city: '札幌市' },
 			})) as {
 				primary: { code: string };
 			};
-			expect(result.primary.code).toBe('EPSG:6679');
+			expect(result.primary.code).toBe('EPSG:6680');
 		});
 
 		it('should recommend zone XVI for survey in Miyakojima', async () => {

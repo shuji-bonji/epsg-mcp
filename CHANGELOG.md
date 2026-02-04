@@ -9,6 +9,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.2] - 2026-02-04
+
+### Added
+
+#### Documentation
+- [EXAMPLES.md](EXAMPLES.md) - Usage examples in English (7 practical scenarios)
+- [EXAMPLES.ja.md](EXAMPLES.ja.md) - Usage examples in Japanese
+- Documentation links added to README.md, README.ja.md, and CLAUDE.md
+
+### Fixed
+
+#### Japan Pack - Hokkaido Zone Corrections (per GSI official definition)
+- **Sapporo**: XI → XII (EPSG:6680)
+- **Kitami**: XII → XIII (EPSG:6681)
+- **Abashiri**: XII → XIII (EPSG:6681)
+- **Tomakomai**: XI → XII (EPSG:6680)
+- **Ebetsu**: XI → XII (EPSG:6680)
+- **Ishikari/Sorachi subregions**: XI → XII (EPSG:6680)
+
+#### Validation Strictness
+- `validate_crs_usage`: Web Mercator + area_calculation now returns `isValid: false`
+  - Severity changed from 'warning' to 'error' for AREA_DISTORTION
+  - Score penalty increased from -20 to -75
+
+#### Troubleshooting
+- English keyword matching improved for `troubleshoot` tool
+  - Added: "off by", "meters", "1-2 meters", "couple meters", etc.
+
+### Technical Details
+- All 638 tests passing
+- Both Japanese and English `recommendations.json` updated
+- Both Japanese and English `troubleshooting.json` updated
+
+---
+
 ## [0.9.1] - 2026-02-03
 
 ### Changed

@@ -31,12 +31,12 @@ describe('Recommendation Service', () => {
 	});
 
 	describe('selectZoneForMultiZonePrefecture', () => {
-		it('should return zone XI for Sapporo', async () => {
+		it('should return zone XII for Sapporo', async () => {
 			const result = await selectZoneForMultiZonePrefecture({
 				prefecture: '北海道',
 				city: '札幌市',
 			});
-			expect(result).toBe('EPSG:6679');
+			expect(result).toBe('EPSG:6680');
 		});
 
 		it('should return zone XII for Asahikawa', async () => {
@@ -145,12 +145,12 @@ describe('Recommendation Service', () => {
 				expect(result.reasoning).toContain('Survey');
 			});
 
-			it('should recommend zone XI for Sapporo survey', async () => {
+			it('should recommend zone XII for Sapporo survey', async () => {
 				const result = await recommendCrs('survey', {
 					prefecture: '北海道',
 					city: '札幌市',
 				});
-				expect(result.primary.code).toBe('EPSG:6679');
+				expect(result.primary.code).toBe('EPSG:6680');
 			});
 
 			it('should recommend zone XIII for Kushiro survey', async () => {
@@ -215,7 +215,7 @@ describe('Recommendation Service', () => {
 					prefecture: '北海道',
 					city: '札幌市',
 				});
-				expect(result.primary.code).toBe('EPSG:6679');
+				expect(result.primary.code).toBe('EPSG:6680');
 			});
 		});
 

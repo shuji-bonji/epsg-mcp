@@ -147,7 +147,7 @@ describe('JP Pack', () => {
 		it('should handle Hokkaido with city', async () => {
 			const location: LocationSpec = { prefecture: '北海道', city: '札幌市' };
 			const zone = await jpPack.selectZoneForLocation(location);
-			expect(zone).toBe('EPSG:6679'); // Zone XI (Sapporo is in XI)
+			expect(zone).toBe('EPSG:6680'); // Zone XII (Sapporo is in XII per GSI definition)
 		});
 
 		it('should handle Okinawa with centerPoint', async () => {

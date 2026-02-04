@@ -162,8 +162,8 @@
 		"北海道": {
 			"note": "Spans 3 zones (West=XI, Central=XII, East=XIII)",
 			"subRegions": {
-				"石狩": "EPSG:6679",
-				"空知": "EPSG:6679",
+				"石狩": "EPSG:6680",
+				"空知": "EPSG:6680",
 				"後志": "EPSG:6679",
 				"胆振": "EPSG:6679",
 				"日高": "EPSG:6679",
@@ -178,16 +178,16 @@
 				"根室": "EPSG:6681"
 			},
 			"cities": {
-				"札幌市": "EPSG:6679",
+				"札幌市": "EPSG:6680",
 				"旭川市": "EPSG:6680",
 				"釧路市": "EPSG:6681",
 				"函館市": "EPSG:6679",
 				"帯広市": "EPSG:6681",
 				"小樽市": "EPSG:6679",
-				"北見市": "EPSG:6680",
-				"江別市": "EPSG:6679",
-				"苫小牧市": "EPSG:6679",
-				"網走市": "EPSG:6680",
+				"北見市": "EPSG:6681",
+				"江別市": "EPSG:6680",
+				"苫小牧市": "EPSG:6680",
+				"網走市": "EPSG:6681",
 				"稚内市": "EPSG:6680",
 				"根室市": "EPSG:6681"
 			},
@@ -254,7 +254,7 @@
 			"deprecated": -50,
 			"areaMismatch": -40,
 			"legacyDatum": -50,
-			"areaDistortion": -20,
+			"areaDistortion": -75,
 			"distanceDistortion": -20,
 			"zoneMismatch": -15,
 			"crossZone": -10,

@@ -534,6 +534,7 @@ npm run test:watch
 
 ## Documentation
 
+- [Usage Examples](EXAMPLES.md) - Practical scenarios showing how EPSG MCP helps with CRS decisions
 - [Creating Country Packs](docs/creating-country-packs.md) - Guide for adding new country/region support
 
 ## Roadmap
