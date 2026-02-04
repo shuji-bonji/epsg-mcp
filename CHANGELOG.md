@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.8] - 2026-02-05
+
+### Fixed
+
+#### Complete US/UK Pack CRS Name Resolution
+- Added `name` property to `ZoneMappingEntry` type
+- All US State Plane CRS entries in zoneMapping now include proper names
+- UK zoneMapping entries now include names for consistency
+- Updated US/UK Pack `getZoneMapping()` to copy `name` field
+- `buildRecommendedCrs()` now accepts `nameOverride` parameter as fallback
+
+### Technical Details
+- For CRS not in crs-data.json's projectedCRS (e.g., EPSG:26929), name is now retrieved from zoneMapping
+- Example: `{"subdivision": "Alabama"}` → `"NAD83 / Alabama East"` instead of `"EPSG:26929"`
+- 655 tests passing
+
+---
+
 ## [0.9.7] - 2026-02-04
 
 ### Fixed

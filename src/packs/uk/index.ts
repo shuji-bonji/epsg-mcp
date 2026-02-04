@@ -115,7 +115,7 @@ export function createUkPack(): CountryPack {
 
 		async getZoneMapping(): Promise<ZoneMapping> {
 			const data = await loadJsonData<{
-				zoneMapping: Record<string, { zone: string; code: string; notes?: string }>;
+				zoneMapping: Record<string, { zone: string; code: string; name?: string; notes?: string }>;
 			}>('crs-data.json');
 
 			if (!recommendationsCache) {
@@ -127,6 +127,7 @@ export function createUkPack(): CountryPack {
 				entries[region] = {
 					zone: mapping.zone,
 					code: mapping.code,
+					name: mapping.name,
 					notes: mapping.notes,
 				};
 			}

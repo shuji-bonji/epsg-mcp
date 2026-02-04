@@ -55,6 +55,8 @@ export interface ZoneMappingEntry {
 	zone: string;
 	/** EPSGコード */
 	code: string;
+	/** CRS名（findCrsById で見つからない場合のフォールバック） */
+	name?: string;
 	/** 備考 */
 	notes?: string;
 }

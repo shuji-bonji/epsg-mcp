@@ -100,6 +100,12 @@ describe('UK Pack', () => {
 			expect(mapping.entries['Northern Ireland']).toBeDefined();
 			expect(mapping.entries['Northern Ireland'].code).toBe('EPSG:2157');
 		});
+
+		it('should include name in zone mapping entries', async () => {
+			const mapping = await ukPack.getZoneMapping();
+			expect(mapping.entries.England.name).toBe('OSGB36 / British National Grid');
+			expect(mapping.entries['Northern Ireland'].name).toBe('IRENET95 / Irish Transverse Mercator');
+		});
 	});
 
 	describe('getRecommendationRules', () => {

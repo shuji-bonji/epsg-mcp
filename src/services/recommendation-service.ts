@@ -161,18 +161,20 @@ export async function selectZoneForLocation(location: LocationSpec): Promise<str
 
 /**
  * CRS情報を取得してRecommendedCrsを構築
+ * @param nameOverride - zoneMappingからの名前（findCrsById で見つからない場合のフォールバック）
  */
 async function buildRecommendedCrs(
 	code: string,
 	score: number,
 	pros: string[],
 	cons: string[],
-	usageNotes?: string
+	usageNotes?: string,
+	nameOverride?: string
 ): Promise<RecommendedCrs> {
 	const crsDetail = await findCrsById(code);
 	return {
 		code,
-		name: crsDetail?.name || code,
+		name: crsDetail?.name || nameOverride || code,
 		score,
 		pros,
 		cons,
@@ -250,12 +252,24 @@ export async function recommendCrs(
 					crsDetail,
 					requirements
 				);
+
+				// zoneMappingから名前を取得（findCrsById で見つからない場合のフォールバック）
+				let zoneName: string | undefined;
+				const zoneMapping = await pack.getZoneMapping();
+				for (const entry of Object.values(zoneMapping.entries)) {
+					if (entry.code === zone) {
+						zoneName = entry.name;
+						break;
+					}
+				}
+
 				const primary = await buildRecommendedCrs(
 					zone,
 					score,
 					['High accuracy', 'Legal basis', 'Public survey compliant'],
 					['Zone selection required', 'Multiple zones for wide areas'],
-					undefined
+					undefined,
+					zoneName
 				);
 				return {
 					primary,

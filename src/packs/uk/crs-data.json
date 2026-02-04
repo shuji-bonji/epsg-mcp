@@ -166,28 +166,65 @@
 		}
 	},
 	"zoneMapping": {
-		"England": { "zone": "BNG", "code": "EPSG:27700" },
-		"Scotland": { "zone": "BNG", "code": "EPSG:27700" },
-		"Wales": { "zone": "BNG", "code": "EPSG:27700" },
+		"England": { "zone": "BNG", "code": "EPSG:27700", "name": "OSGB36 / British National Grid" },
+		"Scotland": { "zone": "BNG", "code": "EPSG:27700", "name": "OSGB36 / British National Grid" },
+		"Wales": { "zone": "BNG", "code": "EPSG:27700", "name": "OSGB36 / British National Grid" },
 		"Northern Ireland": {
 			"zone": "ITM",
 			"code": "EPSG:2157",
+			"name": "IRENET95 / Irish Transverse Mercator",
 			"notes": "Irish Transverse Mercator"
 		},
-		"Greater London": { "zone": "BNG", "code": "EPSG:27700" },
-		"South East": { "zone": "BNG", "code": "EPSG:27700" },
-		"South West": { "zone": "BNG", "code": "EPSG:27700" },
-		"East of England": { "zone": "BNG", "code": "EPSG:27700" },
-		"East Midlands": { "zone": "BNG", "code": "EPSG:27700" },
-		"West Midlands": { "zone": "BNG", "code": "EPSG:27700" },
-		"Yorkshire and the Humber": { "zone": "BNG", "code": "EPSG:27700" },
-		"North West": { "zone": "BNG", "code": "EPSG:27700" },
-		"North East": { "zone": "BNG", "code": "EPSG:27700" },
-		"Highlands": { "zone": "BNG", "code": "EPSG:27700" },
-		"Central Belt": { "zone": "BNG", "code": "EPSG:27700" },
-		"Scottish Borders": { "zone": "BNG", "code": "EPSG:27700" },
-		"North Wales": { "zone": "BNG", "code": "EPSG:27700" },
-		"South Wales": { "zone": "BNG", "code": "EPSG:27700" },
-		"Mid Wales": { "zone": "BNG", "code": "EPSG:27700" }
+		"Greater London": {
+			"zone": "BNG",
+			"code": "EPSG:27700",
+			"name": "OSGB36 / British National Grid"
+		},
+		"South East": { "zone": "BNG", "code": "EPSG:27700", "name": "OSGB36 / British National Grid" },
+		"South West": { "zone": "BNG", "code": "EPSG:27700", "name": "OSGB36 / British National Grid" },
+		"East of England": {
+			"zone": "BNG",
+			"code": "EPSG:27700",
+			"name": "OSGB36 / British National Grid"
+		},
+		"East Midlands": {
+			"zone": "BNG",
+			"code": "EPSG:27700",
+			"name": "OSGB36 / British National Grid"
+		},
+		"West Midlands": {
+			"zone": "BNG",
+			"code": "EPSG:27700",
+			"name": "OSGB36 / British National Grid"
+		},
+		"Yorkshire and the Humber": {
+			"zone": "BNG",
+			"code": "EPSG:27700",
+			"name": "OSGB36 / British National Grid"
+		},
+		"North West": { "zone": "BNG", "code": "EPSG:27700", "name": "OSGB36 / British National Grid" },
+		"North East": { "zone": "BNG", "code": "EPSG:27700", "name": "OSGB36 / British National Grid" },
+		"Highlands": { "zone": "BNG", "code": "EPSG:27700", "name": "OSGB36 / British National Grid" },
+		"Central Belt": {
+			"zone": "BNG",
+			"code": "EPSG:27700",
+			"name": "OSGB36 / British National Grid"
+		},
+		"Scottish Borders": {
+			"zone": "BNG",
+			"code": "EPSG:27700",
+			"name": "OSGB36 / British National Grid"
+		},
+		"North Wales": {
+			"zone": "BNG",
+			"code": "EPSG:27700",
+			"name": "OSGB36 / British National Grid"
+		},
+		"South Wales": {
+			"zone": "BNG",
+			"code": "EPSG:27700",
+			"name": "OSGB36 / British National Grid"
+		},
+		"Mid Wales": { "zone": "BNG", "code": "EPSG:27700", "name": "OSGB36 / British National Grid" }
 	}
 }

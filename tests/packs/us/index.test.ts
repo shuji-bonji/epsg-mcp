@@ -99,6 +99,13 @@ describe('US Pack', () => {
 			const mapping = await usPack.getZoneMapping();
 			expect(mapping.multiZoneRegions!.Texas).toBeDefined();
 		});
+
+		it('should include name in zone mapping entries', async () => {
+			const mapping = await usPack.getZoneMapping();
+			expect(mapping.entries.Alabama.name).toBe('NAD83 / Alabama East');
+			expect(mapping.entries.California.name).toBe('NAD83 / California zone 5');
+			expect(mapping.entries.Montana.name).toBe('NAD83 / Montana');
+		});
 	});
 
 	describe('getRecommendationRules', () => {
