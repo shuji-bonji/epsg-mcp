@@ -301,3 +301,37 @@ export const PREFECTURE_EN_TO_JP: Record<string, string> = {
 	// 沖縄
 	okinawa: '沖縄県',
 } as const;
+
+/**
+ * 英語市名 → 日本語市名マッピング
+ * 北海道・沖縄の複数系にまたがる地域の市町村名
+ * キーは小文字で統一
+ */
+export const CITY_EN_TO_JP: Record<string, string> = {
+	// 北海道
+	sapporo: '札幌市',
+	asahikawa: '旭川市',
+	kushiro: '釧路市',
+	hakodate: '函館市',
+	obihiro: '帯広市',
+	otaru: '小樽市',
+	kitami: '北見市',
+	ebetsu: '江別市',
+	tomakomai: '苫小牧市',
+	abashiri: '網走市',
+	wakkanai: '稚内市',
+	nemuro: '根室市',
+
+	// 沖縄
+	naha: '那覇市',
+	ginowan: '宜野湾市',
+	urasoe: '浦添市',
+	uruma: 'うるま市',
+	nago: '名護市',
+	itoman: '糸満市',
+	tomigusuku: '豊見城市',
+	miyakojima: '宮古島市',
+	ishigaki: '石垣市',
+	nanjo: '南城市',
+	'okinawa city': '沖縄市',
+} as const;

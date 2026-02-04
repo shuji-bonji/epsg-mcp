@@ -9,6 +9,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.5] - 2026-02-04
+
+### Fixed
+
+#### City Name Normalization for Multi-Zone Prefectures
+- Added `normalizeCity()` function for English → Japanese city name translation
+- `normalizeLocation()` now normalizes `city` field in addition to `country` and `prefecture`
+- Fixed: English city names (e.g., "Sapporo") now correctly resolve to Japanese (e.g., "札幌市")
+  - This enables correct zone selection for Hokkaido and Okinawa when city is specified in English
+  - Example: `{prefecture: "Hokkaido", city: "Sapporo"}` → XII系 (EPSG:6680)
+
+### Added
+
+#### City Name Mappings
+- `CITY_EN_TO_JP` constant with English → Japanese mappings for:
+  - Hokkaido: Sapporo, Asahikawa, Hakodate, Kushiro, Obihiro, Otaru, Kitami, Ebetsu, Tomakomai, Abashiri, Wakkanai, Nemuro
+  - Okinawa: Naha, Ginowan, Urasoe, Uruma, Nago, Itoman, Tomigusuku, Miyakojima, Ishigaki, Nanjo, Okinawa City
+
+### Technical Details
+- Added 13 tests for city normalization (657 tests total)
+- City normalization is case-insensitive
+
+---
+
 ## [0.9.4] - 2026-02-04
 
 ### Added

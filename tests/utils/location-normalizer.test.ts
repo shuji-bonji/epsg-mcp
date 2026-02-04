@@ -7,6 +7,7 @@ import type { LocationSpec } from '../../src/types/index.js';
 import {
 	inferCountryFromSubdivision,
 	isJapanesePrefecture,
+	normalizeCity,
 	normalizeCountry,
 	normalizeLocation,
 	normalizePrefecture,
@@ -308,6 +309,75 @@ describe('Location Normalizer', () => {
 		it('should handle country: "Global"', () => {
 			const result = normalizeLocation({ country: 'Global' });
 			expect(result.country).toBe('GLOBAL');
+		});
+	});
+
+	describe('normalizeCity', () => {
+		it('should normalize Hokkaido cities (English to Japanese)', () => {
+			expect(normalizeCity('Sapporo')).toBe('札幌市');
+			expect(normalizeCity('Asahikawa')).toBe('旭川市');
+			expect(normalizeCity('Hakodate')).toBe('函館市');
+			expect(normalizeCity('Kushiro')).toBe('釧路市');
+			expect(normalizeCity('Obihiro')).toBe('帯広市');
+		});
+
+		it('should normalize Okinawa cities (English to Japanese)', () => {
+			expect(normalizeCity('Naha')).toBe('那覇市');
+			expect(normalizeCity('Ginowan')).toBe('宜野湾市');
+			expect(normalizeCity('Ishigaki')).toBe('石垣市');
+			expect(normalizeCity('Miyakojima')).toBe('宮古島市');
+		});
+
+		it('should normalize Okinawa City (with space)', () => {
+			expect(normalizeCity('Okinawa City')).toBe('沖縄市');
+			expect(normalizeCity('okinawa city')).toBe('沖縄市');
+			expect(normalizeCity('OKINAWA CITY')).toBe('沖縄市');
+		});
+
+		it('should handle case-insensitive city names', () => {
+			expect(normalizeCity('sapporo')).toBe('札幌市');
+			expect(normalizeCity('SAPPORO')).toBe('札幌市');
+			expect(normalizeCity('SaPpOrO')).toBe('札幌市');
+		});
+
+		it('should keep Japanese city names unchanged', () => {
+			expect(normalizeCity('札幌市')).toBe('札幌市');
+			expect(normalizeCity('那覇市')).toBe('那覇市');
+		});
+
+		it('should return unknown city names unchanged', () => {
+			expect(normalizeCity('UnknownCity')).toBe('UnknownCity');
+			expect(normalizeCity('渋谷区')).toBe('渋谷区');
+		});
+	});
+
+	describe('normalizeLocation with city', () => {
+		it('should normalize English city name in location', () => {
+			const result = normalizeLocation({
+				prefecture: 'Hokkaido',
+				city: 'Sapporo',
+			});
+			expect(result.prefecture).toBe('北海道');
+			expect(result.city).toBe('札幌市');
+			expect(result.country).toBe('JP');
+		});
+
+		it('should normalize Okinawa city in location', () => {
+			const result = normalizeLocation({
+				prefecture: 'Okinawa',
+				city: 'Naha',
+			});
+			expect(result.prefecture).toBe('沖縄県');
+			expect(result.city).toBe('那覇市');
+		});
+
+		it('should keep non-matching city names unchanged', () => {
+			const result = normalizeLocation({
+				prefecture: 'Tokyo',
+				city: 'Shibuya',
+			});
+			expect(result.prefecture).toBe('東京都');
+			expect(result.city).toBe('Shibuya'); // Not in mapping, unchanged
 		});
 	});
 });

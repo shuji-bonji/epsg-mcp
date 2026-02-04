@@ -7,7 +7,7 @@
  * - subdivision から country の推定
  */
 
-import { COUNTRY_ALIASES, JAPAN_BOUNDS, PREFECTURE_EN_TO_JP } from '../constants/index.js';
+import { CITY_EN_TO_JP, COUNTRY_ALIASES, JAPAN_BOUNDS, PREFECTURE_EN_TO_JP } from '../constants/index.js';
 import type { LocationSpec } from '../types/index.js';
 
 /**
@@ -31,6 +31,25 @@ export function normalizePrefecture(prefecture: string): string {
 
 	// マッチしない場合は元の値を返す
 	return prefecture;
+}
+
+/**
+ * 英語市名を日本語に正規化
+ * 北海道・沖縄の複数系にまたがる地域の市町村名を変換
+ *
+ * @param city - 市名（英語または日本語）
+ * @returns 日本語市名、または元の値
+ */
+export function normalizeCity(city: string): string {
+	// 英語名を小文字に変換してマッチング
+	const lowerCity = city.toLowerCase().trim();
+	const japaneseMatch = CITY_EN_TO_JP[lowerCity];
+	if (japaneseMatch) {
+		return japaneseMatch;
+	}
+
+	// マッチしない場合は元の値を返す
+	return city;
 }
 
 /**
@@ -201,6 +220,8 @@ export function isJapanesePrefecture(value: string): boolean {
  *
  * 後方互換性を維持しながら、以下の変換を行う：
  * - country の正規化（"Japan" → "JP"）
+ * - prefecture の正規化（"Hokkaido" → "北海道"）
+ * - city の正規化（"Sapporo" → "札幌市"）
  * - prefecture → subdivision のマイグレーション
  * - subdivision から country の推定
  *
@@ -218,6 +239,11 @@ export function normalizeLocation(location: LocationSpec): LocationSpec {
 	// prefecture の正規化（英語→日本語変換）
 	if (normalized.prefecture) {
 		normalized.prefecture = normalizePrefecture(normalized.prefecture);
+	}
+
+	// city の正規化（英語→日本語変換）
+	if (normalized.city) {
+		normalized.city = normalizeCity(normalized.city);
 	}
 
 	// prefecture → subdivision のマイグレーション
