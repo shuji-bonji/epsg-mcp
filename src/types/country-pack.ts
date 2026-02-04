@@ -29,6 +29,13 @@ export interface PackMetadata {
 	 * 例: UK Pack → ['GB', 'GBR', 'Britain']
 	 */
 	aliases?: string[];
+	/**
+	 * 市名の英語→ローカル言語マッピング
+	 * 非ラテン文字圏（日本、中国、韓国等）で使用
+	 * キーは小文字の英語名
+	 * 例: JP Pack → { sapporo: '札幌市', naha: '那覇市' }
+	 */
+	cityMapping?: Record<string, string>;
 }
 
 /**

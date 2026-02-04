@@ -72,6 +72,34 @@ export function createJpPack(): CountryPack {
 			description: 'Japan Plane Rectangular CS I-XIX, JGD2011/JGD2000/Tokyo Datum knowledge',
 			language: 'ja',
 			aliases: ['JPN', 'JAPAN'],
+			// 英語市名→日本語市名マッピング（複数系にまたがる地域用）
+			cityMapping: {
+				// 北海道
+				sapporo: '札幌市',
+				asahikawa: '旭川市',
+				kushiro: '釧路市',
+				hakodate: '函館市',
+				obihiro: '帯広市',
+				otaru: '小樽市',
+				kitami: '北見市',
+				ebetsu: '江別市',
+				tomakomai: '苫小牧市',
+				abashiri: '網走市',
+				wakkanai: '稚内市',
+				nemuro: '根室市',
+				// 沖縄
+				naha: '那覇市',
+				ginowan: '宜野湾市',
+				urasoe: '浦添市',
+				uruma: 'うるま市',
+				nago: '名護市',
+				itoman: '糸満市',
+				tomigusuku: '豊見城市',
+				miyakojima: '宮古島市',
+				ishigaki: '石垣市',
+				nanjo: '南城市',
+				'okinawa city': '沖縄市',
+			},
 		},
 
 		async getCrsData(): Promise<PackCrsDataSet> {

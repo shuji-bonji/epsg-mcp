@@ -2,7 +2,8 @@
  * LocationSpec 正規化ユーティリティのテスト
  */
 
-import { describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { clearPacks, registerPack } from '../../src/packs/pack-manager.js';
 import type { LocationSpec } from '../../src/types/index.js';
 import {
 	inferCountryFromSubdivision,
@@ -14,6 +15,15 @@ import {
 } from '../../src/utils/location-normalizer.js';
 
 describe('Location Normalizer', () => {
+	// JP Pack をロードしてテスト
+	beforeAll(async () => {
+		const { createJpPack } = await import('../../src/packs/jp/index.js');
+		registerPack(createJpPack());
+	});
+
+	afterAll(() => {
+		clearPacks();
+	});
 	describe('normalizeCountry', () => {
 		it('should normalize "Japan" to "JP"', () => {
 			expect(normalizeCountry('Japan')).toBe('JP');
@@ -313,41 +323,53 @@ describe('Location Normalizer', () => {
 	});
 
 	describe('normalizeCity', () => {
-		it('should normalize Hokkaido cities (English to Japanese)', () => {
-			expect(normalizeCity('Sapporo')).toBe('札幌市');
-			expect(normalizeCity('Asahikawa')).toBe('旭川市');
-			expect(normalizeCity('Hakodate')).toBe('函館市');
-			expect(normalizeCity('Kushiro')).toBe('釧路市');
-			expect(normalizeCity('Obihiro')).toBe('帯広市');
+		it('should normalize Hokkaido cities (English to Japanese) with JP country', () => {
+			expect(normalizeCity('Sapporo', 'JP')).toBe('札幌市');
+			expect(normalizeCity('Asahikawa', 'JP')).toBe('旭川市');
+			expect(normalizeCity('Hakodate', 'JP')).toBe('函館市');
+			expect(normalizeCity('Kushiro', 'JP')).toBe('釧路市');
+			expect(normalizeCity('Obihiro', 'JP')).toBe('帯広市');
 		});
 
-		it('should normalize Okinawa cities (English to Japanese)', () => {
-			expect(normalizeCity('Naha')).toBe('那覇市');
-			expect(normalizeCity('Ginowan')).toBe('宜野湾市');
-			expect(normalizeCity('Ishigaki')).toBe('石垣市');
-			expect(normalizeCity('Miyakojima')).toBe('宮古島市');
+		it('should normalize Okinawa cities (English to Japanese) with JP country', () => {
+			expect(normalizeCity('Naha', 'JP')).toBe('那覇市');
+			expect(normalizeCity('Ginowan', 'JP')).toBe('宜野湾市');
+			expect(normalizeCity('Ishigaki', 'JP')).toBe('石垣市');
+			expect(normalizeCity('Miyakojima', 'JP')).toBe('宮古島市');
 		});
 
 		it('should normalize Okinawa City (with space)', () => {
-			expect(normalizeCity('Okinawa City')).toBe('沖縄市');
-			expect(normalizeCity('okinawa city')).toBe('沖縄市');
-			expect(normalizeCity('OKINAWA CITY')).toBe('沖縄市');
+			expect(normalizeCity('Okinawa City', 'JP')).toBe('沖縄市');
+			expect(normalizeCity('okinawa city', 'JP')).toBe('沖縄市');
+			expect(normalizeCity('OKINAWA CITY', 'JP')).toBe('沖縄市');
 		});
 
 		it('should handle case-insensitive city names', () => {
-			expect(normalizeCity('sapporo')).toBe('札幌市');
-			expect(normalizeCity('SAPPORO')).toBe('札幌市');
-			expect(normalizeCity('SaPpOrO')).toBe('札幌市');
+			expect(normalizeCity('sapporo', 'JP')).toBe('札幌市');
+			expect(normalizeCity('SAPPORO', 'JP')).toBe('札幌市');
+			expect(normalizeCity('SaPpOrO', 'JP')).toBe('札幌市');
 		});
 
-		it('should keep Japanese city names unchanged', () => {
-			expect(normalizeCity('札幌市')).toBe('札幌市');
-			expect(normalizeCity('那覇市')).toBe('那覇市');
+		it('should keep Japanese city names unchanged (not in mapping)', () => {
+			// 日本語市名はマッピングにないので元のまま返る
+			expect(normalizeCity('札幌市', 'JP')).toBe('札幌市');
+			expect(normalizeCity('那覇市', 'JP')).toBe('那覇市');
 		});
 
 		it('should return unknown city names unchanged', () => {
-			expect(normalizeCity('UnknownCity')).toBe('UnknownCity');
-			expect(normalizeCity('渋谷区')).toBe('渋谷区');
+			expect(normalizeCity('UnknownCity', 'JP')).toBe('UnknownCity');
+			expect(normalizeCity('渋谷区', 'JP')).toBe('渋谷区');
+		});
+
+		it('should return city unchanged without country code', () => {
+			// countryCode がない場合は Pack を参照できないため元のまま
+			expect(normalizeCity('Sapporo')).toBe('Sapporo');
+			expect(normalizeCity('Naha')).toBe('Naha');
+		});
+
+		it('should return city unchanged for unknown country', () => {
+			// 未登録の国コードの場合は元のまま
+			expect(normalizeCity('Sapporo', 'XX')).toBe('Sapporo');
 		});
 	});
 

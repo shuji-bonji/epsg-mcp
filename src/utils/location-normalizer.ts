@@ -7,7 +7,8 @@
  * - subdivision から country の推定
  */
 
-import { CITY_EN_TO_JP, COUNTRY_ALIASES, JAPAN_BOUNDS, PREFECTURE_EN_TO_JP } from '../constants/index.js';
+import { COUNTRY_ALIASES, JAPAN_BOUNDS, PREFECTURE_EN_TO_JP } from '../constants/index.js';
+import { getPackForCountry } from '../packs/pack-manager.js';
 import type { LocationSpec } from '../types/index.js';
 
 /**
@@ -34,18 +35,23 @@ export function normalizePrefecture(prefecture: string): string {
 }
 
 /**
- * 英語市名を日本語に正規化
- * 北海道・沖縄の複数系にまたがる地域の市町村名を変換
+ * 英語市名をローカル言語に正規化
+ * 非ラテン文字圏（日本、中国、韓国等）で複数系にまたがる地域の市町村名を変換
  *
- * @param city - 市名（英語または日本語）
- * @returns 日本語市名、または元の値
+ * @param city - 市名（英語またはローカル言語）
+ * @param countryCode - 国コード（ISO 3166-1 alpha-2）
+ * @returns ローカル言語市名、または元の値
  */
-export function normalizeCity(city: string): string {
-	// 英語名を小文字に変換してマッチング
+export function normalizeCity(city: string, countryCode?: string): string {
 	const lowerCity = city.toLowerCase().trim();
-	const japaneseMatch = CITY_EN_TO_JP[lowerCity];
-	if (japaneseMatch) {
-		return japaneseMatch;
+
+	// Pack の cityMapping を参照
+	if (countryCode) {
+		const pack = getPackForCountry(countryCode);
+		const mapping = pack?.metadata.cityMapping;
+		if (mapping?.[lowerCity]) {
+			return mapping[lowerCity];
+		}
 	}
 
 	// マッチしない場合は元の値を返す
@@ -231,28 +237,22 @@ export function isJapanesePrefecture(value: string): boolean {
 export function normalizeLocation(location: LocationSpec): LocationSpec {
 	const normalized = { ...location };
 
-	// country の正規化
+	// 1. country の正規化
 	if (normalized.country) {
 		normalized.country = normalizeCountry(normalized.country);
 	}
 
-	// prefecture の正規化（英語→日本語変換）
+	// 2. prefecture の正規化（英語→日本語変換）
 	if (normalized.prefecture) {
 		normalized.prefecture = normalizePrefecture(normalized.prefecture);
 	}
 
-	// city の正規化（英語→日本語変換）
-	if (normalized.city) {
-		normalized.city = normalizeCity(normalized.city);
-	}
-
-	// prefecture → subdivision のマイグレーション
-	// Phase 5-1 では変換のみ行い、サービス層での利用は Phase 5-2 で行う
+	// 3. prefecture → subdivision のマイグレーション
 	if (normalized.prefecture && !normalized.subdivision) {
 		normalized.subdivision = normalized.prefecture;
 	}
 
-	// subdivision から country を推定
+	// 4. subdivision から country を推定
 	if (normalized.subdivision && !normalized.country) {
 		const inferredCountry = inferCountryFromSubdivision(normalized.subdivision);
 		if (inferredCountry) {
@@ -260,10 +260,14 @@ export function normalizeLocation(location: LocationSpec): LocationSpec {
 		}
 	}
 
-	// prefecture が指定されていて country がない場合は JP と推定
-	// （日本語の都道府県名が指定されている可能性が高い）
+	// 5. prefecture が指定されていて country がない場合は JP と推定
 	if (normalized.prefecture && !normalized.country) {
 		normalized.country = 'JP';
+	}
+
+	// 6. city の正規化（country 確定後に Pack の cityMapping を参照）
+	if (normalized.city) {
+		normalized.city = normalizeCity(normalized.city, normalized.country);
 	}
 
 	return normalized;

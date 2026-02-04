@@ -1,6 +1,6 @@
 {
 	"name": "@shuji-bonji/epsg-mcp",
-	"version": "0.9.5",
+	"version": "0.9.6",
 	"description": "MCP server providing specialized CRS knowledge worldwide - Country Packs (Japan, US, UK), UTM fallback, and global defaults for AI-powered geodetic decision support",
 	"main": "build/index.js",
 	"scripts": {
