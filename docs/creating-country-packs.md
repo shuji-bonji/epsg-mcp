@@ -304,6 +304,13 @@ export function create{Country}Pack(): CountryPack {
       // Optional: Country code aliases (ISO 3166-1 alpha-3, common names, etc.)
       // These allow users to specify the country in multiple ways
       aliases: ['{CCC}', '{COUNTRY_NAME}'],  // e.g., ['DEU', 'GERMANY'] for DE
+      // Optional: City name mapping for non-Latin script countries
+      // Keys are lowercase English names, values are local language names
+      // Used by normalizeCity() to convert English input to local names
+      // cityMapping: {
+      //   'berlin': 'Berlin',  // For Latin script countries, usually not needed
+      //   'munich': 'München',
+      // },
     },
 
     async getCrsData(): Promise<PackCrsDataSet> {
@@ -444,3 +451,26 @@ See existing packs for reference:
 4. **Test Thoroughly**: Include tests for all regions and edge cases
 5. **Cache Data**: Use lazy loading with caching for performance
 6. **Validate JSON**: Ensure all JSON files are valid before committing
+7. **Add cityMapping for Non-Latin Countries**: If your country uses non-Latin script (e.g., Japanese, Chinese, Korean, Arabic), add `cityMapping` to translate English city names to local names. This enables international users to specify cities in English while ensuring correct zone selection.
+
+### cityMapping Example (Japan Pack)
+
+```typescript
+metadata: {
+  countryCode: 'JP',
+  // ...
+  cityMapping: {
+    // Hokkaido cities
+    sapporo: '札幌市',
+    asahikawa: '旭川市',
+    hakodate: '函館市',
+    // Okinawa cities
+    naha: '那覇市',
+    ishigaki: '石垣市',
+    miyakojima: '宮古島市',
+    'okinawa city': '沖縄市',  // Space in key is OK
+  },
+},
+```
+
+The `cityMapping` keys should be **lowercase English names**. The normalization is case-insensitive.

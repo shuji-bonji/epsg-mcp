@@ -304,6 +304,13 @@ export function create{Country}Pack(): CountryPack {
       // オプション: 国コードのエイリアス（ISO 3166-1 alpha-3、通称など）
       // ユーザーが複数の方法で国を指定できるようになります
       aliases: ['{CCC}', '{国名}'],  // 例: ドイツの場合 ['DEU', 'GERMANY']
+      // オプション: 非ラテン文字圏向けの市名マッピング
+      // キーは小文字の英語名、値はローカル言語名
+      // normalizeCity() が英語入力をローカル名に変換する際に使用
+      // cityMapping: {
+      //   'berlin': 'Berlin',  // ラテン文字圏では通常不要
+      //   'munich': 'München',
+      // },
     },
 
     async getCrsData(): Promise<PackCrsDataSet> {
@@ -444,3 +451,26 @@ export EPSG_PACKS="jp,us,uk,{cc}"
 4. **徹底的にテスト**: 全地域とエッジケースのテストを含める
 5. **データをキャッシュ**: パフォーマンスのために遅延ロードとキャッシュを使用
 6. **JSONを検証**: コミット前にすべてのJSONファイルが有効であることを確認
+7. **非ラテン文字圏では cityMapping を追加**: 日本語、中国語、韓国語、アラビア語など非ラテン文字を使用する国では、`cityMapping` を追加して英語市名をローカル名に変換できるようにします。これにより、国際ユーザーが英語で市名を指定しても、正しいゾーン選択が可能になります。
+
+### cityMapping の例（JP Pack）
+
+```typescript
+metadata: {
+  countryCode: 'JP',
+  // ...
+  cityMapping: {
+    // 北海道の市
+    sapporo: '札幌市',
+    asahikawa: '旭川市',
+    hakodate: '函館市',
+    // 沖縄の市
+    naha: '那覇市',
+    ishigaki: '石垣市',
+    miyakojima: '宮古島市',
+    'okinawa city': '沖縄市',  // キーにスペースを含んでもOK
+  },
+},
+```
+
+`cityMapping` のキーは**小文字の英語名**で統一してください。正規化は大文字小文字を区別しません。

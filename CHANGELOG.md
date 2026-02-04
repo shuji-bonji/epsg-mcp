@@ -9,6 +9,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.6] - 2026-02-04
+
+### Changed
+
+#### Architecture Improvement: cityMapping moved to Country Pack
+
+- `PackMetadata` now includes optional `cityMapping` property for non-Latin script countries
+- City name mappings (English → local language) are now managed by each Country Pack
+- This enables future Country Packs (CN, KR, etc.) to define their own city mappings without modifying core code
+
+#### normalizeCity() Refactoring
+
+- `normalizeCity(city, countryCode?)` now accepts optional `countryCode` parameter
+- City normalization references Pack's `cityMapping` instead of hardcoded constants
+- `normalizeLocation()` reordered: country determination now happens before city normalization
+
+### Removed
+
+- `CITY_EN_TO_JP` constant removed from `src/constants/index.ts`
+  - This data is now in JP Pack's `metadata.cityMapping`
+
+### Technical Details
+
+- JP Pack `metadata.cityMapping` contains Hokkaido/Okinawa city mappings
+- Tests updated to load JP Pack before testing city normalization
+- 655 tests passing
+
+---
+
 ## [0.9.5] - 2026-02-04
 
 ### Fixed
