@@ -170,3 +170,26 @@ export async function findCrsInPacks(
 
 	return null;
 }
+
+/**
+ * パックのzoneMappingからCRS名を検索
+ *
+ * crs-data.jsonのprojectedCRSに含まれないCRSコードでも、
+ * zoneMappingのname属性から名前を取得できる
+ *
+ * @param pack - 検索対象のCountryPack
+ * @param code - EPSGコード（例: "EPSG:26929"）
+ * @returns CRS名、見つからない場合はundefined
+ */
+export async function findCrsNameInPack(
+	pack: CountryPack,
+	code: string
+): Promise<string | undefined> {
+	const zoneMapping = await pack.getZoneMapping();
+	for (const entry of Object.values(zoneMapping.entries)) {
+		if (entry.code === code) {
+			return entry.name;
+		}
+	}
+	return undefined;
+}

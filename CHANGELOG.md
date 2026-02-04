@@ -20,10 +20,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated US/UK Pack `getZoneMapping()` to copy `name` field
 - `buildRecommendedCrs()` now accepts `nameOverride` parameter as fallback
 
+### Refactored
+
+#### Code Deduplication
+- Extracted `findCrsNameInPack()` helper function to `pack-manager.ts`
+  - Centralized zoneMapping name lookup logic
+  - Replaced inline loop in `recommendation-service.ts`
+- Improved code maintainability for future Country Pack additions
+
+### Documentation
+
+#### Country Pack Guide Updates
+- Updated `docs/creating-country-packs.md` with zoneMapping `name` field requirement
+- Updated `docs/creating-country-packs.ja.md` with zoneMapping `name` field requirement
+- Added field requirement table for `zoneMapping` entries
+
+### Tests
+
+- Added zoneMapping name field tests for US Pack and UK Pack
+- 657 tests passing
+
 ### Technical Details
 - For CRS not in crs-data.json's projectedCRS (e.g., EPSG:26929), name is now retrieved from zoneMapping
 - Example: `{"subdivision": "Alabama"}` → `"NAD83 / Alabama East"` instead of `"EPSG:26929"`
-- 655 tests passing
 
 ---
 

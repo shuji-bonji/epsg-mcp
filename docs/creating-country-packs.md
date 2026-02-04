@@ -109,11 +109,22 @@ Create `crs-data.json` with CRS definitions:
     }
   },
   "zoneMapping": {
-    "Region A": { "zone": "Zone A", "code": "EPSG:yyyy" },
-    "Region B": { "zone": "Zone B", "code": "EPSG:zzzz" }
+    "Region A": { "zone": "Zone A", "code": "EPSG:yyyy", "name": "Projected CRS Name A" },
+    "Region B": { "zone": "Zone B", "code": "EPSG:zzzz", "name": "Projected CRS Name B", "notes": "Optional notes" }
   }
 }
 ```
+
+**zoneMapping Fields:**
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `zone` | ✅ | Zone identifier (e.g., "Zone 5", "East") |
+| `code` | ✅ | EPSG code (e.g., "EPSG:2229") |
+| `name` | ✅ | CRS name displayed in recommendations (e.g., "NAD83 / California zone 5") |
+| `notes` | - | Optional notes (e.g., "Multiple zones available") |
+
+**Important:** The `name` field is required for proper display in `recommend_crs` tool output. Without it, the EPSG code will be shown instead of the human-readable name.
 
 ## Step 4: Create Recommendation Rules
 

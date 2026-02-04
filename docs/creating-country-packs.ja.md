@@ -109,11 +109,22 @@ export const {COUNTRY}_SUBREGIONS: Record<string, string> = {
     }
   },
   "zoneMapping": {
-    "Region A": { "zone": "Zone A", "code": "EPSG:yyyy" },
-    "Region B": { "zone": "Zone B", "code": "EPSG:zzzz" }
+    "Region A": { "zone": "Zone A", "code": "EPSG:yyyy", "name": "投影座標系名 A" },
+    "Region B": { "zone": "Zone B", "code": "EPSG:zzzz", "name": "投影座標系名 B", "notes": "オプションの備考" }
   }
 }
 ```
+
+**zoneMappingフィールド:**
+
+| フィールド | 必須 | 説明 |
+|-----------|------|------|
+| `zone` | ✅ | ゾーン識別子（例: "Zone 5", "East"） |
+| `code` | ✅ | EPSGコード（例: "EPSG:2229"） |
+| `name` | ✅ | 推奨時に表示されるCRS名（例: "NAD83 / California zone 5"） |
+| `notes` | - | オプションの備考（例: "複数ゾーンあり"） |
+
+**重要:** `name`フィールドは`recommend_crs`ツールの出力で正しく表示するために必須です。指定しない場合、人間が読みやすい名前の代わりにEPSGコードが表示されます。
 
 ## ステップ4: 推奨ルール作成
 

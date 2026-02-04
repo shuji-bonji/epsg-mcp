@@ -13,7 +13,12 @@ import {
 	WIDE_AREA_THRESHOLD,
 } from '../constants/index.js';
 import { findCrsById, getZoneMapping, loadRecommendations } from '../data/loader.js';
-import { arePacksLoaded, findPackForLocation, loadPacksFromEnv } from '../packs/pack-manager.js';
+import {
+	arePacksLoaded,
+	findCrsNameInPack,
+	findPackForLocation,
+	loadPacksFromEnv,
+} from '../packs/pack-manager.js';
 import type {
 	CrsDetail,
 	LocationSpec,
@@ -254,14 +259,7 @@ export async function recommendCrs(
 				);
 
 				// zoneMappingから名前を取得（findCrsById で見つからない場合のフォールバック）
-				let zoneName: string | undefined;
-				const zoneMapping = await pack.getZoneMapping();
-				for (const entry of Object.values(zoneMapping.entries)) {
-					if (entry.code === zone) {
-						zoneName = entry.name;
-						break;
-					}
-				}
+				const zoneName = await findCrsNameInPack(pack, zone);
 
 				const primary = await buildRecommendedCrs(
 					zone,
