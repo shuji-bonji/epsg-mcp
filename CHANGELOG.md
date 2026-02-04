@@ -9,6 +9,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.7] - 2026-02-04
+
+### Fixed
+
+#### US/UK Pack CRS Name Resolution
+- `findCrsById()` now searches Country Packs when CRS is not found in static data
+- Fixed: US/UK Pack CRS recommendations now show proper names (e.g., "NAD83 / California zone 5") instead of EPSG codes
+- Added `findCrsInPacks()` call to data loader
+
+### Documentation
+
+#### EXAMPLES.md / EXAMPLES.ja.md Alignment
+- Updated all 7 scenarios to reflect actual tool outputs
+- Response structures now match real MCP tool responses
+- Removed aspirational examples that didn't reflect current implementation
+- Updated best practices sections with actual priority levels (must/should/may)
+
+---
+
 ## [0.9.6] - 2026-02-04
 
 ### Changed

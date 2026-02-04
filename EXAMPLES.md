@@ -48,17 +48,19 @@ Input: {
     "name": "JGD2011 / Japan Plane Rectangular CS XII",
     "score": 95,
     "pros": [
-      "Official CRS for surveying in this area",
-      "High accuracy for local measurements",
-      "Based on current JGD2011 datum"
+      "High accuracy",
+      "Legal basis",
+      "Public survey compliant"
     ],
     "cons": [
-      "Limited to zone XII coverage area"
+      "Zone selection required",
+      "Multiple zones for wide areas"
     ]
   },
-  "reasoning": "Zone XII (EPSG:6680) is the designated zone for Sapporo...",
+  "alternatives": [],
+  "reasoning": "Compliant with Public Survey Procedures. Coordinate system established by Survey Act. Japan Plane Rectangular CS is the official survey coordinate system of GSI.",
   "warnings": [
-    "Hokkaido spans multiple zones (XI-XIV). Specify city for accurate zone selection."
+    "Spans 3 zones (West=XI, Central=XII, East=XIII)"
   ]
 }
 ```
@@ -78,7 +80,7 @@ Input: {
 ```json
 {
   "isValid": true,
-  "score": 95,
+  "score": 100,
   "issues": [],
   "suggestions": []
 }
@@ -92,9 +94,10 @@ Input: { "topic": "japan_survey" }
 ```
 
 **Key practices returned:**
-- Use JGD2011-based CRS (EPSG:6669-6687)
-- Select the correct zone for your work area
-- Store raw GNSS observations in JGD2011 geographic (EPSG:6668)
+- Use JGD2011 (EPSG:6668) as the standard (must)
+- Select the appropriate Japan Plane Rectangular CS for the target area (must)
+- Manage wide-area data in geographic CRS (should)
+- Use appropriate decimal places based on coordinate precision (should)
 
 
 ## Scenario 2: Legacy Data Migration (Tokyo Datum → JGD2011)
@@ -119,24 +122,35 @@ Input: {
 **Response:**
 ```json
 {
-  "recommended": {
-    "name": "Tokyo to JGD2011 (2)",
-    "method": "NTv2 grid transformation",
-    "accuracy": "0.2m in most areas",
-    "steps": [
-      {
-        "from": "EPSG:4301",
-        "to": "EPSG:6668",
-        "operation": "Grid-based transformation using TKY2JGD.par"
-      }
-    ]
-  },
-  "alternatives": [...],
-  "warnings": [
-    "Tokyo Datum to JGD2011 involves ~400m shift. Verify transformation parameters.",
-    "Grid file (TKY2JGD.par) required for best accuracy"
+  "directPath": null,
+  "viaPaths": [
+    {
+      "steps": [
+        {
+          "from": "EPSG:4301",
+          "to": "EPSG:4612",
+          "method": "Geocentric translations (geog2D domain)",
+          "accuracy": "1-2m",
+          "epsgCode": "EPSG:15483",
+          "notes": "Official parameters from GSI Japan"
+        },
+        {
+          "from": "EPSG:4612",
+          "to": "EPSG:6668",
+          "method": "Time-dependent Coordinate Frame rotation",
+          "accuracy": "few cm",
+          "epsgCode": "EPSG:6190",
+          "notes": "Crust movement from 2011 Tohoku earthquake"
+        }
+      ],
+      "totalAccuracy": "1-2m or more (watch cumulative error)",
+      "complexity": "moderate"
+    }
   ],
-  "notes": "Direct 3-parameter transformation accuracy is limited to ~1m"
+  "recommended": { /* same as viaPaths[0] */ },
+  "warnings": [
+    "EPSG:4301 is deprecated. Tokyo Datum is deprecated. Do not use for new data. Use EPSG:6668 for new data."
+  ]
 }
 ```
 
@@ -157,24 +171,46 @@ Input: {
 **Response:**
 ```json
 {
-  "matchedSymptom": "large_shift_hundreds_meters",
+  "matchedSymptom": "Coordinates shifted by 1 to several meters",
   "possibleCauses": [
     {
-      "cause": "Tokyo Datum / JGD2011 datum mismatch",
       "likelihood": "high",
-      "explanation": "Tokyo Datum and JGD2011 have ~400m offset..."
+      "cause": "Tokyo Datum to JGD2011 transformation accuracy",
+      "description": "Tokyo Datum → JGD2011 transformation accuracy is limited to 1-2m",
+      "indicators": [
+        "Transformation from Tokyo Datum was performed",
+        "Using old data"
+      ]
+    },
+    {
+      "likelihood": "medium",
+      "cause": "Different transformation parameters",
+      "description": "Same transformation can produce different results depending on parameters used"
     }
   ],
   "diagnosticSteps": [
-    "Verify source data is actually in Tokyo Datum",
-    "Check if transformation parameters are being applied",
-    "Confirm grid file is available and being used"
+    {
+      "step": 1,
+      "action": "Check transformation history",
+      "expected": "Transformation method and parameters are recorded"
+    },
+    {
+      "step": 2,
+      "action": "Verify transformation accuracy limits",
+      "expected": "1-2m shift is normal for Tokyo→JGD transformation"
+    }
   ],
   "suggestedSolutions": [
-    "Apply proper datum transformation (not just CRS reprojection)",
-    "Use NTv2 grid file for highest accuracy"
+    {
+      "forCause": "Tokyo Datum to JGD2011 transformation accuracy",
+      "steps": [
+        "Accept 1-2m shift as transformation accuracy limit",
+        "Consider re-surveying original data if higher accuracy needed"
+      ]
+    }
   ],
-  "confidence": "high"
+  "relatedBestPractices": ["historical_data", "precision_requirements"],
+  "confidence": "medium"
 }
 ```
 
@@ -206,16 +242,24 @@ Input: {
   "primary": {
     "code": "EPSG:3857",
     "name": "WGS 84 / Pseudo-Mercator",
-    "score": 100,
+    "score": 95,
     "pros": [
-      "Standard for web map tiles",
-      "Compatible with all major mapping libraries"
+      "Major library support",
+      "Tile service compatible"
     ],
     "cons": [
-      "Significant area/distance distortion"
-    ],
-    "usageNotes": "Use only for display. Convert to appropriate CRS for calculations."
-  }
+      "Noticeable distortion in Hokkaido",
+      "Cannot calculate area"
+    ]
+  },
+  "alternatives": [
+    {
+      "code": "EPSG:6668",
+      "name": "JGD2011",
+      "score": 75
+    }
+  ],
+  "reasoning": "Web Mercator is the de facto standard for web maps in Japan as well. EPSG:6668 (JGD2011) is recommended for data storage."
 }
 ```
 
@@ -239,15 +283,20 @@ Input: {
     {
       "severity": "error",
       "code": "AREA_DISTORTION",
-      "message": "Web Mercator has ~23% area distortion at Japan's latitude",
-      "recommendation": "Use JGD2011 Plane Rectangular CS for area calculations"
+      "message": "Web Mercator causes significant area distortion",
+      "recommendation": "Use an equal-area or local projected CRS"
     }
+  ],
+  "suggestions": [
+    "Use an equal-area or local projected CRS"
   ],
   "betterAlternatives": [
     {
       "code": "EPSG:6677",
       "name": "JGD2011 / Japan Plane Rectangular CS IX",
-      "score": 90
+      "score": 95,
+      "pros": ["High accuracy", "Standard within Japan"],
+      "cons": ["Cannot span zones"]
     }
   ]
 }
@@ -261,10 +310,10 @@ Input: { "topic": "web_mapping" }
 ```
 
 **Key practices returned:**
-- Use EPSG:3857 for tile display
-- Output GeoJSON in WGS84 (EPSG:4326)
-- Never calculate area/distance in Web Mercator
-- Transform to projected CRS for measurements
+- Use Web Mercator (EPSG:3857) for web map display (must)
+- Output GeoJSON in WGS84 (EPSG:4326) (must)
+- Do not perform area/distance calculations in Web Mercator (must)
+- Use appropriate projected CRS for high-precision functions (should)
 
 
 ## Scenario 4: Troubleshooting Coordinate Shifts
@@ -289,35 +338,54 @@ Input: {
 **Response:**
 ```json
 {
-  "matchedSymptom": "small_shift_meters",
+  "matchedSymptom": "Coordinates shifted by 1 to several meters",
   "possibleCauses": [
     {
-      "cause": "Transformation accuracy limits",
       "likelihood": "high",
-      "explanation": "Tokyo Datum to JGD transformations have inherent accuracy limits of 1-2m"
+      "cause": "Tokyo Datum to JGD2011 transformation accuracy",
+      "description": "Tokyo Datum → JGD2011 transformation accuracy is limited to 1-2m",
+      "indicators": [
+        "Transformation from Tokyo Datum was performed",
+        "Using old data"
+      ]
     },
     {
-      "cause": "Missing grid shift file",
       "likelihood": "medium",
-      "explanation": "Without NTv2 grid file, fallback to less accurate parameters"
-    },
-    {
-      "cause": "Coordinate truncation",
-      "likelihood": "low",
-      "explanation": "Insufficient decimal places in coordinate storage"
+      "cause": "Different transformation parameters",
+      "description": "Same transformation can produce different results depending on parameters used",
+      "indicators": [
+        "Results differ between software",
+        "Transformation method not documented"
+      ]
     }
   ],
   "diagnosticSteps": [
-    "Check transformation method used (grid vs parametric)",
-    "Verify grid files are installed",
-    "Check coordinate precision settings"
+    {
+      "step": 1,
+      "action": "Check transformation history",
+      "expected": "Transformation method and parameters are recorded",
+      "ifFailed": "If transformation is unclear, verify original data"
+    },
+    {
+      "step": 2,
+      "action": "Verify transformation accuracy limits",
+      "expected": "1-2m shift is normal for Tokyo→JGD transformation",
+      "ifFailed": "If shift is larger, investigate other causes"
+    }
   ],
   "suggestedSolutions": [
-    "Install NTv2 grid files for your region",
-    "Use at least 8 decimal places for geographic coordinates"
+    {
+      "forCause": "Tokyo Datum to JGD2011 transformation accuracy",
+      "steps": [
+        "Accept 1-2m shift as transformation accuracy limit",
+        "Consider re-surveying original data if higher accuracy needed",
+        "Record transformation accuracy in metadata"
+      ],
+      "prevention": "Verify data precision requirements and transformation accuracy limits beforehand"
+    }
   ],
-  "relatedBestPractices": ["precision_requirements", "historical_data"],
-  "confidence": "high"
+  "relatedBestPractices": ["historical_data", "precision_requirements"],
+  "confidence": "medium"
 }
 ```
 
@@ -344,29 +412,25 @@ Input: {
 **Response:**
 ```json
 {
-  "isValid": false,
-  "score": 40,
+  "isValid": true,
+  "score": 80,
   "issues": [
     {
-      "severity": "error",
-      "code": "GEOJSON_INCOMPATIBLE",
-      "message": "GeoJSON specification requires WGS84 (EPSG:4326)",
-      "recommendation": "Transform to EPSG:4326 before creating GeoJSON"
+      "severity": "info",
+      "code": "NON_STANDARD_EXCHANGE",
+      "message": "EPSG:4326 is the most widely supported CRS for data exchange",
+      "recommendation": "Consider converting to WGS84 for broader compatibility"
     },
     {
       "severity": "warning",
-      "code": "NON_STANDARD_EXCHANGE",
-      "message": "Projected CRS reduces interoperability",
-      "recommendation": "Use geographic CRS for data exchange"
+      "code": "GEOJSON_INCOMPATIBLE",
+      "message": "GeoJSON specification requires WGS84 (EPSG:4326)",
+      "recommendation": "Convert to EPSG:4326 for GeoJSON export"
     }
   ],
-  "betterAlternatives": [
-    {
-      "code": "EPSG:4326",
-      "name": "WGS 84",
-      "score": 100,
-      "pros": ["GeoJSON standard", "Universal compatibility"]
-    }
+  "suggestions": [
+    "Consider converting to WGS84 for broader compatibility",
+    "Convert to EPSG:4326 for GeoJSON export"
   ]
 }
 ```
@@ -379,10 +443,9 @@ Input: { "topic": "data_exchange" }
 ```
 
 **Key practices returned:**
-- Always include CRS information in metadata
-- Use WGS84 (EPSG:4326) for GeoJSON
-- Document transformation history for traceability
-- Consider accuracy loss during transformations
+- Include CRS information in data (must)
+- Use WGS84 for international data exchange (should)
+- Specify transformation accuracy (should)
 
 
 ## Scenario 6: US State Plane Coordinate System Selection
@@ -415,33 +478,28 @@ Input: {
     "name": "NAD83 / California zone 5",
     "score": 95,
     "pros": [
-      "Official State Plane zone for Los Angeles area",
-      "High accuracy for local surveying",
-      "Based on NAD83 datum"
+      "High accuracy",
+      "Legal basis",
+      "Public survey compliant"
     ],
     "cons": [
-      "Limited coverage area"
+      "Zone selection required",
+      "Multiple zones for wide areas"
     ]
   },
-  "alternatives": [
-    {
-      "code": "EPSG:6425",
-      "name": "NAD83(2011) / California zone 5",
-      "score": 90,
-      "pros": ["Latest datum realization"]
-    }
-  ],
-  "reasoning": "California zone 5 covers the Los Angeles metropolitan area..."
+  "alternatives": [],
+  "reasoning": "Recommended by US CRS Knowledge Pack for survey.",
+  "warnings": []
 }
 ```
 
-**Step 2: Compare NAD83 versions**
+**Step 2: Compare with WGS84**
 
 ```
 Tool: compare_crs
 Input: {
   "crs1": "EPSG:2229",
-  "crs2": "EPSG:6425",
+  "crs2": "EPSG:4326",
   "aspects": ["datum", "accuracy"]
 }
 ```
@@ -449,19 +507,22 @@ Input: {
 **Response:**
 ```json
 {
-  "comparison": {
-    "datum": {
-      "crs1": "NAD83 (original)",
-      "crs2": "NAD83(2011)",
-      "verdict": "CRS2 uses more recent datum realization",
-      "recommendation": "NAD83(2011) recommended for new projects"
+  "comparison": [
+    {
+      "aspect": "Datum",
+      "crs1Value": "NAD83 / California zone 5",
+      "crs2Value": "WGS84",
+      "verdict": "Different datums. Transformation required"
     },
-    "accuracy": {
-      "crs1": "~1m relative to current positions",
-      "crs2": "~2cm relative to current positions",
-      "verdict": "CRS2 has higher accuracy"
+    {
+      "aspect": "Accuracy",
+      "crs1Value": "Survey-grade within zone",
+      "crs2Value": "N/A",
+      "verdict": "Different accuracy characteristics"
     }
-  }
+  ],
+  "summary": "Comparison of geographic and projected CRS. Choose based on your use case.",
+  "recommendation": "Use geographic CRS for wide-area data storage, projected CRS for local calculations."
 }
 ```
 
@@ -495,60 +556,32 @@ Input: {
     "name": "OSGB36 / British National Grid",
     "score": 95,
     "pros": [
-      "Official UK mapping coordinate system",
-      "Compatible with Ordnance Survey products",
-      "Well-established transformation to GNSS"
+      "High accuracy",
+      "Legal basis",
+      "Public survey compliant"
     ],
-    "usageNotes": "Use OSTN15 transformation for GNSS data"
-  }
-}
-```
-
-**Step 2: Transformation from GNSS (ETRS89) to BNG**
-
-```
-Tool: suggest_transformation
-Input: {
-  "sourceCrs": "EPSG:4258",
-  "targetCrs": "EPSG:27700",
-  "location": { "country": "UK" }
-}
-```
-
-**Response:**
-```json
-{
-  "recommended": {
-    "name": "ETRS89 to OSGB36 / British National Grid",
-    "method": "OSTN15 + OSGM15 transformation",
-    "accuracy": "~0.1m horizontal, ~0.02m vertical",
-    "steps": [
-      {
-        "from": "EPSG:4258",
-        "to": "EPSG:27700",
-        "operation": "OSTN15 grid-based transformation"
-      }
+    "cons": [
+      "Zone selection required",
+      "Multiple zones for wide areas"
     ]
   },
-  "warnings": [
-    "Do not use simple Helmert transformation (only ~5m accuracy)",
-    "OSTN15 is mandatory for sub-metre accuracy"
-  ]
+  "alternatives": [],
+  "reasoning": "Recommended by UK CRS Knowledge Pack for survey.",
+  "warnings": []
 }
 ```
 
-**Step 3: UK-specific Best Practices**
+**Step 2: Best Practices for Survey**
 
 ```
 Tool: get_best_practices
-Input: { "topic": "uk_survey" }
+Input: { "topic": "precision_requirements" }
 ```
 
 **Key practices returned:**
-- Use British National Grid (EPSG:27700) for England, Scotland, Wales
-- Use Irish Transverse Mercator (EPSG:2157) for Northern Ireland
-- Always use OSTN15 for GNSS-to-BNG transformation
-- Store raw GNSS in ETRS89 before transformation
+- Define precision requirements at project start (must)
+- Use appropriate CRS for required precision (should)
+- Document precision in metadata (should)
 
 
 ## Summary: When to Use Each Tool

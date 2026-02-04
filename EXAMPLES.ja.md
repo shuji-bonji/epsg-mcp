@@ -48,17 +48,19 @@ Input: {
     "name": "JGD2011 / Japan Plane Rectangular CS XII",
     "score": 95,
     "pros": [
-      "この地域での測量の公式CRS",
-      "局所的な測定で高精度",
-      "現行のJGD2011測地系に基づく"
+      "高精度",
+      "法的根拠あり",
+      "公共測量準則に準拠"
     ],
     "cons": [
-      "XII系のカバー範囲に限定"
+      "系の選択が必要",
+      "広域では複数系にまたがる"
     ]
   },
-  "reasoning": "XII系（EPSG:6680）は札幌市の指定系です...",
+  "alternatives": [],
+  "reasoning": "公共測量作業規程に準拠。測量法で定められた座標系。平面直角座標系は国土地理院の公式測量座標系です。",
   "warnings": [
-    "北海道は複数の系（XI〜XIV）にまたがります。正確な系選択のため市区町村を指定してください。"
+    "3つの系にまたがります（西部=XI、中央部=XII、東部=XIII）"
   ]
 }
 ```
@@ -78,7 +80,7 @@ Input: {
 ```json
 {
   "isValid": true,
-  "score": 95,
+  "score": 100,
   "issues": [],
   "suggestions": []
 }
@@ -92,9 +94,10 @@ Input: { "topic": "japan_survey" }
 ```
 
 **主な推奨事項:**
-- JGD2011ベースのCRS（EPSG:6669-6687）を使用
-- 作業地域に適した系を選択
-- GNSSの生データはJGD2011地理座標系（EPSG:6668）で保存
+- JGD2011（EPSG:6668）を標準として使用（must）
+- 対象地域に適した平面直角座標系を選択（must）
+- 広域データは地理座標系で管理（should）
+- 座標精度に応じた適切な小数点以下桁数を使用（should）
 
 
 ## シナリオ 2: 旧測地系データの移行（Tokyo Datum → JGD2011）
@@ -119,23 +122,35 @@ Input: {
 **レスポンス:**
 ```json
 {
-  "recommended": {
-    "name": "Tokyo to JGD2011 (2)",
-    "method": "NTv2グリッド変換",
-    "accuracy": "ほとんどの地域で0.2m",
-    "steps": [
-      {
-        "from": "EPSG:4301",
-        "to": "EPSG:6668",
-        "operation": "TKY2JGD.parを使用したグリッドベース変換"
-      }
-    ]
-  },
-  "warnings": [
-    "Tokyo DatumからJGD2011への変換は約400mのずれを伴います。変換パラメータを確認してください。",
-    "最高精度にはグリッドファイル（TKY2JGD.par）が必要です"
+  "directPath": null,
+  "viaPaths": [
+    {
+      "steps": [
+        {
+          "from": "EPSG:4301",
+          "to": "EPSG:4612",
+          "method": "Geocentric translations (geog2D domain)",
+          "accuracy": "1-2m",
+          "epsgCode": "EPSG:15483",
+          "notes": "日本国土地理院による公式パラメータ"
+        },
+        {
+          "from": "EPSG:4612",
+          "to": "EPSG:6668",
+          "method": "Time-dependent Coordinate Frame rotation",
+          "accuracy": "数cm",
+          "epsgCode": "EPSG:6190",
+          "notes": "東北地方太平洋沖地震による地殻変動対応"
+        }
+      ],
+      "totalAccuracy": "1-2m以上（累積誤差注意）",
+      "complexity": "moderate"
+    }
   ],
-  "notes": "3パラメータ変換の精度は約1mに制限されます"
+  "recommended": { /* viaPaths[0]と同じ */ },
+  "warnings": [
+    "EPSG:4301 は非推奨です。Tokyo Datumは非推奨。新規データには使用しないこと。新規データには EPSG:6668 を使用してください。"
+  ]
 }
 ```
 
@@ -156,24 +171,46 @@ Input: {
 **レスポンス:**
 ```json
 {
-  "matchedSymptom": "large_shift_hundreds_meters",
+  "matchedSymptom": "座標が1〜数メートルずれている",
   "possibleCauses": [
     {
-      "cause": "Tokyo Datum / JGD2011 測地系の不一致",
       "likelihood": "high",
-      "explanation": "Tokyo DatumとJGD2011には約400mのオフセットがあります..."
+      "cause": "Tokyo DatumからJGD2011への変換精度",
+      "description": "Tokyo Datum → JGD2011 変換精度は1-2mに制限されます",
+      "indicators": [
+        "Tokyo Datumからの変換が行われた",
+        "古いデータを使用している"
+      ]
+    },
+    {
+      "likelihood": "medium",
+      "cause": "異なる変換パラメータ",
+      "description": "同じ変換でも使用するパラメータによって結果が異なります"
     }
   ],
   "diagnosticSteps": [
-    "元データが本当にTokyo Datumであることを確認",
-    "変換パラメータが適用されているか確認",
-    "グリッドファイルが利用可能で使用されているか確認"
+    {
+      "step": 1,
+      "action": "変換履歴を確認",
+      "expected": "変換方法とパラメータが記録されている"
+    },
+    {
+      "step": 2,
+      "action": "変換精度の限界を確認",
+      "expected": "Tokyo→JGD変換では1-2mのずれは正常"
+    }
   ],
   "suggestedSolutions": [
-    "適切な測地系変換を適用（単なるCRS再投影ではなく）",
-    "最高精度にはNTv2グリッドファイルを使用"
+    {
+      "forCause": "Tokyo DatumからJGD2011への変換精度",
+      "steps": [
+        "1-2mのずれを変換精度の限界として受け入れる",
+        "高精度が必要な場合は元データの再測量を検討"
+      ]
+    }
   ],
-  "confidence": "high"
+  "relatedBestPractices": ["historical_data", "precision_requirements"],
+  "confidence": "medium"
 }
 ```
 
@@ -205,16 +242,24 @@ Input: {
   "primary": {
     "code": "EPSG:3857",
     "name": "WGS 84 / Pseudo-Mercator",
-    "score": 100,
+    "score": 95,
     "pros": [
-      "Web地図タイルの標準",
-      "すべての主要地図ライブラリと互換性あり"
+      "主要ライブラリサポート",
+      "タイルサービス互換"
     ],
     "cons": [
-      "面積・距離に大きな歪みあり"
-    ],
-    "usageNotes": "表示専用。計算には適切なCRSに変換してください。"
-  }
+      "北海道で顕著な歪み",
+      "面積計算不可"
+    ]
+  },
+  "alternatives": [
+    {
+      "code": "EPSG:6668",
+      "name": "JGD2011",
+      "score": 75
+    }
+  ],
+  "reasoning": "Web MercatorはWeb地図において日本でもデファクトスタンダードです。データ保存にはEPSG:6668（JGD2011）を推奨します。"
 }
 ```
 
@@ -238,15 +283,20 @@ Input: {
     {
       "severity": "error",
       "code": "AREA_DISTORTION",
-      "message": "Web Mercatorは日本の緯度で約23%の面積歪みがあります",
-      "recommendation": "面積計算にはJGD2011平面直角座標系を使用してください"
+      "message": "Web Mercatorは面積に大きな歪みを生じます",
+      "recommendation": "正積図法またはローカル投影座標系を使用してください"
     }
+  ],
+  "suggestions": [
+    "正積図法またはローカル投影座標系を使用してください"
   ],
   "betterAlternatives": [
     {
       "code": "EPSG:6677",
       "name": "JGD2011 / Japan Plane Rectangular CS IX",
-      "score": 90
+      "score": 95,
+      "pros": ["高精度", "日本国内の標準"],
+      "cons": ["系をまたげない"]
     }
   ]
 }
@@ -260,10 +310,10 @@ Input: { "topic": "web_mapping" }
 ```
 
 **主な推奨事項:**
-- タイル表示にはEPSG:3857を使用
-- GeoJSON出力はWGS84（EPSG:4326）で
-- Web Mercatorでは面積・距離計算をしない
-- 測定には投影座標系に変換
+- Web地図表示にはWeb Mercator（EPSG:3857）を使用（must）
+- GeoJSON出力はWGS84（EPSG:4326）で（must）
+- Web Mercatorでは面積・距離計算をしない（must）
+- 高精度機能には適切な投影座標系を使用（should）
 
 
 ## シナリオ 4: 座標ずれのトラブルシューティング
@@ -288,35 +338,54 @@ Input: {
 **レスポンス:**
 ```json
 {
-  "matchedSymptom": "small_shift_meters",
+  "matchedSymptom": "座標が1〜数メートルずれている",
   "possibleCauses": [
     {
-      "cause": "変換精度の限界",
       "likelihood": "high",
-      "explanation": "Tokyo DatumからJGDへの変換には1〜2mの固有の精度限界があります"
+      "cause": "Tokyo DatumからJGD2011への変換精度",
+      "description": "Tokyo Datum → JGD2011 変換精度は1-2mに制限されます",
+      "indicators": [
+        "Tokyo Datumからの変換が行われた",
+        "古いデータを使用している"
+      ]
     },
     {
-      "cause": "グリッドシフトファイルの欠落",
       "likelihood": "medium",
-      "explanation": "NTv2グリッドファイルがないと、精度の低いパラメータにフォールバック"
-    },
-    {
-      "cause": "座標の桁落ち",
-      "likelihood": "low",
-      "explanation": "座標保存時の小数点以下桁数が不十分"
+      "cause": "異なる変換パラメータ",
+      "description": "同じ変換でも使用するパラメータによって結果が異なります",
+      "indicators": [
+        "ソフトウェア間で結果が異なる",
+        "変換方法が文書化されていない"
+      ]
     }
   ],
   "diagnosticSteps": [
-    "使用された変換方法（グリッド vs パラメトリック）を確認",
-    "グリッドファイルがインストールされているか確認",
-    "座標精度設定を確認"
+    {
+      "step": 1,
+      "action": "変換履歴を確認",
+      "expected": "変換方法とパラメータが記録されている",
+      "ifFailed": "変換が不明な場合は元データを検証"
+    },
+    {
+      "step": 2,
+      "action": "変換精度の限界を確認",
+      "expected": "Tokyo→JGD変換では1-2mのずれは正常",
+      "ifFailed": "ずれが大きい場合は他の原因を調査"
+    }
   ],
   "suggestedSolutions": [
-    "対象地域のNTv2グリッドファイルをインストール",
-    "地理座標には少なくとも8桁の小数点を使用"
+    {
+      "forCause": "Tokyo DatumからJGD2011への変換精度",
+      "steps": [
+        "1-2mのずれを変換精度の限界として受け入れる",
+        "高精度が必要な場合は元データの再測量を検討",
+        "変換精度をメタデータに記録"
+      ],
+      "prevention": "事前にデータ精度要件と変換精度の限界を確認"
+    }
   ],
-  "relatedBestPractices": ["precision_requirements", "historical_data"],
-  "confidence": "high"
+  "relatedBestPractices": ["historical_data", "precision_requirements"],
+  "confidence": "medium"
 }
 ```
 
@@ -343,29 +412,25 @@ Input: {
 **レスポンス:**
 ```json
 {
-  "isValid": false,
-  "score": 40,
+  "isValid": true,
+  "score": 80,
   "issues": [
     {
-      "severity": "error",
-      "code": "GEOJSON_INCOMPATIBLE",
-      "message": "GeoJSON仕様はWGS84（EPSG:4326）を要求しています",
-      "recommendation": "GeoJSON作成前にEPSG:4326に変換してください"
+      "severity": "info",
+      "code": "NON_STANDARD_EXCHANGE",
+      "message": "EPSG:4326がデータ交換で最も広くサポートされているCRSです",
+      "recommendation": "より広い互換性のためにWGS84への変換を検討してください"
     },
     {
       "severity": "warning",
-      "code": "NON_STANDARD_EXCHANGE",
-      "message": "投影座標系は相互運用性を低下させます",
-      "recommendation": "データ交換には地理座標系を使用"
+      "code": "GEOJSON_INCOMPATIBLE",
+      "message": "GeoJSON仕様はWGS84（EPSG:4326）を要求しています",
+      "recommendation": "GeoJSONエクスポート時はEPSG:4326に変換してください"
     }
   ],
-  "betterAlternatives": [
-    {
-      "code": "EPSG:4326",
-      "name": "WGS 84",
-      "score": 100,
-      "pros": ["GeoJSON標準", "普遍的な互換性"]
-    }
+  "suggestions": [
+    "より広い互換性のためにWGS84への変換を検討してください",
+    "GeoJSONエクスポート時はEPSG:4326に変換してください"
   ]
 }
 ```
@@ -378,10 +443,9 @@ Input: { "topic": "data_exchange" }
 ```
 
 **主な推奨事項:**
-- メタデータには必ずCRS情報を含める
-- GeoJSONにはWGS84（EPSG:4326）を使用
-- 追跡可能性のため変換履歴を記録
-- 変換時の精度低下に注意
+- データにCRS情報を含める（must）
+- 国際データ交換にはWGS84を使用（should）
+- 変換精度を明記（should）
 
 
 ## シナリオ 6: 米国State Plane座標系の選択
@@ -414,33 +478,28 @@ Input: {
     "name": "NAD83 / California zone 5",
     "score": 95,
     "pros": [
-      "ロサンゼルス地域の公式State Planeゾーン",
-      "ローカル測量に高精度",
-      "NAD83測地系に基づく"
+      "高精度",
+      "法的根拠あり",
+      "公共測量準則に準拠"
     ],
     "cons": [
-      "カバー範囲が限定的"
+      "ゾーン選択が必要",
+      "広域では複数ゾーンにまたがる"
     ]
   },
-  "alternatives": [
-    {
-      "code": "EPSG:6425",
-      "name": "NAD83(2011) / California zone 5",
-      "score": 90,
-      "pros": ["最新の測地系実現"]
-    }
-  ],
-  "reasoning": "カリフォルニアゾーン5はロサンゼルス都市圏をカバーしています..."
+  "alternatives": [],
+  "reasoning": "US CRS Knowledge Packの測量推奨。",
+  "warnings": []
 }
 ```
 
-**ステップ 2: NAD83バージョンの比較**
+**ステップ 2: WGS84との比較**
 
 ```
 Tool: compare_crs
 Input: {
   "crs1": "EPSG:2229",
-  "crs2": "EPSG:6425",
+  "crs2": "EPSG:4326",
   "aspects": ["datum", "accuracy"]
 }
 ```
@@ -448,19 +507,22 @@ Input: {
 **レスポンス:**
 ```json
 {
-  "comparison": {
-    "datum": {
-      "crs1": "NAD83（オリジナル）",
-      "crs2": "NAD83(2011)",
-      "verdict": "CRS2はより新しい測地系実現を使用",
-      "recommendation": "新規プロジェクトにはNAD83(2011)を推奨"
+  "comparison": [
+    {
+      "aspect": "測地系",
+      "crs1Value": "NAD83 / California zone 5",
+      "crs2Value": "WGS84",
+      "verdict": "異なる測地系。変換が必要"
     },
-    "accuracy": {
-      "crs1": "現在の位置に対して約1m",
-      "crs2": "現在の位置に対して約2cm",
-      "verdict": "CRS2の方が高精度"
+    {
+      "aspect": "精度",
+      "crs1Value": "ゾーン内で測量グレード",
+      "crs2Value": "N/A",
+      "verdict": "異なる精度特性"
     }
-  }
+  ],
+  "summary": "地理座標系と投影座標系の比較。用途に応じて選択してください。",
+  "recommendation": "広域データ保存には地理座標系、ローカル計算には投影座標系を使用。"
 }
 ```
 
@@ -494,60 +556,32 @@ Input: {
     "name": "OSGB36 / British National Grid",
     "score": 95,
     "pros": [
-      "英国の公式マッピング座標系",
-      "Ordnance Survey製品と互換性あり",
-      "GNSSへの確立された変換あり"
+      "高精度",
+      "法的根拠あり",
+      "公共測量準則に準拠"
     ],
-    "usageNotes": "GNSSデータにはOSTN15変換を使用"
-  }
-}
-```
-
-**ステップ 2: GNSS（ETRS89）からBNGへの変換**
-
-```
-Tool: suggest_transformation
-Input: {
-  "sourceCrs": "EPSG:4258",
-  "targetCrs": "EPSG:27700",
-  "location": { "country": "UK" }
-}
-```
-
-**レスポンス:**
-```json
-{
-  "recommended": {
-    "name": "ETRS89 to OSGB36 / British National Grid",
-    "method": "OSTN15 + OSGM15 変換",
-    "accuracy": "水平約0.1m、垂直約0.02m",
-    "steps": [
-      {
-        "from": "EPSG:4258",
-        "to": "EPSG:27700",
-        "operation": "OSTN15グリッドベース変換"
-      }
+    "cons": [
+      "ゾーン選択が必要",
+      "広域では複数ゾーンにまたがる"
     ]
   },
-  "warnings": [
-    "単純なヘルマート変換を使用しないでください（精度約5mのみ）",
-    "サブメートル精度にはOSTN15が必須です"
-  ]
+  "alternatives": [],
+  "reasoning": "UK CRS Knowledge Packの測量推奨。",
+  "warnings": []
 }
 ```
 
-**ステップ 3: 英国固有のベストプラクティス**
+**ステップ 2: 測量のベストプラクティス**
 
 ```
 Tool: get_best_practices
-Input: { "topic": "uk_survey" }
+Input: { "topic": "precision_requirements" }
 ```
 
 **主な推奨事項:**
-- イングランド、スコットランド、ウェールズにはBritish National Grid（EPSG:27700）を使用
-- 北アイルランドにはIrish Transverse Mercator（EPSG:2157）を使用
-- GNSSからBNGへの変換には必ずOSTN15を使用
-- 変換前のGNSS生データはETRS89で保存
+- プロジェクト開始時に精度要件を定義（must）
+- 必要な精度に適したCRSを使用（should）
+- メタデータに精度を記録（should）
 
 
 ## まとめ: 各ツールの使いどころ

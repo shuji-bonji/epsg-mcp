@@ -7,6 +7,7 @@ import { readFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DataLoadError } from '../errors/index.js';
+import { findCrsInPacks } from '../packs/pack-manager.js';
 import type {
 	BestPracticesData,
 	ComparisonsData,
@@ -236,10 +237,16 @@ async function buildCrsIndex(): Promise<void> {
 export async function findCrsById(code: string): Promise<CrsDetail | undefined> {
 	await buildCrsIndex();
 
-	// First try in-memory index (Pack + static data)
+	// First try in-memory index (static Japan/Global data)
 	const cached = crsIndex?.get(normalizeCode(code));
 	if (cached) {
 		return cached;
+	}
+
+	// Try Country Packs (US, UK, etc.)
+	const packResult = await findCrsInPacks(code);
+	if (packResult) {
+		return packResult.crs;
 	}
 
 	// Fallback to SQLite if available
