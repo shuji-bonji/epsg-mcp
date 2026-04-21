@@ -17,15 +17,15 @@ import {
 
 // ハンドラーを再エクスポート
 export {
-	handleSearchCrs,
+	handleCompareCrs,
+	handleGetBestPractices,
 	handleGetCrsDetail,
 	handleListCrsByRegion,
 	handleRecommendCrs,
-	handleValidateCrsUsage,
+	handleSearchCrs,
 	handleSuggestTransformation,
-	handleCompareCrs,
-	handleGetBestPractices,
 	handleTroubleshoot,
+	handleValidateCrsUsage,
 };
 
 // ツール名とハンドラーのマッピング

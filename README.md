@@ -104,7 +104,7 @@ By default, output is in English. To get Japanese output, set the `EPSG_LANG` en
 ### MCP Inspector
 
 ```bash
-npx @anthropic-ai/mcp-inspector npx @shuji-bonji/epsg-mcp
+npx @modelcontextprotocol/inspector npx @shuji-bonji/epsg-mcp
 ```
 
 ## Tools
@@ -119,7 +119,7 @@ Search CRS by keyword.
   query: string;           // Search keyword (e.g., "JGD2011", "4326", "Tokyo")
   type?: "geographic" | "projected" | "compound" | "vertical" | "engineering";
   region?: "Japan" | "Global";
-  limit?: number;          // Default: 10
+  limit?: number;          // Default: 10, max: 100
 }
 
 // Output
@@ -205,6 +205,7 @@ Recommend optimal CRS based on purpose and location.
            "survey" | "navigation" | "data_exchange" | "data_storage" | "visualization";
   location: {
     country?: string;      // "Japan" | "Global"
+    region?: string;       // "Kanto", "Hokkaido", "Main Island", "Sakishima", etc.
     prefecture?: string;   // "Tokyo", "Hokkaido", etc.
     city?: string;         // "Sapporo", "Naha", etc. (for multi-zone support)
     boundingBox?: BoundingBox;
@@ -213,6 +214,7 @@ Recommend optimal CRS based on purpose and location.
   requirements?: {
     accuracy?: "high" | "medium" | "low";
     distortionTolerance?: "minimal" | "moderate" | "flexible";
+    interoperability?: string[];  // e.g., ["GIS", "CAD", "Web"]
   };
 }
 
@@ -482,7 +484,9 @@ npm run epsg:download-db
 npx tsx scripts/download-epsg-db.ts ./path/to/epsg.db
 ```
 
-2. **Install sql.js** (if not already installed)
+2. **Install sql.js** (only if `npm install` did not install it)
+
+`sql.js` is already listed in `optionalDependencies`, so it is normally installed automatically when you run `npm install @shuji-bonji/epsg-mcp`. You only need this step if the optional dependency was skipped (e.g., by `--no-optional`):
 
 ```bash
 npm install sql.js
@@ -543,6 +547,7 @@ npm run test:watch
 - **Phase 2** ✅: recommend_crs, validate_crs_usage
 - **Phase 3** ✅: suggest_transformation, compare_crs
 - **Phase 4** ✅: get_best_practices, troubleshoot
+- **Phase 5** ✅: Internationalization & multi-region support (Country Pack system, UTM fallback, optional SQLite backend, JP/US/UK packs)
 
 ## Related Projects
 

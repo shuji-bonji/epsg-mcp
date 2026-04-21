@@ -9,6 +9,51 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.9] - 2026-04-21
+
+### Documentation
+
+#### README corrections
+
+- Fixed MCP Inspector command: replaced the non-existent `@anthropic-ai/mcp-inspector` with `@modelcontextprotocol/inspector` in `README.md`, `README.ja.md`, and the Phase 1–4 implementation plan docs.
+- Added **Phase 5** to the Roadmap section of `README.md` / `README.ja.md` (i18n & multi-region support: Country Packs, UTM fallback, optional SQLite backend).
+- `search_crs`: documented the `limit` upper bound (`max: 100`) to match the schema.
+- `recommend_crs`: documented previously omitted input fields `location.region` and `requirements.interoperability`.
+- Clarified that `sql.js` is declared in `optionalDependencies` and usually installed automatically; manual `npm install sql.js` is only needed when the optional dependency was skipped.
+
+#### Docs restructure
+
+- Moved the directory tree and module overview from `CLAUDE.md` to a new [docs/project-architecture.md](docs/project-architecture.md).
+- Moved the detailed Phase 1–5 implementation status from `CLAUDE.md` to a new [docs/implementation-status.md](docs/implementation-status.md).
+- Removed the outdated "データソース" note from `CLAUDE.md` (Phase 1-only description that was superseded by the Phase 5 Country Pack architecture; authoritative info lives in `README.md`).
+- `CLAUDE.md` is now a thin index pointing to README / CHANGELOG / docs, with only the essentials for collaborators (tech stack, commands, environment variables).
+
+### Fixed
+
+#### Lint cleanup
+
+- `biome.json`: bumped `$schema` URL from `2.3.13` to `2.4.12` to match the installed Biome CLI (version pinned in `package-lock.json`).
+- `src/data/loader.ts` (`searchByTokens`): replaced `!tokenMatches || !tokenMatches.has(code)` with `!tokenMatches?.has(code)` per Biome's `lint/complexity/useOptionalChain` rule. Behavior is unchanged.
+
+### Changed
+
+#### CI/CD
+
+- **Migrated npm publishing to Trusted Publisher (OIDC).**
+    - `.github/workflows/publish.yml` now uses `id-token: write` and `npm publish --provenance --access public`.
+    - Removed the `NODE_AUTH_TOKEN` / `secrets.NPM_TOKEN` secret from the workflow.
+    - Trusted Publisher requires npm >= 11.5.1, but Node 22 ships with npm 10.x. Instead of `npm install -g npm@latest` (which fails intermittently on Actions runners with `MODULE_NOT_FOUND: promise-retry` due to a self-overwrite race), the publish step runs a fresh npm via `npx -y npm@latest publish --provenance --access public`. Other steps (`npm ci` / test / build) continue to use the bundled npm 10.x.
+- **Bumped Node.js baseline to 22** across workflows.
+    - `publish.yml`: Node 20 → 22.
+    - `ci.yml`: matrix changed from `[18, 20, 22]` to `[22, 20, 24]`. Node 18 was dropped because it reached EOL in April 2025.
+
+### Migration notes
+
+- Maintainers must register the package under **npm → Settings → Trusted Publisher** (GitHub Actions / repo `shuji-bonji/epsg-mcp` / workflow `publish.yml`) before the next tag push.
+- After the registration succeeds on a release, the `NPM_TOKEN` repository secret and any legacy npm access tokens previously used for publishing should be revoked.
+
+---
+
 ## [0.9.8] - 2026-02-05
 
 ### Fixed

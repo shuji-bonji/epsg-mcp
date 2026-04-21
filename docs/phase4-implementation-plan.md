@@ -1175,7 +1175,7 @@ npm test
 ### 5.2 MCP Inspector
 
 ```bash
-npx @anthropic-ai/mcp-inspector build/index.js
+npx @modelcontextprotocol/inspector build/index.js
 ```
 
 ### 5.3 Claude Codeでの統合テスト

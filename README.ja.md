@@ -104,7 +104,7 @@ npx @shuji-bonji/epsg-mcp
 ### MCP Inspector
 
 ```bash
-npx @anthropic-ai/mcp-inspector npx @shuji-bonji/epsg-mcp
+npx @modelcontextprotocol/inspector npx @shuji-bonji/epsg-mcp
 ```
 
 ## Tools
@@ -119,7 +119,7 @@ CRSをキーワードで検索します。
   query: string;           // 検索キーワード（例: "JGD2011", "4326", "東京"）
   type?: "geographic" | "projected" | "compound" | "vertical" | "engineering";
   region?: "Japan" | "Global";
-  limit?: number;          // デフォルト: 10
+  limit?: number;          // デフォルト: 10、最大: 100
 }
 
 // 出力
@@ -205,6 +205,7 @@ EPSGコードでCRSの詳細情報を取得します。
            "survey" | "navigation" | "data_exchange" | "data_storage" | "visualization";
   location: {
     country?: string;      // "Japan" | "Global"
+    region?: string;       // "Kanto", "Hokkaido", "Main Island", "Sakishima" など
     prefecture?: string;   // "東京都", "北海道" など
     city?: string;         // "札幌市", "那覇市" など（複数系対応）
     boundingBox?: BoundingBox;
@@ -213,6 +214,7 @@ EPSGコードでCRSの詳細情報を取得します。
   requirements?: {
     accuracy?: "high" | "medium" | "low";
     distortionTolerance?: "minimal" | "moderate" | "flexible";
+    interoperability?: string[];  // 例: ["GIS", "CAD", "Web"]
   };
 }
 
@@ -482,7 +484,9 @@ npm run epsg:download-db
 npx tsx scripts/download-epsg-db.ts ./path/to/epsg.db
 ```
 
-2. **sql.js のインストール**（未インストールの場合）
+2. **sql.js のインストール**（`npm install` で自動インストールされなかった場合のみ）
+
+`sql.js` は `optionalDependencies` に含まれているため、通常は `npm install @shuji-bonji/epsg-mcp` 実行時に自動的にインストールされます。`--no-optional` フラグ付きでインストールした場合など、任意依存がスキップされたときのみ以下を実行してください:
 
 ```bash
 npm install sql.js
@@ -543,6 +547,7 @@ npm run test:watch
 - **Phase 2** ✅: recommend_crs, validate_crs_usage
 - **Phase 3** ✅: suggest_transformation, compare_crs
 - **Phase 4** ✅: get_best_practices, troubleshoot
+- **Phase 5** ✅: 国際化・多地域対応（Country Packシステム、UTMフォールバック、SQLiteバックエンド（任意）、JP/US/UK パック）
 
 ## Related Projects
 

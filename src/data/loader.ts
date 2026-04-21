@@ -292,7 +292,7 @@ export async function searchByTokens(tokens: string[]): Promise<string[]> {
 		let matchesAll = true;
 		for (let i = 1; i < lowerTokens.length; i++) {
 			const tokenMatches = nameTokenIndex.get(lowerTokens[i]);
-			if (!tokenMatches || !tokenMatches.has(code)) {
+			if (!tokenMatches?.has(code)) {
 				matchesAll = false;
 				break;
 			}

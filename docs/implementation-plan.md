@@ -178,7 +178,7 @@ npm test
 ### 手動テスト（MCP Inspector）
 
 ```bash
-npx @anthropic-ai/mcp-inspector build/index.js
+npx @modelcontextprotocol/inspector build/index.js
 ```
 
 ### Claude Desktopでの統合テスト
