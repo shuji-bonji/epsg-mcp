@@ -16,7 +16,7 @@
 2. Packがない地域では**UTMゾーン自動計算**で合理的な投影座標系を提案
 3. 最終フォールバックとして**安全なデフォルト**（WGS84 / Web Mercator）
 
-変換実行は [mcp-server-proj](https://github.com/mcp-server-proj) に委譲し、**知識提供・判断支援に特化**しています。
+変換実行は [mcp-server-proj](https://github.com/radial-hks/mcp-server-proj) に委譲し、**知識提供・判断支援に特化**しています。
 
 ## Features
 
@@ -551,7 +551,7 @@ npm run test:watch
 
 ## Related Projects
 
-- [mcp-server-proj](https://github.com/mcp-server-proj) - 座標変換実行用MCPサーバー
+- [mcp-server-proj](https://github.com/radial-hks/mcp-server-proj) - 座標変換実行用MCPサーバー
 - [EPSG.io](https://epsg.io/) - EPSG座標系データベース
 
 ## License

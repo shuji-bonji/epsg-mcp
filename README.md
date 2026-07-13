@@ -16,7 +16,7 @@ An MCP server that provides specialized knowledge and decision support for Coord
 2. **Automatic UTM zone calculation** when no pack is available
 3. **Safe defaults** (WGS84 / Web Mercator) as the final fallback
 
-Coordinate transformation execution is delegated to [mcp-server-proj](https://github.com/mcp-server-proj), **focusing on knowledge provision and decision support**.
+Coordinate transformation execution is delegated to [mcp-server-proj](https://github.com/radial-hks/mcp-server-proj), **focusing on knowledge provision and decision support**.
 
 ## Features
 
@@ -551,7 +551,7 @@ npm run test:watch
 
 ## Related Projects
 
-- [mcp-server-proj](https://github.com/mcp-server-proj) - MCP server for coordinate transformation execution
+- [mcp-server-proj](https://github.com/radial-hks/mcp-server-proj) - MCP server for coordinate transformation execution
 - [EPSG.io](https://epsg.io/) - EPSG coordinate system database
 
 ## License

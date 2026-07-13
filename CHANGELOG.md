@@ -9,6 +9,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.9.10] - 2026-07-14
+
+### Added
+
+#### Claude Code plugin support
+
+- Added `.claude-plugin/plugin.json` so that this MCP server can be installed directly as a Claude Code plugin. The manifest registers the `epsg` MCP server via `npx -y @shuji-bonji/epsg-mcp@latest`, so no manual `claude_desktop_config.json` / `.mcp.json` editing is required.
+
+### Documentation
+
+- Fixed the `mcp-server-proj` links in `README.md` / `README.ja.md`: they pointed at the non-existent `https://github.com/mcp-server-proj` and now point at the actual repository `https://github.com/radial-hks/mcp-server-proj`.
+
+---
+
 ## [0.9.9] - 2026-04-21
 
 ### Documentation
