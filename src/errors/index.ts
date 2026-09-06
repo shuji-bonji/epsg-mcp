@@ -6,7 +6,7 @@ import type { ZodError } from 'zod';
 
 export class ValidationError extends Error {
 	constructor(public zodError: ZodError) {
-		const messages = zodError.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
+		const messages = zodError.issues.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ');
 		super(`Validation failed: ${messages}`);
 		this.name = 'ValidationError';
 	}
