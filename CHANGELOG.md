@@ -9,9 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [1.0.0] - 2026-09-06
+## [0.10.0] - 2026-09-06
 
-First major release. The server now runs on MCP TypeScript SDK v2 and requires Node.js 22 or later.
+The server now runs on MCP TypeScript SDK v2 and requires Node.js 22 or later.
 
 ### Changed
 

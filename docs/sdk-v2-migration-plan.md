@@ -131,7 +131,7 @@ declare function serveStdio(factory: McpServerFactory, options?: ServeStdioOptio
 | 24 "Krypton" | Active LTS。最新 24.20.0 | CI に含める |
 | 26 | Current。最新 26.8.1（2026-08-26） | 2026-10 に LTS 化予定。CI の任意ジョブとして追加してもよい |
 
-`engines.node` を `>=18.0.0` から `>=22` に上げるのは互換性を破る変更なので、バージョンは 1.0.0 に上げるのが自然です（0.9.x の段階で SDK v2 対応とあわせて区切りをつける）。
+`engines.node` を `>=18.0.0` から `>=22` に上げるのは互換性を破る変更ですが、0.x 系ではマイナー更新で互換性を破ってよいため、バージョンは 0.10.0 にします（1.0.0 は、ツールの入出力と Node 要件を今後固定してよいと判断した時点で付けます）。
 
 ### 3.2 TypeScript 7
 
@@ -180,7 +180,7 @@ flowchart TD
   P1["Phase 1: SDK v2 最小移行（案 A）<br/>codemod 実行 / zod ^4.2 / errors→issues<br/>→ 657 件のテスト通過を確認"]
   P2["Phase 2: Zod スキーマに .describe() 移植<br/>definitions.ts の JSON Schema と<br/>z.toJSONSchema() の出力を突き合わせるテストを追加"]
   P3["Phase 3: McpServer + registerTool + serveStdio<br/>definitions.ts から inputSchema を削除<br/>v1 / v2 クライアント両方で疎通確認"]
-  P4["Phase 4: ドキュメントと公開<br/>README (Node 22+) / CHANGELOG / plugin.json<br/>v1.0.0 としてタグ push"]
+  P4["Phase 4: ドキュメントと公開<br/>README (Node 22+) / CHANGELOG / plugin.json<br/>v0.10.0 としてタグ push"]
   P0 --> P1 --> P2 --> P3 --> P4
 ```
 
@@ -216,7 +216,7 @@ codemod は `package.json`（`@modelcontextprotocol/sdk` を削除し `@modelcon
 
 **Phase 4: ドキュメントと公開**
 
-README / README.ja.md の Node バッジと必要環境を 22+ に、`.claude-plugin/plugin.json` と `package.json` の `version` を 1.0.0 にします。CHANGELOG には、Node 18/20 のサポート終了、`@modelcontextprotocol/server` 2.x への移行、不正入力時のエラー文の変更（`{"text":..., "code":"VALIDATION_ERROR"}` から `Input validation error: ...` へ）、`tools/list` の `inputSchema` に `$schema`（draft 2020-12）が付くようになったことを書きます。
+README / README.ja.md の Node バッジと必要環境を 22+ に、`.claude-plugin/plugin.json` と `package.json` の `version` を 0.10.0 にします。CHANGELOG には、Node 18/20 のサポート終了、`@modelcontextprotocol/server` 2.x への移行、不正入力時のエラー文の変更（`{"text":..., "code":"VALIDATION_ERROR"}` から `Input validation error: ...` へ）、`tools/list` の `inputSchema` に `$schema`（draft 2020-12）が付くようになったことを書きます。
 
 ### 4.4 見送るもの
 
