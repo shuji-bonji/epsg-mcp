@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+#### Toolchain and runtime baseline (Phase 0 of the SDK v2 migration)
+
+- **BREAKING (for the next release):** `engines.node` is now `>=22`. Node.js 18 and 20 are no longer supported (Node 20 reached end of life in April 2026). CI now runs on Node 22 (Maintenance LTS) and 24 (Active LTS).
+- Upgraded `typescript` to 7.0.2 (the Go-based native compiler). `tsconfig.json` now sets `"types": ["node"]` because TypeScript 6.0+ changed the default of `types` from `["*"]` to `[]`.
+- Upgraded `vitest` to 5.x, `@biomejs/biome` to 2.5.x (`biome.json` migrated: `rules.recommended` → `rules.preset`), and `@types/node` to 24.x to match the supported Node.js range.
+- `npm audit fix` applied to `package-lock.json` (transitive dependencies only; no runtime dependency changed).
+
+### Documentation
+
+- Added [docs/sdk-v2-migration-plan.md](docs/sdk-v2-migration-plan.md): current-state assessment and the phased plan for migrating to `@modelcontextprotocol/server` 2.x (`serveStdio` + `registerTool`).
+
 ---
 
 ## [0.9.10] - 2026-07-14

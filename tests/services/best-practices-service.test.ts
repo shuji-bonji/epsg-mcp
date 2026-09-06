@@ -139,16 +139,17 @@ describe('Best Practices Service', () => {
 				}
 			});
 
-			it.each(
-				topics
-			)('should have common mistakes with required fields for topic: %s', async (topic) => {
-				const result = await getBestPractices(topic);
-				for (const mistake of result.commonMistakes) {
-					expect(mistake.mistake).toBeDefined();
-					expect(mistake.consequence).toBeDefined();
-					expect(mistake.solution).toBeDefined();
+			it.each(topics)(
+				'should have common mistakes with required fields for topic: %s',
+				async (topic) => {
+					const result = await getBestPractices(topic);
+					for (const mistake of result.commonMistakes) {
+						expect(mistake.mistake).toBeDefined();
+						expect(mistake.consequence).toBeDefined();
+						expect(mistake.solution).toBeDefined();
+					}
 				}
-			});
+			);
 		});
 
 		describe('context parameter', () => {
