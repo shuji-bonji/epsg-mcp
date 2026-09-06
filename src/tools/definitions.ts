@@ -1,8 +1,7 @@
 /**
  * MCP Tool Definitions
  */
-
-import type { Tool } from '@modelcontextprotocol/sdk/types.js';
+import type { Tool } from '@modelcontextprotocol/server';
 
 export const tools: Tool[] = [
 	{
