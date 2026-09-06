@@ -9,6 +9,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [0.10.1] - 2026-09-06
+
+### Fixed
+
+- `recommend_crs` / `validate_crs_usage`: when only `location.subdivision` was given (e.g. `{ "country": "Japan", "subdivision": "Hokkaido", "city": "Sapporo" }`), the Japan zone lookup ignored it and fell back to Zone IX with the warning `Prefecture could not be determined`. `normalizeLocation()` now fills `prefecture` from `subdivision` when the value is a Japanese prefecture name (English or Japanese), so `subdivision` — the field recommended in `tools/list` since 0.10.0 — resolves zones the same way `prefecture` does. Non-Japanese subdivisions (US states, UK regions) are not affected.
+
+### Changed
+
+- Claude Code plugin (`.claude-plugin/plugin.json`): the `epsg` server now starts with `EPSG_PACKS=jp,us,uk`, so US and UK Country Packs are available to plugin users without editing any configuration. Loading all three packs adds about 5 ms to startup.
+
+---
+
 ## [0.10.0] - 2026-09-06
 
 The server now runs on MCP TypeScript SDK v2 and requires Node.js 22 or later.

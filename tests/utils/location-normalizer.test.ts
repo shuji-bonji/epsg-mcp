@@ -222,6 +222,28 @@ describe('Location Normalizer', () => {
 			expect(result.country).toBe('JP');
 		});
 
+		it('should fill prefecture from a Japanese subdivision', () => {
+			const result = normalizeLocation({ subdivision: '大阪府' });
+			expect(result.prefecture).toBe('大阪府');
+		});
+
+		it('should fill prefecture from an English subdivision (normalized to Japanese)', () => {
+			const result = normalizeLocation({ country: 'Japan', subdivision: 'Hokkaido' });
+			expect(result.prefecture).toBe('北海道');
+			expect(result.subdivision).toBe('Hokkaido'); // subdivision itself is preserved
+			expect(result.country).toBe('JP');
+		});
+
+		it('should not fill prefecture from a non-Japanese subdivision', () => {
+			const result = normalizeLocation({ country: 'US', subdivision: 'California' });
+			expect(result.prefecture).toBeUndefined();
+		});
+
+		it('should keep an explicit prefecture over subdivision', () => {
+			const result = normalizeLocation({ prefecture: '東京都', subdivision: 'Hokkaido' });
+			expect(result.prefecture).toBe('東京都');
+		});
+
 		it('should infer country from US state', () => {
 			const result = normalizeLocation({ subdivision: 'California' });
 			expect(result.country).toBe('US');
