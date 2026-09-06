@@ -7,21 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.0.0] - 2026-09-06
+
+First major release. The server now runs on MCP TypeScript SDK v2 and requires Node.js 22 or later.
+
 ### Changed
 
-#### Toolchain and runtime baseline (Phase 0 of the SDK v2 migration)
+#### MCP SDK v2 (`@modelcontextprotocol/server` 2.x)
 
-- **BREAKING (for the next release):** `engines.node` is now `>=22`. Node.js 18 and 20 are no longer supported (Node 20 reached end of life in April 2026). CI now runs on Node 22 (Maintenance LTS) and 24 (Active LTS).
-- Upgraded `typescript` to 7.0.2 (the Go-based native compiler). `tsconfig.json` now sets `"types": ["node"]` because TypeScript 6.0+ changed the default of `types` from `["*"]` to `[]`.
-- Upgraded `vitest` to 5.x, `@biomejs/biome` to 2.5.x (`biome.json` migrated: `rules.recommended` → `rules.preset`), and `@types/node` to 24.x to match the supported Node.js range.
-- `npm audit fix` applied to `package-lock.json` (transitive dependencies only; no runtime dependency changed).
+- Migrated from `@modelcontextprotocol/sdk` 1.x to `@modelcontextprotocol/server` 2.x (MCP specification 2026-07-28). The server is started with `serveStdio(() => createServer())`; 2025-era clients (Claude Desktop, Claude Code, MCP Inspector, SDK 1.x clients) keep working through the SDK's built-in legacy handling.
+- Tools are registered with `McpServer.registerTool()`. The Zod schemas in `src/schemas/index.ts` are now the single definition of tool inputs; the `tools/list` JSON Schema is generated from them by the SDK (JSON Schema draft 2020-12, with a `$schema` field).
+- Every input field description from the former hand-written JSON Schema was ported to the Zod schemas as `.describe()`. `location.subdivision` (the recommended replacement for `location.prefecture`) is now advertised in `tools/list`.
+- Input validation runs in the SDK before the tool handler. Invalid arguments now return `isError: true` with a plain-text message beginning with `Input validation error:` instead of the previous `{"text": "Validation failed: ...", "code": "VALIDATION_ERROR"}` JSON. `NOT_FOUND`, `DATA_LOAD_ERROR`, and `INTERNAL_ERROR` responses are unchanged.
+- Upgraded `zod` to 4.x.
+
+#### Runtime and toolchain baseline
+
+- **BREAKING:** `engines.node` is now `>=22`. Node.js 18 and 20 are no longer supported (Node 20 reached end of life in April 2026). CI runs on Node 22 (Maintenance LTS) and 24 (Active LTS).
+- Upgraded `typescript` to 7.0.2 (the Go-based native compiler). `tsconfig.json` sets `"types": ["node"]` because TypeScript 6.0+ changed the default of `types` from `["*"]` to `[]`.
+- Upgraded `vitest` to 5.x, `@biomejs/biome` to 2.5.x (`biome.json` migrated: `rules.recommended` → `rules.preset`), and `@types/node` to 24.x.
+
+### Added
+
+- `src/server.ts`: `createServer()` builds the `McpServer` and registers all tools; `src/index.ts` only preloads data and serves stdio.
+- `tests/server.test.ts`: MCP-level tests (`tools/list` / `tools/call`) over `InMemoryTransport` using `@modelcontextprotocol/client`.
+- README: "Running from a local build" section (`node build/index.js` configuration for MCP clients).
 
 ### Documentation
 
-- Added [docs/sdk-v2-migration-plan.md](docs/sdk-v2-migration-plan.md): current-state assessment and the phased plan for migrating to `@modelcontextprotocol/server` 2.x (`serveStdio` + `registerTool`).
+- Added [docs/sdk-v2-migration-plan.md](docs/sdk-v2-migration-plan.md): current-state assessment and the phased migration plan.
 
 ---
-
 ## [0.9.10] - 2026-07-14
 
 ### Added

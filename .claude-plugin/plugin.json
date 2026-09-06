@@ -1,7 +1,7 @@
 {
   "$schema": "https://raw.githubusercontent.com/anthropics/claude-code/main/.claude-plugin/plugin.schema.json",
   "name": "epsg-mcp",
-  "version": "0.9.10",
+  "version": "1.0.0",
   "description": "測地系・座標参照系 (CRS) の専門知識 MCP server。EPSG コード検索・用途別推奨・座標変換提案・Country Pack (日本/US/UK)・トラブルシュートを提供。",
   "author": {
     "name": "shuji-bonji",

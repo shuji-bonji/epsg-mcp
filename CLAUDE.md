@@ -19,7 +19,7 @@
 ## 技術スタック
 
 - TypeScript（ESM）
-- @modelcontextprotocol/sdk
+- @modelcontextprotocol/server 2.x（MCP SDK v2。`serveStdio` + `McpServer.registerTool`）
 - Zod（バリデーション）
 - Vitest（テスト）
 - Biome（Lint / Format）
