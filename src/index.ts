@@ -5,64 +5,20 @@
  * 座標参照系（CRS）に関する知識提供MCPサーバー
  */
 
-import { createRequire } from 'node:module';
-import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
-import { Server } from '@modelcontextprotocol/server';
+import { serveStdio } from '@modelcontextprotocol/server/stdio';
 import { preloadAll } from './data/loader.js';
 import { initSqliteDb, isSqliteAvailable } from './data/sqlite-loader.js';
-import { formatErrorResponse } from './errors/index.js';
 import { getRegisteredPacks, loadPacksFromEnv } from './packs/pack-manager.js';
-import { tools } from './tools/definitions.js';
-import { toolHandlers } from './tools/handlers.js';
+import { createServer } from './server.js';
 import { error, info, PerformanceTimer } from './utils/logger.js';
 
-const require = createRequire(import.meta.url);
-const { version } = require('../package.json');
-
-const server = new Server(
-	{
-		name: 'epsg-mcp',
-		version,
-	},
-	{
-		capabilities: {
-			tools: {},
-		},
-	}
-);
-
-server.setRequestHandler('tools/list', async () => {
-	return { tools };
-});
-
-server.setRequestHandler('tools/call', async (request) => {
-	const { name, arguments: args } = request.params;
-
-	try {
-		const handler = toolHandlers[name];
-		if (!handler) {
-			throw new Error(`Unknown tool: ${name}`);
-		}
-
-		const result = await handler(args);
-		return {
-			content: [{ type: 'text', text: JSON.stringify(result, null, 2) }],
-		};
-	} catch (err) {
-		const formatted = formatErrorResponse(err);
-		error(`Tool ${name} failed`, { error: formatted.text });
-		return {
-			content: [{ type: 'text', text: JSON.stringify(formatted, null, 2) }],
-			isError: true,
-		};
-	}
-});
-
-async function main() {
+/**
+ * Country Pack・静的データ・（任意の）SQLite DB をプロセス起動時に一度だけ読み込む。
+ */
+async function preload(): Promise<void> {
 	info('EPSG MCP Server: Preloading data...');
 	const timer = new PerformanceTimer('preload');
 
-	// Load country packs, static data, and optionally SQLite DB in parallel
 	const epsgDbPath = process.env.EPSG_DB_PATH;
 	const loadTasks: Promise<unknown>[] = [loadPacksFromEnv(), preloadAll()];
 
@@ -78,9 +34,21 @@ async function main() {
 	info(
 		`EPSG MCP Server: Data loaded in ${loadTime}ms (${packs.length} pack(s): ${packs.map((p) => p.countryCode).join(', ') || 'none'}${sqliteStatus ? `, ${sqliteStatus}` : ''})`
 	);
+}
 
-	const transport = new StdioServerTransport();
-	await server.connect(transport);
+async function main(): Promise<void> {
+	await preload();
+
+	const handle = serveStdio(() => createServer(), {
+		onerror: (err) => error('stdio transport error', { error: err.message }),
+	});
+
+	const shutdown = () => {
+		void handle.close().finally(() => process.exit(0));
+	};
+	process.on('SIGINT', shutdown);
+	process.on('SIGTERM', shutdown);
+
 	info('EPSG MCP Server running on stdio');
 }
 
