@@ -145,6 +145,26 @@ describe('Recommendation Service', () => {
 				expect(result.reasoning).toContain('Survey');
 			});
 
+			it('should resolve the zone from subdivision alone (no prefecture)', async () => {
+				const result = await recommendCrs('survey', {
+					country: 'Japan',
+					subdivision: 'Osaka',
+				});
+				expect(result.primary.code).toBe('EPSG:6674');
+				expect(result.warnings ?? []).not.toContain(
+					'Prefecture could not be determined. Using Zone IX (Tokyo area) as default.'
+				);
+			});
+
+			it('should resolve a multi-zone prefecture from subdivision + city', async () => {
+				const result = await recommendCrs('survey', {
+					country: 'Japan',
+					subdivision: 'Hokkaido',
+					city: 'Sapporo',
+				});
+				expect(result.primary.code).toBe('EPSG:6680');
+			});
+
 			it('should recommend zone XII for Sapporo survey', async () => {
 				const result = await recommendCrs('survey', {
 					prefecture: '北海道',

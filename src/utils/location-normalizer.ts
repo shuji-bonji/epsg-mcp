@@ -229,6 +229,7 @@ export function isJapanesePrefecture(value: string): boolean {
  * - prefecture の正規化（"Hokkaido" → "北海道"）
  * - city の正規化（"Sapporo" → "札幌市"）
  * - prefecture → subdivision のマイグレーション
+ * - subdivision → prefecture の補完（日本の都道府県名のとき）
  * - subdivision から country の推定
  *
  * @param location - 正規化前の LocationSpec
@@ -250,6 +251,17 @@ export function normalizeLocation(location: LocationSpec): LocationSpec {
 	// 3. prefecture → subdivision のマイグレーション
 	if (normalized.prefecture && !normalized.subdivision) {
 		normalized.subdivision = normalized.prefecture;
+	}
+
+	// 3b. subdivision → prefecture の補完
+	// subdivision が日本の都道府県名（英語または日本語）のときだけ prefecture を埋める。
+	// 日本の系（Zone）判定は prefecture を読むため、subdivision だけを渡された場合に
+	// 「都道府県を判定できない」と扱われるのを防ぐ。US の州名などは対象外。
+	if (normalized.subdivision && !normalized.prefecture) {
+		const asPrefecture = normalizePrefecture(normalized.subdivision);
+		if (isJapanesePrefecture(asPrefecture)) {
+			normalized.prefecture = asPrefecture;
+		}
 	}
 
 	// 4. subdivision から country を推定
