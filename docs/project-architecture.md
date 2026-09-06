@@ -6,7 +6,8 @@ EPSG MCP Server のソースコード構成。各ディレクトリ・ファイ�
 
 ```
 src/
-├── index.ts                # MCPサーバーエントリポイント
+├── index.ts                # エントリポイント（データのプリロード → serveStdio）
+├── server.ts               # createServer(): McpServer の組み立てとツール登録
 ├── types/                  # 型定義（ValidationIssueCode等）
 ├── schemas/                # Zodスキーマ
 ├── errors/                 # エラーハンドリング
@@ -63,7 +64,7 @@ src/
 │       ├── best-practices.json
 │       └── troubleshooting.json
 └── tools/
-    ├── definitions.ts      # ツール定義
+    ├── definitions.ts      # ツール定義（名前・説明・Zod 入力スキーマ）
     └── handlers.ts         # ツールハンドラー
 ```
 
@@ -71,11 +72,13 @@ src/
 
 ```mermaid
 flowchart LR
-  A[MCP Client] -->|stdio| B[index.ts]
+  A[MCP Client] -->|stdio| B[index.ts<br/>serveStdio]
   B --> C[loadPacksFromEnv]
   B --> D[preloadAll]
   B --> E[initSqliteDb<br/>（任意）]
-  B --> F[tools/handlers.ts]
+  B --> S[server.ts<br/>createServer]
+  S -->|registerTool| F[tools/handlers.ts]
+  S --> Z[schemas/index.ts<br/>Zod → JSON Schema]
   F --> G[services/*]
   G --> H[data/loader<br/>+ packs/*]
   G --> I[sqlite-loader<br/>（任意）]

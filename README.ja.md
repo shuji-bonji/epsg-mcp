@@ -101,6 +101,38 @@ npx @shuji-bonji/epsg-mcp
 }
 ```
 
+### ローカルビルドで実行する（開発用）
+
+未公開のビルドを試すときは、`npx` の代わりに `build/index.js` を MCP クライアントから直接指定します。
+
+```bash
+git clone https://github.com/shuji-bonji/epsg-mcp.git
+cd epsg-mcp
+npm ci
+npm run build
+```
+
+```json
+{
+	"mcpServers": {
+		"epsg-dev": {
+			"command": "node",
+			"args": ["/absolute/path/to/epsg-mcp/build/index.js"],
+			"env": {
+				"EPSG_PACKS": "jp,us,uk"
+			}
+		}
+	}
+}
+```
+
+補足:
+
+- `build/index.js` は `npm run build` の生成物です。ソースを変更したら再ビルドし、MCP クライアント側でサーバーを再起動してください。
+- Claude Desktop などの GUI アプリはシェルの `PATH` を引き継がないことがあります。`spawn node ENOENT` になる場合は、`"node"` を `which node` で表示される絶対パスに置き換えてください。
+- Claude Code では次の 1 コマンドで登録できます: `claude mcp add epsg-dev -e EPSG_PACKS=jp,us,uk -- node /absolute/path/to/epsg-mcp/build/index.js`
+- `npx @modelcontextprotocol/inspector node build/index.js` で MCP Inspector からローカルビルドを開けます。
+
 ### MCP Inspector
 
 ```bash
@@ -521,6 +553,8 @@ export EPSG_DB_PATH="/path/to/epsg.db"
 EPSGデータベースは [PROJ](https://proj.org/) が提供しており、[IOGP EPSG Geodetic Parameter Dataset](https://epsg.org/) を再配布しています。ライセンス情報については [EPSG利用規約](https://epsg.org/terms-of-use.html) を参照してください。
 
 ## Development
+
+Node.js 22 以上が必要です。
 
 ```bash
 # Install dependencies
