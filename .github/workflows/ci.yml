@@ -14,9 +14,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        # Node 22 is the baseline. 20 (Maintenance LTS) and 24 (Active LTS)
-        # are included for compatibility verification.
-        node-version: [22, 20, 24]
+        # Node 22 (Maintenance LTS) is the baseline; 24 (Active LTS) is also
+        # verified. Node 20 reached EOL in 2026-04 and is no longer supported.
+        node-version: [22, 24]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
